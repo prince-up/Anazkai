@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -9,7 +9,7 @@ function createWindow() {
     height: 800,
     alwaysOnTop: true, // Always on top as requested
     resizable: true,
-    show: false, // Start hidden (invisible) by default
+    show: true, // Start visible by default
     skipTaskbar: true, // Hide from the taskbar
     transparent: true, // Make background transparent
     frame: false, // Remove window frame
@@ -27,6 +27,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+    // Open DevTools automatically for debugging
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
@@ -36,20 +37,44 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  // Prevent opening Developer Tools via shortcuts to avoid hacking
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.control && input.shift && input.key.toLowerCase() === 'i') {
-      event.preventDefault();
-    }
-    if (input.key === 'F12') {
-      event.preventDefault();
-    }
-  });
 }
 
 app.whenReady().then(() => {
   createWindow();
+
+  // Register Display Media Request Handler for system audio loopback capture
+  session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
+    desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+      const primarySource = sources[0];
+      if (primarySource) {
+        callback({
+          video: primarySource,
+          audio: 'loopback'
+        });
+      } else {
+        callback(null);
+      }
+    }).catch((err) => {
+      console.error('Error fetching screen sources for getDisplayMedia:', err);
+      callback(null);
+    });
+  });
+
+  // Grant media permission requests explicitly (microphone and loopback)
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'media') {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
+
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    if (permission === 'media') {
+      return true;
+    }
+    return false;
+  });
 
   // Register Global Hotkeys
   globalShortcut.register('F1', () => {
@@ -92,6 +117,18 @@ app.whenReady().then(() => {
       return null;
     } catch (error) {
       console.error('Error capturing screen:', error);
+      return null;
+    }
+  });
+
+  // Handle IPC request to get the primary display desktop source ID for system audio capture
+  ipcMain.handle('get-desktop-source-id', async () => {
+    try {
+      const sources = await desktopCapturer.getSources({ types: ['screen'] });
+      // Return the ID of the first (primary) screen source
+      return sources[0]?.id || null;
+    } catch (error) {
+      console.error('Error getting desktop source ID:', error);
       return null;
     }
   });
