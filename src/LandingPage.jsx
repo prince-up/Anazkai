@@ -549,10 +549,10 @@ class Solution {
               The desktop app runs quietly in the background, listening to your call and surfacing the best answers in real time. No switching windows.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full">
-              <button className="w-full sm:w-auto bg-white text-black px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+              <a href="https://github.com/prince-up/cheater-Boy/releases/latest" target="_blank" rel="noreferrer" className="w-full sm:w-auto bg-white text-black px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                 <Download size={18} />
-                Download for Mac
-              </button>
+                Download for Windows
+              </a>
               <button className="w-full sm:w-auto bg-[#232529] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#2c2f35] transition-colors border border-gray-700">
                 Browser vs App
               </button>
@@ -560,7 +560,7 @@ class Solution {
           </div>
           
           {/* Right Image/Mockup */}
-          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden bg-cover bg-left shadow-[inset_60px_0_60px_rgba(17,19,21,1)] lg:shadow-[inset_100px_0_100px_rgba(17,19,21,1)]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1200&q=80')" }}>
+          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden bg-cover bg-left shadow-[inset_60px_0_60px_rgba(17,19,21,1)] lg:shadow-[inset_100px_0_100px_rgba(17,19,21,1)]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614624532983-4ce03382d63d?auto=format&fit=crop&w=1200&q=80')" }}>
             
             {/* The Overlay UI */}
             <div className="absolute top-1/2 left-8 md:left-12 -translate-y-1/2 w-[85%] max-w-[460px] flex flex-col gap-3">
