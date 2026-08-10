@@ -352,7 +352,26 @@ class Solution {
             </div>
           </div>
 
+          {/* Social Proof */}
+          <div className="pt-6 border-t border-emerald-500/10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+            <div className="flex -space-x-3">
+              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/penguin.jpg" alt="Anazk Mascot" />
+            </div>
+            <div className="text-xs font-medium text-left">
+              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-800'}`}>Used by <span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>1,534,135+</span> people</span>
+              <div className="flex items-center gap-1 mt-0.5 text-gray-500 font-semibold">
+                <div className="flex text-amber-500 gap-0.5">
+                  <Star size={12} fill="currentColor" />
+                  <Star size={12} fill="currentColor" />
+                  <Star size={12} fill="currentColor" />
+                  <Star size={12} fill="currentColor" />
+                  <Star size={12} fill="currentColor" />
+                </div>
+                <span><span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-855'}`}>4.86</span> (340,066+ reviews)</span>
+              </div>
+            </div>
           </div>
+        </div>
              {/* Hero Right - Interactive Mockup Window */}
         <div className="lg:col-span-6 flex flex-col items-center relative select-none">
           
@@ -728,65 +747,102 @@ class Solution {
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white p-8 rounded-3xl border border-gray-150 shadow-md flex flex-col justify-between text-left hover:border-emerald-500/25 hover:shadow-lg transition-all relative overflow-hidden min-h-[310px]">
-            
-            {/* Decorative Penguin Mascot Stamp */}
-            <div className="absolute top-6 right-6 w-14 h-14 opacity-85 select-none animate-bounce-slow">
-              <img src="/penguin.jpg" alt="Penguin Stamp" className="w-full h-full object-cover rounded-full border border-gray-100 shadow-sm" />
-            </div>
-
-            <div className="space-y-6 pt-4">
-              {/* Stars */}
-              <div className="flex text-amber-500 gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill="currentColor" />
-                ))}
-              </div>
-
-              {/* Review text */}
-              <p className="text-gray-700 text-base sm:text-[17px] leading-relaxed font-semibold pr-16 italic">
-                &quot;{reviews[activeReviewIdx].content}&quot;
-              </p>
-
-              {/* Reviewer Details (Down there: reviewer image, name, and handle) */}
-              <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                <img src={reviews[activeReviewIdx].avatar} alt={reviews[activeReviewIdx].name} className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500/20" />
-                <div>
-                  <span className="block font-black text-sm text-gray-950 uppercase tracking-wide">{reviews[activeReviewIdx].name}</span>
-                  <a 
-                    href={reviews[activeReviewIdx].name === "Prem Kumar" ? "https://www.instagram.com/_its_prem__7/" : 
-                          reviews[activeReviewIdx].name === "Nitesh Kumar" ? "https://www.instagram.com/_.nitesh__kumar._/" :
-                          reviews[activeReviewIdx].name === "Abhinav Asthana" ? "https://www.instagram.com/abhinav.asthana__/" :
-                          "https://www.instagram.com/007_priyanshu_/"} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="block text-xs font-bold text-emerald-600 hover:underline"
-                  >
-                    {reviews[activeReviewIdx].name === "Prem Kumar" ? "@_its_prem__7" : 
-                     reviews[activeReviewIdx].name === "Nitesh Kumar" ? "@_.nitesh__kumar._" :
-                     reviews[activeReviewIdx].name === "Abhinav Asthana" ? "@abhinav.asthana__" :
-                     "@007_priyanshu_"}
-                  </a>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch max-w-6xl mx-auto">
+          
+          {/* Card 1: Prem Kumar */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <img src="/prem.png" alt="Prem Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
+                <div className="flex-1">
+                  <span className="block font-black text-sm text-gray-900 uppercase">Prem Kumar</span>
+                  <a href="https://www.instagram.com/_its_prem__7/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_its_prem__7</a>
+                </div>
+                <div className="flex text-amber-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={11} fill="currentColor" />
+                  ))}
                 </div>
               </div>
+              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
+                Behavioral rounds became so easy. It Tailored answers using my actual resume experience. I just read from the overlay. Really a game changer.
+              </p>
             </div>
-            
-            {/* Bottom Timeline tracker */}
-            <div className="mt-6 flex items-center justify-between text-[10px] text-gray-400 font-semibold uppercase">
-              <span className="flex items-center gap-1">Verified Candidate</span>
-              <div className="flex gap-1.5 items-center">
-                {reviews.map((_, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setActiveReviewIdx(idx)}
-                    className={`w-2 h-2 rounded-full transition-all cursor-pointer ${activeReviewIdx === idx ? 'bg-[#0d2e27] w-4' : 'bg-gray-250 hover:bg-gray-400'}`}
-                    title={`View Review ${idx + 1}`}
-                  />
-                ))}
-              </div>
+            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
+              <span className="font-extrabold uppercase">Verified Candidate</span>
+              <span>Jul 21, 2026</span>
             </div>
           </div>
+
+          {/* Card 2: Priyanshu Kumar */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <img src="/priyanshu.png" alt="Priyanshu Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
+                  <div>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Priyanshu Kumar</span>
+                    <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@007_priyanshu_</a>
+                  </div>
+                </div>
+                <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
+              </div>
+              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
+                Bhai setup is super easy. The best part is screen share invisible protection. I shared my screen on Google Meet and Zoom, and they saw nothing. Highly recommend.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 986 <span className="pl-2">💬 Reply</span></span>
+              <span>11:15 PM - Jan 17, 2026</span>
+            </div>
+          </div>
+
+          {/* Card 3: Abhinav Asthana */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <img src="/nitesh.png" alt="Abhinav Asthana" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
+                  <div>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Abhinav Asthana</span>
+                    <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@abhinav.asthana__</a>
+                  </div>
+                </div>
+                <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
+              </div>
+              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
+                The transcription speed is crazy. Even with my interviewer's accent and complex topics like Redis, it transcribed everything perfectly. Saved me so much stress.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 412 <span className="pl-2">💬 Reply</span></span>
+              <span>10:42 PM - Feb 14, 2026</span>
+            </div>
+          </div>
+
+          {/* Card 4: Nitesh Kumar */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <img src="/abhinav.png" alt="Nitesh Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
+                  <div>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Nitesh Kumar</span>
+                    <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_.nitesh__kumar._</a>
+                  </div>
+                </div>
+                <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
+              </div>
+              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
+                Honestly, this app is a life saver. I had a tough coding interview last week, it transcribed everything and gave me the answer in seconds. Cleared the round easily!
+              </p>
+            </div>
+            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 385 <span className="pl-2">💬 Reply</span></span>
+              <span>11:06 PM - Jan 7, 2026</span>
+            </div>
+          </div>
+
         </div>
       </section>
 
