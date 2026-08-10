@@ -25,7 +25,7 @@ function LandingPage() {
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveReviewIdx((prev) => (prev + 1) % 4);
-    }, 30000); // 30 seconds
+    }, 40000); // 40 seconds
     return () => clearInterval(timer);
   }, []);
   
