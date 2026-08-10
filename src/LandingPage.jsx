@@ -239,26 +239,29 @@ class Solution {
         </div>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-extrabold uppercase tracking-wider text-[#0d2e27]">
-          <a href="#features" className="hover:text-emerald-600 transition-colors">Features</a>
-          <a href="#sandbox" className="hover:text-emerald-600 transition-colors">Interactive Demo</a>
-          <a href="#reviews" className="hover:text-emerald-600 transition-colors">Reviews</a>
-          <a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a>
-          <a href="#privacy" className="hover:text-emerald-600 transition-colors">Privacy</a>
+        <div className="hidden md:flex items-center gap-8 text-xs font-black text-[#0d2e27]">
+          <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
+          <a href="#reviews" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Reviews</a>
+          <a href="#privacy" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Privacy</a>
+          <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
+          <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
+            Desktop App
+            <span className="text-[9px] bg-[#10b981] text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left">New</span>
+          </a>
         </div>
 
         {/* Buttons */}
         <div className="hidden md:flex items-center space-x-3">
           <button 
             onClick={() => setShowDownloadModal(true)} 
-            className="p-2.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full hover:bg-emerald-100 transition-all cursor-pointer"
-            title="Download Desktop App"
+            className="w-10 h-10 rounded-full border border-gray-200 hover:border-gray-300 flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 transition-all cursor-pointer shadow-sm"
+            title="Download App"
           >
             <Download size={16} />
           </button>
           <button 
             onClick={() => setShowSignInModal(true)}
-            className="px-6 py-2.5 bg-[#0f2e27] text-white hover:bg-emerald-950 font-bold text-sm rounded-full transition-all shadow-md flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
+            className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
           >
             Sign in
             <ArrowRight size={14} />
@@ -307,12 +310,12 @@ class Solution {
          {/* Hero Left Content */}
         <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 text-[#10b981] font-bold text-sm uppercase tracking-wider">
-            <Laptop size={15} className="text-[#10b981]" />
+            <span>💻</span>
             FULL CODING INTERVIEW SUPPORT
           </div>
           
-          <h1 className="font-display font-extrabold text-[40px] sm:text-[56px] lg:text-[72px] text-[#0d2e27] leading-[1.08] tracking-tight">
-            Your Real-Time <span className="relative inline-flex items-center gap-1 bg-white border border-gray-200 px-3.5 py-1.5 rounded-2xl shadow-sm text-sm sm:text-base font-bold text-[#0d2e27] align-middle mx-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>💬</span> <br />
+          <h1 className="font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] text-[#0d2e27] leading-[1.1] tracking-tight">
+            Your Real-Time <span className="inline-flex items-center justify-center bg-gray-100 border border-gray-300 w-14 h-9 rounded-full text-gray-800 text-lg align-middle mx-2 shadow-inner select-none font-sans font-black">...</span> <br />
             AI Interview Assistant
           </h1>
 
@@ -334,182 +337,193 @@ class Solution {
                 <CheckCircle2 size={14} />
                 No Credit Card Required
               </div>
-              <span className="block mt-0.5 text-gray-400">Credits, Subscriptions, Lifetime</span>
+              <span className="block mt-0.5 text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Credits, Subscriptions, Lifetime</span>
             </div>
           </div>
 
-          {/* Social Proof (Fills the visual density) */}
+          {/* Social Proof */}
           <div className="pt-6 border-t border-emerald-500/10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <div className="flex -space-x-3">
               <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
               <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
               <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
             </div>
-            <div className="text-xs text-gray-600 font-medium">
-              <span className="block font-black text-gray-800">Used by 1,534,135+ people</span>
-              <div className="flex items-center gap-1.5 mt-0.5 text-[#0d2e27]">
-                <div className="flex text-amber-500">
+            <div className="text-xs text-gray-600 font-medium text-left">
+              <span className="block font-black text-gray-800 text-sm">Used by <span className="font-extrabold text-[#0d2e27]">1,534,135+</span> people</span>
+              <div className="flex items-center gap-1 mt-0.5 text-gray-500 font-semibold">
+                <div className="flex text-amber-500 gap-0.5">
                   <Star size={12} fill="currentColor" />
                   <Star size={12} fill="currentColor" />
                   <Star size={12} fill="currentColor" />
                   <Star size={12} fill="currentColor" />
                   <Star size={12} fill="currentColor" />
                 </div>
-                <span><span className="font-bold">4.86</span> (340,066+ reviews)</span>
+                <span><span className="font-extrabold text-gray-850">4.86</span> (340,066+ reviews)</span>
               </div>
             </div>
           </div>
         </div>
-
         {/* Hero Right - Interactive Mockup Window */}
-        <div className="lg:col-span-6">
-          <div className="bg-[#0b1227] rounded-3xl p-1 border border-emerald-500/20 shadow-2xl relative">
-            
-            {/* Window Tabs (Non-coding vs Coding) */}
-            <div className="flex justify-center gap-1.5 p-3 border-b border-white/5 bg-black/40 rounded-t-3xl">
-              <button 
-                onClick={() => setActiveTab('non-coding')}
-                className={`px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/5 text-gray-400 hover:text-white'}`}
-              >
-                📁 Non-Coding
-              </button>
-              <button 
-                onClick={() => setActiveTab('coding')}
-                className={`px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/5 text-gray-400 hover:text-white'}`}
-              >
-                &lt;/&gt; Coding
-              </button>
+        <div className="lg:col-span-6 flex flex-col items-center relative">
+          
+          {/* Window Tabs (Floating above mockup container) */}
+          <div className="flex justify-center bg-[#0d2e27] border border-emerald-500/10 p-1.5 rounded-full shadow-lg relative z-20 -mb-6">
+            <button 
+              onClick={() => setActiveTab('non-coding')}
+              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#10b981] text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
+            >
+              📁 Non-Coding
+            </button>
+            <button 
+              onClick={() => setActiveTab('coding')}
+              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#10b981] text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
+            >
+              &lt;/&gt; Coding
+            </button>
+          </div>
+
+          {/* Window Mockup Outer Container */}
+          <div className="w-full bg-white rounded-3xl p-1 border border-gray-200 shadow-2xl relative pt-8">
+            {/* Window Dots (macOS style) */}
+            <div className="absolute top-4 left-6 flex space-x-1.5">
+              <span className="w-3 h-3 bg-[#ff5f56] rounded-full inline-block"></span>
+              <span className="w-3 h-3 bg-[#ffbd2e] rounded-full inline-block"></span>
+              <span className="w-3 h-3 bg-[#27c93f] rounded-full inline-block"></span>
             </div>
 
-            {/* Window Content */}
-            <div className="p-4 bg-gradient-to-b from-[#0f172a] to-[#070b18] rounded-b-3xl min-h-[380px] flex flex-col justify-between text-left font-mono">
-              
-              {/* Window Header */}
-              <div className="flex justify-between items-center pb-3 border-b border-white/5">
-                <div className="flex space-x-1.5">
-                  <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
-                  <span className="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span>
-                  <span className="w-3 h-3 bg-green-500 rounded-full inline-block"></span>
-                </div>
-                <div className="flex items-center space-x-1.5 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wide">Anazk v2.0 Live</span>
-                </div>
-              </div>
-
-              {/* Main Simulated Panel */}
-              <div className="flex-1 my-4 text-xs overflow-y-auto max-h-[260px] pr-2 space-y-4 no-scrollbar">
-                {activeTab === 'non-coding' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full text-gray-300 font-sans text-[11px] leading-relaxed">
-                    
-                    {/* Left side: Video & Transcript */}
-                    <div className="space-y-3 flex flex-col justify-between">
-                      {/* Mock Video Container */}
-                      <div className="bg-black rounded-xl overflow-hidden border border-white/10 relative h-[150px] flex flex-col justify-between p-3 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&h=250&q=80')" }}>
-                        {/* Dark Overlay */}
-                        <div className="absolute inset-0 bg-black/40 z-0"></div>
-                        
-                        {/* Video Top Bar */}
-                        <div className="flex justify-between items-center z-10">
-                          <span className="text-[10px] text-white font-bold flex items-center gap-1">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                            What is AnazkAI? Explained
-                          </span>
-                          <span className="text-[8px] bg-red-600 text-white font-bold px-1.5 py-0.5 rounded">LIVE</span>
-                        </div>
-
-                        {/* YouTube Play Button & Badge */}
-                        <div className="flex flex-col items-center justify-center z-10 flex-1 gap-2">
-                          <button className="w-12 h-12 bg-red-600 hover:bg-red-750 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 cursor-pointer">
-                            <Play size={18} fill="currentColor" className="ml-0.5" />
-                          </button>
-                          <div className="bg-white border border-gray-300 text-gray-900 font-bold px-4 py-1.5 rounded-xl shadow-md text-xs tracking-wide">
-                            AnazkAI demo
-                          </div>
-                        </div>
+            {/* Window Content Area */}
+            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-[380px] text-left font-mono">
+              {activeTab === 'non-coding' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  
+                  {/* Left Panel: White Card (Video & Transcript) */}
+                  <div className="bg-white rounded-2xl border border-gray-200/60 p-4 shadow-sm space-y-4 flex flex-col justify-between">
+                    {/* Video Block */}
+                    <div className="bg-black rounded-xl overflow-hidden border border-gray-200 relative h-[160px] flex flex-col justify-between p-3 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=250&q=80')" }}>
+                      <div className="absolute inset-0 bg-black/35 z-0"></div>
+                      
+                      <div className="flex justify-between items-center z-10">
+                        <span className="text-[10px] text-white font-bold flex items-center gap-1">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                          What is AnazkAI? Explained
+                        </span>
+                        <span className="text-[8px] bg-red-600 text-white font-black px-1.5 py-0.5 rounded">LIVE</span>
                       </div>
 
-                      {/* Mock Transcript Box */}
-                      <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex-1 flex flex-col justify-between">
-                        <div className="flex justify-between items-center pb-1.5 border-b border-white/5 mb-2">
-                          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">📝 Transcript</span>
-                          <div className="flex items-center gap-1 text-[9px] text-gray-400 font-semibold">
-                            <span>AutoScroll</span>
-                            <span className="w-6 h-3.5 bg-emerald-500 rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
-                          </div>
-                        </div>
-                        <p className="text-gray-300 italic text-[11px] leading-relaxed">&quot;this position anazk i provides answers&quot;</p>
-                        
-                        {/* Transcript Controls */}
-                        <div className="flex items-center gap-3 pt-2 text-gray-500">
-                          <span className="hover:text-white cursor-pointer">🔄</span>
-                          <span className="hover:text-white cursor-pointer">⏱️</span>
+                      <div className="flex flex-col items-center justify-center z-10 flex-1">
+                        <button className="w-11 h-11 bg-red-600 hover:bg-red-750 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 cursor-pointer">
+                          <Play size={16} fill="currentColor" className="ml-0.5" />
+                        </button>
+                      </div>
+
+                      <div className="flex justify-center z-10">
+                        <div className="bg-white border border-gray-200 text-gray-900 font-extrabold px-3 py-1 rounded-xl shadow-md text-[10px] tracking-wide">
+                          AnazkAI demo
                         </div>
                       </div>
                     </div>
 
-                    {/* Right side: AI Response */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-center pb-1.5 border-b border-white/5 mb-3">
-                          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">🤖 AI Response</span>
-                          <div className="flex items-center gap-1 text-[9px] text-gray-400 font-semibold">
-                            <span>AutoScroll</span>
-                            <span className="w-6 h-3.5 bg-emerald-500 rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2 text-[10px] text-gray-300 leading-relaxed font-sans">
-                          <span className="block text-gray-500">all you have to do</span>
-                          <hr className="border-white/5" />
-                          <p className="font-semibold text-white">• Summarized question: What are the three highest mountains in Africa?</p>
-                          <p className="text-yellow-400 font-bold">⭐ Answer:</p>
-                          <ul className="space-y-1 pl-2 text-gray-400">
-                            <li>• Mount Kilimanjaro in Tanzania, standing at 5,895 meters (19,341 feet).</li>
-                            <li>• Mount Kenya in Kenya, with a height of 5,199 meters (17,057 feet).</li>
-                            <li>• Mount Stanley in Uganda, which reaches 5,109 meters (16,762 feet).</li>
-                          </ul>
+                    {/* Transcript Block */}
+                    <div className="flex-1 flex flex-col justify-between space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                        <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">📝 Transcript</span>
+                        <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-semibold">
+                          <span>AutoScroll</span>
+                          <span className="w-6 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
                         </div>
                       </div>
-
-                      {/* Blue Explain Backdrop */}
-                      <div className="bg-blue-950/30 border border-blue-500/20 text-blue-300 p-2 rounded-lg mt-3 text-[9px] leading-normal font-sans">
-                        you have to do is click the generate response button, read the generated responses, and speak them out naturally.
+                      
+                      <p className="text-gray-700 italic text-[11px] leading-relaxed pr-2 overflow-y-auto max-h-[75px] no-scrollbar">
+                        &quot;this position anazk i provides answers&quot;
+                      </p>
+                      
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-gray-400 text-[10px] font-semibold">
+                        <div className="flex items-center gap-3">
+                          <span className="hover:text-gray-600 cursor-pointer">🔄</span>
+                          <span className="hover:text-gray-600 cursor-pointer">⏱️</span>
+                        </div>
+                        <button className="text-gray-400 hover:text-red-500 font-bold transition-colors cursor-pointer">Clear Transcript</button>
                       </div>
                     </div>
-
                   </div>
-                ) : (
-                  <>
-                    <div className="bg-white/5 p-3 rounded-xl border border-white/10 text-gray-400 text-[10px]">
-                      <span className="block text-[10px] text-teal-400 font-bold uppercase tracking-wider mb-1">IDE Screen Captured:</span>
-                      <p className="text-white font-mono text-[10px] mb-2">{codingProblem.question}</p>
-                      <pre className="bg-black/30 p-2 rounded text-emerald-300 font-mono leading-tight text-[9px] overflow-x-auto">{simulatedCode || '// loading code context...'}</pre>
+
+                  {/* Right Panel: Light Grey Card (AI Response) */}
+                  <div className="bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                        <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">🖥️ AI Response</span>
+                        <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-semibold">
+                          <span>AutoScroll</span>
+                          <span className="w-6 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 text-[10px] text-gray-700 leading-relaxed font-sans overflow-y-auto max-h-[140px] no-scrollbar pr-1 pt-2">
+                        <span className="block text-gray-400 font-mono text-[9px]">all you have to do</span>
+                        <p className="font-extrabold text-[#0d2e27]">• Summarized question: What are the three highest mountains in Africa?</p>
+                        <p className="text-yellow-600 font-extrabold">⭐ Answer:</p>
+                        <ul className="space-y-1 pl-2 text-gray-600 font-medium">
+                          <li>• Mount Kilimanjaro in Tanzania, standing at 5,895 meters (19,341 feet).</li>
+                          <li>• Mount Kenya in Kenya, with a height of 5,199 meters (17,057 feet).</li>
+                          <li>• Mount Stanley in Uganda, which reaches 5,109 meters (16,762 feet).</li>
+                        </ul>
+                      </div>
                     </div>
 
-                    {simulatedSolution && (
-                      <div className="bg-[#022c22]/30 p-3 rounded-xl border border-emerald-500/20 text-gray-300 animate-in fade-in duration-200">
-                        <span className="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1.5">AI Code Solution (Java):</span>
-                        <pre className="text-gray-200 font-mono text-[9px] leading-relaxed overflow-x-auto whitespace-pre">{simulatedSolution}</pre>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+                    {/* Instruction Backdrop */}
+                    <div className="bg-blue-50 border border-blue-100 text-blue-750 p-2.5 rounded-xl text-[9px] leading-normal font-sans font-semibold">
+                      you have to do is click the generate response button, read the generated responses, and speak them out naturally.
+                    </div>
 
-              {/* Window Footer Control buttons */}
-              <div className="pt-3 border-t border-white/5 flex justify-between items-center text-[10px] font-sans text-gray-400 font-semibold mt-3 w-full">
-                <button className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold rounded-lg hover:bg-emerald-500/25 transition-all cursor-pointer">
-                  Generate Response
-                </button>
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] text-gray-500">⏱️ 54 mins</span>
-                  <span className="px-2 py-0.5 bg-red-500/10 text-red-400 font-bold border border-red-500/20 rounded cursor-pointer">Exit</span>
-                  <span className="flex items-center gap-1 text-emerald-400">
-                    🎤 Live
-                  </span>
+                    {/* Controls Row */}
+                    <div className="pt-2 border-t border-gray-200 flex flex-col gap-2">
+                      <div className="flex justify-between items-center w-full">
+                        <button className="px-3 py-1.5 bg-[#0b0f19] border border-emerald-500/20 text-[#10b981] font-black text-[10px] rounded-lg hover:bg-black transition-all cursor-pointer">
+                          Generate Response
+                        </button>
+                        <div className="flex items-center gap-2 text-[9px] text-gray-400 font-semibold">
+                          <span>⏱️ 54 mins</span>
+                          <span className="px-1.5 py-0.5 bg-red-50 text-red-500 font-black border border-red-100 rounded cursor-pointer hover:bg-red-100 transition-colors">Exit</span>
+                          <span className="flex items-center gap-0.5 text-emerald-600 font-extrabold">
+                            🎤 Live
+                          </span>
+                        </div>
+                      </div>
+                      {/* Watch on YouTube Row */}
+                      <div className="flex justify-end text-[9px] font-semibold text-gray-500">
+                        <a href="#youtube" className="flex items-center gap-1 hover:text-red-600 transition-colors">
+                          <span>Watch on</span> <span className="bg-red-600 text-white font-extrabold px-1 rounded">YouTube</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  {/* Left panel: Code captured */}
+                  <div className="bg-white rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
+                    <div className="border-b border-gray-100 pb-2">
+                      <span className="block text-[10px] text-teal-600 font-black uppercase tracking-wider mb-1">🖥️ captured coding task</span>
+                      <p className="text-[#0d2e27] font-mono text-[10px] font-bold leading-relaxed">{codingProblem.question}</p>
+                    </div>
+                    <pre className="bg-gray-50 border border-gray-100 p-3 rounded-xl text-emerald-800 font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[180px] no-scrollbar">{simulatedCode || '// loading code context...'}</pre>
+                  </div>
+
+                  {/* Right panel: Solution output */}
+                  <div className="bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
+                    <div className="border-b border-gray-200 pb-2">
+                      <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider">🤖 AI Solutions (Java)</span>
+                    </div>
+                    <pre className="text-gray-700 font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[160px] no-scrollbar whitespace-pre">{simulatedSolution}</pre>
+                    <div className="pt-2 border-t border-gray-200 flex justify-end">
+                      <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-sm">
+                        Copy Solution
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
