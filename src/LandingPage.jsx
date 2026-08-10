@@ -225,7 +225,7 @@ class Solution {
       <div className="absolute top-[800px] -left-100 w-[500px] h-[500px] bg-emerald-100/15 rounded-full blur-[90px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className="fixed top-5 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl z-50 bg-white/70 backdrop-blur-xl border border-emerald-500/10 px-6 py-3 rounded-full flex justify-between items-center shadow-[0_10px_30px_rgba(16,185,129,0.05)] transition-all">
+      <nav className="fixed top-5 left-1/2 -translate-x-1/2 w-[95%] max-w-[1440px] z-50 bg-white/70 backdrop-blur-xl border border-emerald-500/10 px-6 py-3 rounded-full flex justify-between items-center shadow-[0_10px_30px_rgba(16,185,129,0.05)] transition-all">
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -302,7 +302,7 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <header className="pt-32 pb-24 px-6 md:px-16 max-w-[1440px] w-[95%] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
          {/* Hero Left Content */}
         <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 text-[#10b981] font-bold text-sm uppercase tracking-wider">
@@ -731,8 +731,8 @@ class Solution {
               <div className="flex items-center space-x-3">
                 <img src="/prem.png" alt="Prem Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
                 <div className="flex-1">
-                  <span className="block font-black text-sm text-gray-800">Prem Kumar</span>
-                  <span className="block text-[10px] text-gray-400 font-semibold">prem... @gmail.com</span>
+                  <span className="block font-black text-sm text-gray-900 uppercase">Prem Kumar</span>
+                  <a href="https://www.instagram.com/_its_prem__7/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_its_prem__7</a>
                 </div>
                 <div className="flex text-amber-500">
                   {[...Array(5)].map((_, i) => (
@@ -745,7 +745,7 @@ class Solution {
               </p>
             </div>
             <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span>Verified Candidate</span>
+              <span className="font-extrabold uppercase">Verified Candidate</span>
               <span>Jul 21, 2026</span>
             </div>
           </div>
@@ -757,18 +757,18 @@ class Solution {
                 <div className="flex items-center gap-3">
                   <img src="/priyanshu.png" alt="Priyanshu Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
                   <div>
-                    <span className="block font-black text-sm text-gray-800">Priyanshu Kumar</span>
-                    <span className="block text-xs text-gray-400">@priyanshu_codes</span>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Priyanshu Kumar</span>
+                    <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@007_priyanshu_</a>
                   </div>
                 </div>
-                <div className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full hover:bg-sky-100 cursor-pointer">Follow</div>
+                <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
               </div>
               <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
                 Bhai setup is super easy. The best part is screen share invisible protection. I shared my screen on Google Meet and Zoom, and they saw nothing. Highly recommend.
               </p>
             </div>
             <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1">❤️ 986 <span className="pl-2">💬 Reply</span></span>
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 986 <span className="pl-2">💬 Reply</span></span>
               <span>11:15 PM - Jan 17, 2026</span>
             </div>
           </div>
@@ -780,18 +780,18 @@ class Solution {
                 <div className="flex items-center gap-3">
                   <img src="/abhinav.png" alt="Abhinav Asthana" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
                   <div>
-                    <span className="block font-black text-sm text-gray-800">Abhinav Asthana</span>
-                    <span className="block text-xs text-gray-400">@abhinav_codes</span>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Abhinav Asthana</span>
+                    <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@abhinav.asthana__</a>
                   </div>
                 </div>
-                <div className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full hover:bg-sky-100 cursor-pointer">Follow</div>
+                <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
               </div>
               <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
                 The transcription speed is crazy. Even with my interviewer's accent and complex topics like Redis, it transcribed everything perfectly. Saved me so much stress.
               </p>
             </div>
             <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1">❤️ 412 <span className="pl-2">💬 Reply</span></span>
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 412 <span className="pl-2">💬 Reply</span></span>
               <span>10:42 PM - Feb 14, 2026</span>
             </div>
           </div>
@@ -803,18 +803,18 @@ class Solution {
                 <div className="flex items-center gap-3">
                   <img src="/nitesh.png" alt="Nitesh Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
                   <div>
-                    <span className="block font-black text-sm text-gray-800">Nitesh Kumar</span>
-                    <span className="block text-xs text-gray-400">@nitesh_codes</span>
+                    <span className="block font-black text-sm text-gray-900 uppercase">Nitesh Kumar</span>
+                    <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_.nitesh__kumar._</a>
                   </div>
                 </div>
-                <div className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full hover:bg-sky-100 cursor-pointer">Follow</div>
+                <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
               </div>
               <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
                 Honestly, this app is a life saver. I had a tough coding interview last week, it transcribed everything and gave me the answer in seconds. Cleared the round easily!
               </p>
             </div>
             <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1">❤️ 385 <span className="pl-2">💬 Reply</span></span>
+              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 385 <span className="pl-2">💬 Reply</span></span>
               <span>11:06 PM - Jan 7, 2026</span>
             </div>
           </div>
@@ -1077,16 +1077,16 @@ class Solution {
           </button>
 
           {/* Cards Frame */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             {pricingOption === 'subscription' ? (
               <>
-                {/* Card 1: Monthly */}
+                {/* Card 1: Weekly */}
                 <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Monthly</span>
+                    <span className="block text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Weekly</span>
                     <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹9,470</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($99.90) per month</span>
+                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹1,500</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($19.90) per week</span>
                     </div>
                     <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
@@ -1103,7 +1103,30 @@ class Solution {
                   </button>
                 </div>
 
-                {/* Card 2: Yearly (Recommended) */}
+                {/* Card 2: Monthly */}
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-4">
+                    <span className="block text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Monthly</span>
+                    <div className="pt-2">
+                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹3,000</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($39.90) per month</span>
+                    </div>
+                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500" />
+                        <span>∞ Unlimited Calls</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <button 
+                    onClick={() => setShowSignInModal(true)}
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                  >
+                    Subscribe
+                  </button>
+                </div>
+
+                {/* Card 3: Yearly (Recommended) */}
                 <div className="bg-white p-8 rounded-3xl border-2 border-emerald-500 shadow-xl space-y-6 flex flex-col justify-between relative text-left">
                   {/* Best Deal Tag */}
                   <div className="absolute top-0 left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
@@ -1113,15 +1136,14 @@ class Solution {
                   <div className="space-y-4">
                     <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">Yearly</span>
                     <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹57,300</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($599.90) per year</span>
+                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹6,000</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($79.90) per year</span>
                     </div>
                     <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Check size={16} className="text-emerald-500" />
                           <span>∞ Unlimited Calls</span>
-                          <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Save 50%</span>
                         </div>
                       </li>
                     </ul>
@@ -1136,7 +1158,34 @@ class Solution {
               </>
             ) : (
               <>
-                {/* Card 1: Basic Pack */}
+                {/* Card 1: 45 min for ₹300 */}
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-4">
+                    <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">45 Minutes Session</span>
+                    <div className="pt-2">
+                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹300</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($3.90) one-time</span>
+                    </div>
+                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500" />
+                        <span>45 min AI response session</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500" />
+                        <span>Stealth Mode active</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <button 
+                    onClick={() => setShowSignInModal(true)}
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                  >
+                    Buy Credits
+                  </button>
+                </div>
+
+                {/* Card 2: 1 Session Credit */}
                 <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-4">
                     <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Session Credit</span>
@@ -1151,7 +1200,7 @@ class Solution {
                       </li>
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500" />
-                        <span>Stealth Mode draw system active</span>
+                        <span>Stealth Mode active</span>
                       </li>
                     </ul>
                   </div>
@@ -1163,7 +1212,7 @@ class Solution {
                   </button>
                 </div>
 
-                {/* Card 2: Developer Value Pack */}
+                {/* Card 3: Developer Value Pack */}
                 <div className="bg-white p-8 rounded-3xl border-2 border-emerald-500 shadow-xl space-y-6 flex flex-col justify-between relative text-left">
                   <div className="absolute top-0 left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
                     Best value
