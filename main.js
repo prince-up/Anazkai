@@ -16,7 +16,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false, // For simplicity in this example to allow IPC from React
-      devTools: true // Enabled Developer Tools temporarily for debugging
+      devTools: process.argv.includes('--dev') // Enabled Developer Tools only for debugging in dev mode
     }
   });
 
@@ -27,8 +27,6 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
-    // Open DevTools automatically for debugging
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
   // Prevent window from being captured in screen shares, screenshots, or recordings

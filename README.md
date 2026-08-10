@@ -1,6 +1,6 @@
-# AI Study Assistant
+# Anazk
 
-AI Study Assistant is a modern, lightweight desktop application built to assist students and programmers. It securely captures your screen (or a specific region), automatically extracts text using offline OCR, and uses Google's Gemini AI to provide instant explanations, solutions, and code reviews.
+Anazk is a modern, lightweight desktop application built to assist students and programmers. It securely captures your screen (or a specific region), automatically extracts text using offline OCR, and uses Google's Gemini AI to provide instant explanations, solutions, and code reviews.
 
 ## 🚀 Tech Stack
 - **Desktop Environment:** Electron
@@ -26,8 +26,8 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine. You
 ### Running Locally
 1. Clone the repository:
    ```bash
-   git clone https://github.com/prince-up/cheater-Boy.git
-   cd cheater-Boy
+   git clone https://github.com/prince-up/anazk.git
+   cd anazk
    ```
 2. Install the dependencies:
    ```bash

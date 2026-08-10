@@ -1,7 +1,7 @@
 {
-  "name": "cheaterboy",
+  "name": "anazk",
   "version": "1.0.0",
-  "description": "cheaterBoy with visible overlay",
+  "description": "Anazk with visible overlay",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
@@ -30,8 +30,8 @@
     "wait-on": "^9.1.0"
   },
   "build": {
-    "appId": "com.cheaterboy.app",
-    "productName": "cheaterBoy",
+    "appId": "com.anazk.app",
+    "productName": "Anazk",
     "directories": {
       "output": "release"
     },
