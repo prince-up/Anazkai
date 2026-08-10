@@ -302,7 +302,8 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="pt-32 pb-24 px-6 md:px-16 max-w-[1440px] w-[95%] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <header className="min-h-screen pt-32 pb-24 px-6 md:px-16 max-w-[1440px] w-[95%] mx-auto flex items-center justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
          {/* Hero Left Content */}
         <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 text-[#10b981] font-bold text-sm uppercase tracking-wider">
@@ -512,7 +513,8 @@ class Solution {
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
 
 
