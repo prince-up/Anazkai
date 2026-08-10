@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Sparkles, Mic, Settings, Copy, X, Monitor, Code, Shield, 
-  EyeOff, Download, User, ArrowRight, Star, Play, Check, 
-  ChevronDown, Menu, Lock, Laptop, CheckCircle2, ChevronLeft, ChevronRight 
+  Star, ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, 
+  MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
+  Shield, EyeOff, User, ChevronLeft, ChevronRight, Lock, Laptop, Check
 } from 'lucide-react';
 
 function LandingPage() {
@@ -501,11 +501,6 @@ class Solution {
                     </div>
                   </div>
 
-                  {/* Floating Center Badge: Penguin Mascot Image */}
-                  <div className="absolute bottom-[225px] left-[54%] -translate-x-[45%] z-20 w-24 h-24 bg-white border border-gray-150 p-1.5 rounded-full shadow-2xl overflow-hidden select-none hover:scale-105 transition-transform duration-300">
-                    <img src="/penguin.jpg" alt="Anazk Mascot" className="w-full h-full object-cover rounded-full" />
-                  </div>
-
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch font-sans">
@@ -540,7 +535,91 @@ class Solution {
 
 
 
-      {/* Compatibility Green Banner */}
+      {/* Desktop App CTA Banner */}
+      <section className="px-6 py-10 max-w-[1200px] mx-auto mt-4">
+        <div className="bg-[#111315] rounded-[32px] overflow-hidden flex flex-col lg:flex-row items-stretch justify-between border border-gray-800 shadow-2xl">
+          
+          {/* Left Content */}
+          <div className="p-10 md:p-14 lg:w-[45%] flex flex-col items-start justify-center text-left space-y-6 z-10 bg-[#111315]">
+            <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Desktop App</span>
+            <h2 className="text-white text-3xl md:text-[38px] font-bold leading-[1.15] tracking-tight">
+              Make sure you're getting the most from ParakeetAI.
+            </h2>
+            <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+              The desktop app runs quietly in the background, listening to your call and surfacing the best answers in real time. No switching windows.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full">
+              <button className="w-full sm:w-auto bg-white text-black px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                <Download size={18} />
+                Download for Mac
+              </button>
+              <button className="w-full sm:w-auto bg-[#232529] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#2c2f35] transition-colors border border-gray-700">
+                Browser vs App
+              </button>
+            </div>
+          </div>
+          
+          {/* Right Image/Mockup */}
+          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden bg-cover bg-left shadow-[inset_60px_0_60px_rgba(17,19,21,1)] lg:shadow-[inset_100px_0_100px_rgba(17,19,21,1)]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1200&q=80')" }}>
+            
+            {/* The Overlay UI */}
+            <div className="absolute top-1/2 left-8 md:left-12 -translate-y-1/2 w-[85%] max-w-[460px] flex flex-col gap-3">
+              
+              {/* Top Controls Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-gray-500 bg-black/40 p-1.5 rounded-lg backdrop-blur-md">
+                   <Monitor size={14} />
+                   <Mic size={14} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="hidden sm:flex bg-black/60 backdrop-blur-md rounded-lg p-1 border border-white/5 text-[10px] font-semibold text-gray-400">
+                    <button className="px-3 py-1 hover:bg-white/10 hover:text-white rounded transition-colors">Answer ⌘↵</button>
+                    <button className="px-3 py-1 hover:bg-white/10 hover:text-white rounded transition-colors">Screenshot ⇧⌘↵</button>
+                    <button className="px-3 py-1 bg-[#1a1c20] text-white shadow-sm rounded border border-white/5 transition-colors">Chat ⇧⌘_</button>
+                  </div>
+                  <div className="flex items-center justify-center bg-black/60 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/5 text-[10px] font-mono text-gray-300">
+                    0:15
+                  </div>
+                  <div className="flex bg-black/60 backdrop-blur-md rounded-lg border border-white/5 text-gray-400">
+                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors rounded-l-lg"><MoreVertical size={14} /></button>
+                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors border-l border-white/5"><Move size={14} /></button>
+                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors rounded-r-lg border-l border-white/5"><ChevronDown size={14} /></button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Interface */}
+              <div className="bg-[#16181b]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex justify-end gap-1.5 p-2 bg-black/20 border-b border-white/5">
+                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 text-[10px] px-2.5 py-1 rounded-md flex items-center gap-1.5">Add Screenshot <span className="font-mono text-gray-500">⇧⌥↵</span></button>
+                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 text-[10px] px-2.5 py-1 rounded-md flex items-center gap-1.5">Clear <span className="font-mono text-gray-500">⌘⌫</span></button>
+                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 p-1 rounded-md"><X size={12} /></button>
+                </div>
+                
+                {/* Input Area */}
+                <div className="p-3 relative border-b border-white/5">
+                  <input type="text" placeholder="Enter a message..." className="w-full bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none" />
+                  <div className="absolute right-3 top-3 flex gap-2 text-gray-500">
+                    <button className="hover:text-white transition-colors"><CornerDownLeft size={14} /></button>
+                  </div>
+                </div>
+
+                {/* Response Area (simulated text) */}
+                <div className="p-5 bg-gradient-to-b from-[#1a1c20]/50 to-transparent text-gray-400 text-[11px] leading-[1.7] space-y-3 font-medium">
+                  <p className="text-gray-300">Lorem ipsum dolor sit amet consectetur. In arcu vivamus orci scelerisque purus sed et.</p>
+                  <p>Nisi cursus tortor commodo nibh velit nulla. Metus mauris diam id scelerisque commodo in faucibus purus. Lacus proin ipsum sed iaculis eget nunc eu imperdiet.</p>
+                  <ul className="list-disc pl-5 space-y-1.5 opacity-60">
+                    <li>Lorem ipsum dolor sit amet consectetur.</li>
+                    <li>In arcu vivamus orci scelerisque purus sed et.</li>
+                    <li>Nisi cursus tortor commodo nibh velit nulla.</li>
+                    <li>Metus mauris diam id scelerisque commodo in faucibus purus.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>      {/* Compatibility Green Banner */}
       <section id="features" className="py-20 px-6 max-w-7xl mx-auto">
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
