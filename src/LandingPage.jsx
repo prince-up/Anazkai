@@ -370,20 +370,20 @@ class Solution {
             </div>
           </div>
         </div>
-        {/* Hero Right - Interactive Mockup Window */}
-        <div className="lg:col-span-6 flex flex-col items-center relative">
+             {/* Hero Right - Interactive Mockup Window */}
+        <div className="lg:col-span-6 flex flex-col items-center relative select-none">
           
           {/* Window Tabs (Floating above mockup container) */}
-          <div className="flex justify-center bg-[#0d2e27] border border-emerald-500/10 p-1.5 rounded-full shadow-lg relative z-20 -mb-6">
+          <div className={`flex justify-center border p-1 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
             <button 
               onClick={() => setActiveTab('non-coding')}
-              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#10b981] text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
+              className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               📁 Non-Coding
             </button>
             <button 
               onClick={() => setActiveTab('coding')}
-              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#10b981] text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
+              className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               &lt;/&gt; Coding
             </button>
@@ -399,96 +399,45 @@ class Solution {
             </div>
 
             {/* Window Content Area */}
-            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-[380px] text-left font-mono">
+            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-[410px] text-left font-mono relative overflow-hidden">
               {activeTab === 'non-coding' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                <div className="relative w-full h-[375px] font-sans">
                   
-                  {/* Left Panel: White Card (Video & Transcript) */}
-                  <div className="bg-white rounded-2xl border border-gray-200/60 p-4 shadow-sm space-y-4 flex flex-col justify-between">
-                    {/* Video Block */}
-                    <div className="bg-black rounded-xl overflow-hidden border border-gray-200 relative h-[160px] flex flex-col justify-between p-3 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=250&q=80')" }}>
-                      <div className="absolute inset-0 bg-black/35 z-0"></div>
-                      
-                      <div className="flex justify-between items-center z-10">
-                        <span className="text-[10px] text-white font-bold flex items-center gap-1">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                          What is AnazkAI? Explained
-                        </span>
-                        <span className="text-[8px] bg-red-600 text-white font-black px-1.5 py-0.5 rounded">LIVE</span>
-                      </div>
-
-                      <div className="flex flex-col items-center justify-center z-10 flex-1">
-                        <button className="w-11 h-11 bg-red-600 hover:bg-red-750 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 cursor-pointer">
-                          <Play size={16} fill="currentColor" className="ml-0.5" />
-                        </button>
-                      </div>
-
-                      <div className="flex justify-center z-10">
-                        <div className="bg-white border border-gray-200 text-gray-900 font-extrabold px-3 py-1 rounded-xl shadow-md text-[10px] tracking-wide">
-                          AnazkAI demo
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Transcript Block */}
-                    <div className="flex-1 flex flex-col justify-between space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">📝 Transcript</span>
-                        <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-semibold">
-                          <span>AutoScroll</span>
-                          <span className="w-6 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-700 italic text-[11px] leading-relaxed pr-2 overflow-y-auto max-h-[75px] no-scrollbar">
-                        &quot;this position anazk i provides answers&quot;
-                      </p>
-                      
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-gray-400 text-[10px] font-semibold">
-                        <div className="flex items-center gap-3">
-                          <span className="hover:text-gray-600 cursor-pointer">🔄</span>
-                          <span className="hover:text-gray-600 cursor-pointer">⏱️</span>
-                        </div>
-                        <button className="text-gray-400 hover:text-red-500 font-bold transition-colors cursor-pointer">Clear Transcript</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Panel: Light Grey Card (AI Response) */}
-                  <div className="bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-4">
+                  {/* Right Panel: Light Grey Card (AI Response) - Placed in background on right */}
+                  <div className="absolute right-0 top-0 bottom-0 w-[52%] bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-2 z-0 text-left">
                     <div>
-                      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                        <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">🖥️ AI Response</span>
-                        <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-semibold">
+                      <div className="flex justify-between items-center pb-1.5 border-b border-gray-200">
+                        <span className="text-[9px] text-[#0d2e27] font-black uppercase tracking-wider">🖥️ AI Response</span>
+                        <div className="flex items-center gap-1 text-[8px] text-gray-400 font-semibold">
                           <span>AutoScroll</span>
                           <span className="w-6 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
                         </div>
                       </div>
                       
-                      <div className="space-y-2 text-[10px] text-gray-700 leading-relaxed font-sans overflow-y-auto max-h-[140px] no-scrollbar pr-1 pt-2">
-                        <span className="block text-gray-400 font-mono text-[9px]">all you have to do</span>
+                      <div className="space-y-1.5 text-[9px] text-gray-700 leading-relaxed font-sans overflow-y-auto max-h-[125px] no-scrollbar pr-1 pt-1">
+                        <span className="block text-gray-400 font-mono text-[8px]">all you have to do</span>
                         <p className="font-extrabold text-[#0d2e27]">• Summarized question: What are the three highest mountains in Africa?</p>
                         <p className="text-yellow-600 font-extrabold">⭐ Answer:</p>
-                        <ul className="space-y-1 pl-2 text-gray-600 font-medium">
-                          <li>• Mount Kilimanjaro in Tanzania, standing at 5,895 meters (19,341 feet).</li>
-                          <li>• Mount Kenya in Kenya, with a height of 5,199 meters (17,057 feet).</li>
-                          <li>• Mount Stanley in Uganda, which reaches 5,109 meters (16,762 feet).</li>
+                        <ul className="space-y-0.5 pl-1.5 text-gray-600 font-medium list-disc">
+                          <li>Mount Kilimanjaro in Tanzania, standing at 5,895 meters (19,341 feet).</li>
+                          <li>Mount Kenya in Kenya, with a height of 5,199 meters (17,057 feet).</li>
+                          <li>Mount Stanley in Uganda, which reaches 5,109 meters (16,762 feet).</li>
                         </ul>
                       </div>
                     </div>
 
                     {/* Instruction Backdrop */}
-                    <div className="bg-blue-50 border border-blue-100 text-blue-750 p-2.5 rounded-xl text-[9px] leading-normal font-sans font-semibold">
+                    <div className="bg-blue-50 border border-blue-100 text-blue-750 p-2 rounded-xl text-[8px] leading-normal font-sans font-semibold">
                       you have to do is click the generate response button, read the generated responses, and speak them out naturally.
                     </div>
 
                     {/* Controls Row */}
-                    <div className="pt-2 border-t border-gray-200 flex flex-col gap-2">
+                    <div className="pt-1.5 border-t border-gray-200 flex flex-col gap-1">
                       <div className="flex justify-between items-center w-full">
-                        <button className="px-3 py-1.5 bg-[#0b0f19] border border-emerald-500/20 text-[#10b981] font-black text-[10px] rounded-lg hover:bg-black transition-all cursor-pointer">
+                        <button className="px-2.5 py-1 bg-[#0b0f19] border border-emerald-500/20 text-[#10b981] font-black text-[9px] rounded-lg hover:bg-black transition-all cursor-pointer">
                           Generate Response
                         </button>
-                        <div className="flex items-center gap-2 text-[9px] text-gray-400 font-semibold">
+                        <div className="flex items-center gap-1.5 text-[8px] text-gray-400 font-semibold">
                           <span>⏱️ 54 mins</span>
                           <span className="px-1.5 py-0.5 bg-red-50 text-red-500 font-black border border-red-100 rounded cursor-pointer hover:bg-red-100 transition-colors">Exit</span>
                           <span className="flex items-center gap-0.5 text-emerald-600 font-extrabold">
@@ -497,17 +446,67 @@ class Solution {
                         </div>
                       </div>
                       {/* Watch on YouTube Row */}
-                      <div className="flex justify-end text-[9px] font-semibold text-gray-500">
-                        <a href="#youtube" className="flex items-center gap-1 hover:text-red-600 transition-colors">
+                      <div className="flex justify-end text-[8px] font-semibold text-gray-500">
+                        <a href="#youtube" className="flex items-center gap-1 hover:text-red-650 transition-colors">
                           <span>Watch on</span> <span className="bg-red-600 text-white font-extrabold px-1 rounded">YouTube</span>
                         </a>
                       </div>
                     </div>
                   </div>
 
+                  {/* Left Top Panel: White Card (Video) - Overlaps AI Response slightly */}
+                  <div className="absolute left-0 top-0 w-[54%] h-[195px] z-10 bg-black rounded-2xl overflow-hidden border border-gray-200/50 shadow-md flex flex-col justify-between p-3 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=250&q=80')" }}>
+                    <div className="absolute inset-0 bg-black/35 z-0"></div>
+                    
+                    <div className="flex justify-between items-center z-10 w-full">
+                      <span className="text-[9px] text-white font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                        What is ParakeetAI? Explained
+                      </span>
+                      <span className="text-[8px] bg-red-600 text-white font-black px-1.5 py-0.5 rounded">LIVE</span>
+                    </div>
+
+                    {/* Centered Right Overlap Play Button */}
+                    <div className="absolute right-[-22px] top-[50%] -translate-y-[50%] z-20">
+                      <button className="w-11 h-11 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-xl transition-transform hover:scale-105 cursor-pointer border-2 border-white">
+                        <Play size={16} fill="currentColor" className="ml-0.5" />
+                      </button>
+                    </div>
+
+                    <div className="z-10"></div>
+                  </div>
+
+                  {/* Left Bottom Panel: Transcript - Overlaps AI Response slightly */}
+                  <div className="absolute left-0 bottom-0 w-[54%] h-[165px] z-10 bg-white rounded-2xl border border-gray-200 p-4 shadow-md flex flex-col justify-between text-left">
+                    <div className="flex justify-between items-center pb-1.5 border-b border-gray-100">
+                      <span className="text-[9px] text-[#0d2e27] font-black uppercase tracking-wider">📝 Transcript</span>
+                      <div className="flex items-center gap-1 text-[8px] text-gray-400 font-semibold">
+                        <span>AutoScroll</span>
+                        <span className="w-5 h-3 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2 h-2 bg-white rounded-full block float-right"></span></span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-700 italic text-[10px] leading-relaxed pr-2 overflow-y-auto max-h-[70px] no-scrollbar">
+                      &quot;this position parakeet i provides answers&quot;
+                    </p>
+                    
+                    <div className="flex items-center justify-between pt-1.5 border-t border-gray-50 text-gray-400 text-[9px] font-semibold">
+                      <div className="flex items-center gap-3">
+                        <span className="hover:text-gray-600 cursor-pointer">🔄</span>
+                        <span className="hover:text-gray-600 cursor-pointer">⏱️</span>
+                      </div>
+                      <button className="text-gray-400 hover:text-red-500 font-bold transition-colors cursor-pointer">Clear Transcript</button>
+                    </div>
+                  </div>
+
+                  {/* Floating Center Badge: "ParakeetAI demo" */}
+                  <div className="absolute bottom-[48px] left-[54%] -translate-x-[45%] z-20 bg-white border border-gray-100 px-6 py-3.5 rounded-2xl shadow-2xl text-center flex items-center justify-center font-display font-black text-[#0d2e27] text-base sm:text-lg tracking-tight select-none">
+                    ParakeetAI demo
+                  </div>
+
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch font-sans">
                   {/* Left panel: Code captured */}
                   <div className="bg-white rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
                     <div className="border-b border-gray-100 pb-2">
@@ -519,7 +518,7 @@ class Solution {
 
                   {/* Right panel: Solution output */}
                   <div className="bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
-                    <div className="border-b border-gray-200 pb-2">
+                    <div className="border-b border-gray-250 pb-2">
                       <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider">🤖 AI Solutions (Java)</span>
                     </div>
                     <pre className="text-gray-700 font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[160px] no-scrollbar whitespace-pre">{simulatedSolution}</pre>
