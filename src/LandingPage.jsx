@@ -224,11 +224,11 @@ class Solution {
   ];
 
   return (
-    <div className={`font-sans min-h-screen relative overflow-x-hidden antialiased text-left transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#030712] text-gray-100 dark-theme-active' : 'bg-[#f2fcf7] text-[#1e293b]'}`}>
+    <div className={`font-sans min-h-screen relative overflow-x-hidden antialiased text-left transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#030712] text-gray-100 dark-theme-active' : 'bg-[#f0f8ff] text-[#1e293b]'}`}>
       
       {/* Dynamic Background Glows */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-emerald-200/20 via-teal-100/10 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute top-[800px] -left-100 w-[500px] h-[500px] bg-emerald-100/15 rounded-full blur-[90px] pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-sky-200/25 via-blue-100/15 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
       <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[96%] lg:w-[98%] max-w-none z-50 backdrop-blur-xl border px-6 py-3 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
@@ -347,29 +347,7 @@ class Solution {
             </div>
           </div>
 
-          {/* Social Proof */}
-          <div className="pt-6 border-t border-emerald-500/10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-            <div className="flex -space-x-3">
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/prem.png" alt="Prem Kumar" />
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/nitesh.png" alt="Nitesh Kumar" />
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/abhinav.png" alt="Abhinav Asthana" />
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/priyanshu.png" alt="Priyanshu Kumar" />
-            </div>
-            <div className="text-xs font-medium text-left">
-              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-800'}`}>Used by <span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>1,534,135+</span> people</span>
-              <div className="flex items-center gap-1 mt-0.5 text-gray-500 font-semibold">
-                <div className="flex text-amber-500 gap-0.5">
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                </div>
-                <span><span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-855'}`}>4.86</span> (340,066+ reviews)</span>
-              </div>
-            </div>
           </div>
-        </div>
              {/* Hero Right - Interactive Mockup Window */}
         <div className="lg:col-span-6 flex flex-col items-center relative select-none">
           
@@ -499,9 +477,9 @@ class Solution {
                     </div>
                   </div>
 
-                  {/* Floating Center Badge: "ParakeetAI demo" */}
-                  <div className="absolute bottom-[245px] left-[54%] -translate-x-[45%] z-20 bg-white border border-gray-100 px-6 py-3.5 rounded-2xl shadow-2xl text-center flex items-center justify-center font-display font-black text-[#0d2e27] text-base sm:text-lg tracking-tight select-none">
-                    ParakeetAI demo
+                  {/* Floating Center Badge: Penguin Mascot Image */}
+                  <div className="absolute bottom-[225px] left-[54%] -translate-x-[45%] z-20 w-24 h-24 bg-white border border-gray-150 p-1.5 rounded-full shadow-2xl overflow-hidden select-none hover:scale-105 transition-transform duration-300">
+                    <img src="/penguin.jpg" alt="Anazk Mascot" className="w-full h-full object-cover rounded-full" />
                   </div>
 
                 </div>
@@ -1352,16 +1330,7 @@ class Solution {
               </div>
             </div>
 
-            {/* Social Links List */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-gray-400">
-              <a href="#blog" className="hover:text-white transition-colors">Blog</a>
-              <a href="#youtube" className="hover:text-white transition-colors">YouTube</a>
-              <a href="#twitter" className="hover:text-white transition-colors">X (Twitter)</a>
-              <a href="#linkedin" className="hover:text-white transition-colors">LinkedIn</a>
-              <a href="#instagram" className="hover:text-white transition-colors">Instagram</a>
-              <a href="#facebook" className="hover:text-white transition-colors">Facebook</a>
-              <a href="#tiktok" className="hover:text-white transition-colors">TikTok</a>
-            </div>
+
 
             {/* Other Projects */}
             <div className="text-xs text-gray-500">
@@ -1657,6 +1626,27 @@ class Solution {
           </div>
         </div>
       )}
+
+      {/* Floating Right Scroll Navigator */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-center gap-3.5 p-3.5 bg-white/80 backdrop-blur-md border border-gray-200/50 rounded-full shadow-xl">
+        <button 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="text-gray-400 hover:text-sky-600 transition-all p-1.5 rounded-full hover:bg-gray-100 cursor-pointer font-bold text-sm"
+          title="Scroll to Top"
+        >
+          ▲
+        </button>
+        <div className="w-1.5 h-1.5 rounded-full bg-sky-500 shadow-sm"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+        <button 
+          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
+          className="text-gray-400 hover:text-sky-600 transition-all p-1.5 rounded-full hover:bg-gray-100 cursor-pointer font-bold text-sm"
+          title="Scroll to Bottom"
+        >
+          ▼
+        </button>
+      </div>
 
     </div>
   );
