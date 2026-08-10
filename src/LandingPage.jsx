@@ -13,6 +13,12 @@ function LandingPage() {
   const [activeFaq, setActiveFaq] = useState(null);
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
   
+  // Custom legal & support modals
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  
   // Interactive Sandbox state
   const [sandboxQuestion, setSandboxQuestion] = useState('');
   const [sandboxResponse, setSandboxResponse] = useState('');
@@ -218,14 +224,14 @@ class Solution {
   ];
 
   return (
-    <div className="bg-[#f2fcf7] text-[#1e293b] font-sans min-h-screen relative overflow-x-hidden antialiased text-left">
+    <div className={`font-sans min-h-screen relative overflow-x-hidden antialiased text-left transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#030712] text-gray-100 dark-theme-active' : 'bg-[#f2fcf7] text-[#1e293b]'}`}>
       
       {/* Dynamic Background Glows */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-emerald-200/20 via-teal-100/10 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-[800px] -left-100 w-[500px] h-[500px] bg-emerald-100/15 rounded-full blur-[90px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className="fixed top-5 left-1/2 -translate-x-1/2 w-[95%] max-w-[1440px] z-50 bg-white/70 backdrop-blur-xl border border-emerald-500/10 px-6 py-3 rounded-full flex justify-between items-center shadow-[0_10px_30px_rgba(16,185,129,0.05)] transition-all">
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[96%] lg:w-[98%] max-w-none z-50 backdrop-blur-xl border px-6 py-3 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -239,10 +245,10 @@ class Solution {
         </div>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 text-xs font-black text-[#0d2e27]">
+        <div className={`hidden md:flex items-center gap-8 text-xs font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
           <a href="#reviews" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Reviews</a>
-          <a href="#privacy" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Privacy</a>
+          <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
           <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
             Desktop App
@@ -261,7 +267,7 @@ class Solution {
           </button>
           <button 
             onClick={() => setShowSignInModal(true)}
-            className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
+            className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
           >
             Sign in
             <ArrowRight size={14} />
@@ -305,7 +311,7 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-32 pb-24 px-6 md:px-16 max-w-[1440px] w-[95%] mx-auto flex items-center justify-center">
+      <header className="min-h-screen pt-32 pb-24 px-4 sm:px-8 lg:px-12 w-full mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
          {/* Hero Left Content */}
         <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
@@ -314,12 +320,12 @@ class Solution {
             FULL CODING INTERVIEW SUPPORT
           </div>
           
-          <h1 className="font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] text-[#0d2e27] leading-[1.1] tracking-tight">
+          <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             Your Real-Time <span className="inline-flex items-center justify-center bg-gray-100 border border-gray-300 w-14 h-9 rounded-full text-gray-800 text-lg align-middle mx-2 shadow-inner select-none font-sans font-black">...</span> <br />
             AI Interview Assistant
           </h1>
 
-          <p className="text-gray-600 text-base sm:text-[20px] lg:text-[21px] max-w-2xl mx-auto lg:mx-0 font-semibold leading-relaxed mt-6">
+          <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl mx-auto lg:mx-0 font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-600'}`}>
             Automatically get an answer to every interview question with ChatGPT AI software. An AI Interview copilot. Real-time and private.
           </p>
 
@@ -344,12 +350,13 @@ class Solution {
           {/* Social Proof */}
           <div className="pt-6 border-t border-emerald-500/10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <div className="flex -space-x-3">
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80" alt="user" />
+              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/prem.png" alt="Prem Kumar" />
+              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/nitesh.png" alt="Nitesh Kumar" />
+              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/abhinav.png" alt="Abhinav Asthana" />
+              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/priyanshu.png" alt="Priyanshu Kumar" />
             </div>
-            <div className="text-xs text-gray-600 font-medium text-left">
-              <span className="block font-black text-gray-800 text-sm">Used by <span className="font-extrabold text-[#0d2e27]">1,534,135+</span> people</span>
+            <div className="text-xs font-medium text-left">
+              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-800'}`}>Used by <span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>1,534,135+</span> people</span>
               <div className="flex items-center gap-1 mt-0.5 text-gray-500 font-semibold">
                 <div className="flex text-amber-500 gap-0.5">
                   <Star size={12} fill="currentColor" />
@@ -358,7 +365,7 @@ class Solution {
                   <Star size={12} fill="currentColor" />
                   <Star size={12} fill="currentColor" />
                 </div>
-                <span><span className="font-extrabold text-gray-850">4.86</span> (340,066+ reviews)</span>
+                <span><span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-855'}`}>4.86</span> (340,066+ reviews)</span>
               </div>
             </div>
           </div>
@@ -1337,12 +1344,12 @@ class Solution {
               <div className="flex flex-wrap gap-2">
                 <a href="#comparisons" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Comparisons</a>
                 <a href="#feedback" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Feedback</a>
-                <a href="#support" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Support</a>
-                <a href="#terms" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Terms & Conditions</a>
+                <button onClick={() => setShowSupportModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Support</button>
+                <button onClick={() => setShowTermsModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Terms & Conditions</button>
               </div>
               <div className="flex flex-wrap gap-2">
-                <a href="#privacy" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Privacy Policy</a>
-                <a href="#refund" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Refund Policy</a>
+                <button onClick={() => setShowPrivacyModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Privacy Policy</button>
+                <button onClick={() => setShowRefundModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Refund Policy</button>
               </div>
             </div>
 
@@ -1359,7 +1366,7 @@ class Solution {
 
             {/* Other Projects */}
             <div className="text-xs text-gray-500">
-              Our other projects: <a href="https://goodview.ai" target="_blank" rel="noreferrer" className="text-gray-400 hover:underline">GoodviewAI</a>
+              Our other projects: <a href="https://hiremind.ai" target="_blank" rel="noreferrer" className="text-gray-400 hover:underline">Hiremind AI (agentic AI interview platform)</a>
             </div>
 
             {/* Copyright */}
@@ -1460,6 +1467,194 @@ class Solution {
             <p className="mt-4 text-[10px] text-center text-gray-400 font-semibold">
               Stable Build v2.0.0. Developed by Prince Yadav.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Legal Terms Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh]">
+            <button 
+              onClick={() => setShowTermsModal(false)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2 pr-8">Agreement to our legal terms</h3>
+            <p className="text-gray-400 text-xs font-semibold mb-4">Last Update: March 15, 2026</p>
+            
+            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
+              <p>We operate the website (the “Site”), as well as any other related products and services that refer or link to these legal terms (the “Legal Terms”) (collectively, the “Services”).</p>
+              <p>These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”), and ParakeetAI d.o.o., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</p>
+              <p className="font-bold text-red-650 bg-red-50 p-3 rounded-xl border border-red-100">YOU ARE RESPONSIBLE FOR USING THE SERVICES ONLY FOR LEGAL AND ETHICAL PURPOSES. You are solely responsible for ensuring that your use of the Services complies with all applicable laws, regulations, and third-party rules that apply to you, including without limitation laws governing recording, wiretapping, consent, privacy, data protection, intellectual property, confidentiality, employment, education, professional licensing, examinations, and unfair or deceptive practices.</p>
+              <p>You agree that you will not use the Services in any manner that is illegal, deceptive, fraudulent, harmful, harassing, or otherwise unethical, and that you will not use the Services to violate any obligations you owe to a third party (including but not limited to your employer, school, examination provider, certification body, interviewer, counterparty, or any platform whose terms of service or code of conduct apply to your interaction). Where the law, institution, employer, platform, or other person requires notice, disclosure, or consent before recording, processing, or being assisted by AI in a conversation, meeting, interview, examination, or other interaction, it is your sole responsibility to obtain that notice, disclosure, or consent. We provide the Services as a general-purpose tool and do not endorse, encourage, or condone any unlawful or unethical use, and any such use is a material breach of these Legal Terms.</p>
+              <p>Supplemental terms and conditions or documents that may be posted on the Services from time to time are hereby expressly incorporated herein by reference. We reserve the right, in our sole discretion, to make changes or modifications to these Legal Terms from time to time. We will alert you about any changes by updating the “Last updated” date of these Legal Terms, and you waive any right to receive specific notice of each such change.</p>
+              <p>The Services are intended for users who are at least 18 years old. Persons under the age of 18 are not permitted to use or register for the Services.</p>
+              
+              <div className="font-bold text-gray-805 pt-2 text-sm border-t border-gray-100">Table of contents</div>
+              <ul className="list-disc pl-4 space-y-1 text-gray-500">
+                <li>1. Our services</li>
+                <li>2. Intellectual property rights</li>
+                <li>3. User representations</li>
+                <li>4. User registration</li>
+                <li>5. Purchases and payment</li>
+                <li>6. Prohibited activities</li>
+                <li>7. User generated contributions</li>
+                <li>8. Contribution license</li>
+                <li>9. Social media</li>
+                <li>10. Services management</li>
+                <li>11. Privacy policy</li>
+                <li>12. Term and termination</li>
+                <li>13. Modifications and interruptions</li>
+                <li>14. Governing law</li>
+                <li>15. Dispute resolution</li>
+                <li>16. Corrections</li>
+                <li>17. Disclaimer</li>
+                <li>18. Limitations of liability</li>
+                <li>19. Indemnification</li>
+                <li>20. User data</li>
+                <li>21. Electronic communications, transactions, and signatures</li>
+                <li>22. California users and residents</li>
+                <li>23. Miscellaneous</li>
+                <li>24. Contact us</li>
+              </ul>
+
+              <div className="font-bold text-gray-805 pt-2 text-[13px] border-t border-gray-100 uppercase">1. Our services</div>
+              <p>The information provided when using the Services is not intended for distribution to or use by any person or entity in any jurisdiction or country where such distribution or use would be contrary to law or regulation or which would subject us to any registration requirement within such jurisdiction or country. Accordingly, those persons who choose to access the Services from other locations do so on their own initiative and are solely responsible for compliance with local laws, if and to the extent local laws are applicable.</p>
+              
+              <div className="font-bold text-gray-805 pt-2 text-[13px] border-t border-gray-100 uppercase">2. Intellectual property rights</div>
+              <p>We are the owner or the licensee of all intellectual property rights in our Services, including all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics in the Services (collectively, the “Content”), as well as the trademarks, service marks, and logos contained therein (the “Marks”).</p>
+              
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">3. User representations</div>
+              <p>By using the Services, you represent and warrant that: (1) all registration information you submit will be true, accurate, current, and complete; (2) you will maintain the accuracy of such information and promptly update such registration information as necessary; (3) you have the legal capacity and you agree to comply with these Legal Terms; (4) you are not a minor in the jurisdiction in which you reside; (5) you will not access the Services through automated or non-human means, whether through a bot, script or otherwise; (6) you will not use the Services for any illegal, unauthorized, or unethical purpose; (7) your use of the Services will not violate any applicable law or regulation...</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">5. Purchases and payment</div>
+              <p>We accept Visa, Mastercard, American Express, and Discover. You agree to provide current, complete, and accurate purchase and account information for all purchases made via the Services.</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">6. Prohibited activities</div>
+              <p>You agree not to systematically retrieve data, trick or defraud other users, circumvent security features, decompile software, or reverse engineer any of the code comprising the Services.</p>
+              <p className="font-bold text-[#15803d]">Automated account-sharing protection (new sessions paused). To enforce the one-person-per-account rule above, we monitor account activity for signals of account sharing and reserve the right to analyze this activity using any methods we see fit. If we determine that an account is being shared, we may temporarily pause activating new sessions (free or paid) and extending or restarting existing ones.</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">24. Contact us</div>
+              <p>In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:</p>
+              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 font-mono text-[11px] leading-relaxed text-gray-500">
+                ParakeetAI d.o.o.<br />
+                Slovenska cesta 55b<br />
+                Ljubljana, Notranjska 1000<br />
+                Slovenia<br />
+                Email: support@parakeet-ai.com
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Privacy Policy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh]">
+            <button 
+              onClick={() => setShowPrivacyModal(false)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2 pr-8">Privacy Policy</h3>
+            <p className="text-gray-400 text-xs font-semibold mb-4">Last Update: August 30, 2024</p>
+            
+            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
+              <p>This Privacy Notice for ParakeetAI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at parakeet-ai.com, or any website of ours that links to this Privacy Notice.</p>
+              
+              <div className="font-bold text-gray-800 pt-2 text-sm border-t border-gray-100">SUMMARY OF KEY POINTS</div>
+              <p>We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. We do not process sensitive personal information, and we do not collect any information from third parties.</p>
+              
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">1. What information do we collect?</div>
+              <p>We collect personal information that you voluntarily provide to us when you register on the Services, express an interest in obtaining information about us or our products and Services, when you participate in activities on the Services, or otherwise when you contact us. This includes names, email addresses, job titles, and payment data handled by Stripe.</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">5. Do we use cookies and other tracking technologies?</div>
+              <p>We may use cookies and similar tracking technologies (like web beacons and pixels) to gather information when you interact with our Services. To opt out of being tracked by Google Analytics across the Services, visit https://tools.google.com/dlpage/gaoptout.</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">6. Do we offer artificial intelligence-based products?</div>
+              <p>Yes, we offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies (collectively, “AI Products”). We provide the AI Products through third-party service providers, including OpenAI and Speechmatics.</p>
+
+              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">16. How can you contact us about this notice?</div>
+              <p>If you have questions or comments about this notice, you may email us at support@anazkai.com or write to Slovenia office.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Refund Policy Modal */}
+      {showRefundModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800">
+            <button 
+              onClick={() => setShowRefundModal(false)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-655 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-4">Refund Policy</h3>
+            
+            <div className="text-xs text-gray-600 font-medium leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <p>Yes, we offer a 7-day refund window for accidental purchases or unused purchases. If you haven't used the service (for example, by activating a call session), you can request a full refund within 7 days of purchase via the money refund form in your dashboard.</p>
+              <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because ParakeetAI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
+              <p>If any credit has been used, the purchase is no longer eligible for a refund. We do not issue partial refunds for unused credits.</p>
+              <p>We encourage everybody to test the tool thoroughly before purchasing.</p>
+              <p className="font-bold text-[#0d2e27]">Important: This applies to one refund per person/user (not per account). If you've already received a refund, later purchases aren't eligible.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. AI Support Chat Modal */}
+      {showSupportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col h-[520px]">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 flex justify-between items-start">
+              <div>
+                <h3 className="font-display font-black text-xl text-[#0d2e27]">AI Support</h3>
+                <p className="text-[10px] text-gray-400 font-bold leading-normal mt-1">This is an AI assistant, not a human. It can make mistakes, so please double-check important information.</p>
+              </div>
+              <button 
+                onClick={() => setShowSupportModal(false)}
+                className="text-gray-400 hover:text-gray-655 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer shrink-0 ml-4"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Conversation Messages */}
+            <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50/50 no-scrollbar">
+              <div className="flex gap-3 items-start max-w-[85%]">
+                <img src="/penguin.jpg" alt="AI Agent" className="w-8 h-8 rounded-full border border-emerald-500/20 object-cover shadow-sm" />
+                <div className="bg-white border border-gray-150 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs font-semibold text-gray-750 leading-relaxed">
+                  Hi! I'm Anazk's AI support assistant. How can I help you today?
+                </div>
+              </div>
+            </div>
+
+            {/* Input Bar */}
+            <div className="p-4 border-t border-gray-100 bg-white rounded-b-3xl flex items-center gap-2">
+              <input 
+                type="text" 
+                placeholder="Type your message..." 
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-xs font-semibold placeholder-gray-400 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.value = '';
+                  }
+                }}
+              />
+              <button 
+                onClick={() => {}} 
+                className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       )}
