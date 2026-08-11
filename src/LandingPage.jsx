@@ -560,63 +560,10 @@ class Solution {
           </div>
           
           {/* Right Image/Mockup */}
-          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden bg-cover bg-left shadow-[inset_60px_0_60px_rgba(17,19,21,1)] lg:shadow-[inset_100px_0_100px_rgba(17,19,21,1)]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1614624532983-4ce03382d63d?auto=format&fit=crop&w=1200&q=80')" }}>
-            
-            {/* The Overlay UI */}
-            <div className="absolute top-1/2 left-8 md:left-12 -translate-y-1/2 w-[85%] max-w-[460px] flex flex-col gap-3">
-              
-              {/* Top Controls Row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-gray-500 bg-black/40 p-1.5 rounded-lg backdrop-blur-md">
-                   <Monitor size={14} />
-                   <Mic size={14} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="hidden sm:flex bg-black/60 backdrop-blur-md rounded-lg p-1 border border-white/5 text-[10px] font-semibold text-gray-400">
-                    <button className="px-3 py-1 hover:bg-white/10 hover:text-white rounded transition-colors">Answer ⌘↵</button>
-                    <button className="px-3 py-1 hover:bg-white/10 hover:text-white rounded transition-colors">Screenshot ⇧⌘↵</button>
-                    <button className="px-3 py-1 bg-[#1a1c20] text-white shadow-sm rounded border border-white/5 transition-colors">Chat ⇧⌘_</button>
-                  </div>
-                  <div className="flex items-center justify-center bg-black/60 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/5 text-[10px] font-mono text-gray-300">
-                    0:15
-                  </div>
-                  <div className="flex bg-black/60 backdrop-blur-md rounded-lg border border-white/5 text-gray-400">
-                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors rounded-l-lg"><MoreVertical size={14} /></button>
-                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors border-l border-white/5"><Move size={14} /></button>
-                    <button className="p-1.5 hover:bg-white/10 hover:text-white transition-colors rounded-r-lg border-l border-white/5"><ChevronDown size={14} /></button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Interface */}
-              <div className="bg-[#16181b]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="flex justify-end gap-1.5 p-2 bg-black/20 border-b border-white/5">
-                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 text-[10px] px-2.5 py-1 rounded-md flex items-center gap-1.5">Add Screenshot <span className="font-mono text-gray-500">⇧⌥↵</span></button>
-                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 text-[10px] px-2.5 py-1 rounded-md flex items-center gap-1.5">Clear <span className="font-mono text-gray-500">⌘⌫</span></button>
-                   <button className="bg-white/5 hover:bg-white/10 transition-colors text-gray-400 p-1 rounded-md"><X size={12} /></button>
-                </div>
-                
-                {/* Input Area */}
-                <div className="p-3 relative border-b border-white/5">
-                  <input type="text" placeholder="Enter a message..." className="w-full bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none" />
-                  <div className="absolute right-3 top-3 flex gap-2 text-gray-500">
-                    <button className="hover:text-white transition-colors"><CornerDownLeft size={14} /></button>
-                  </div>
-                </div>
-
-                {/* Response Area (simulated text) */}
-                <div className="p-5 bg-gradient-to-b from-[#1a1c20]/50 to-transparent text-gray-400 text-[11px] leading-[1.7] space-y-3 font-medium">
-                  <p className="text-gray-300">Lorem ipsum dolor sit amet consectetur. In arcu vivamus orci scelerisque purus sed et.</p>
-                  <p>Nisi cursus tortor commodo nibh velit nulla. Metus mauris diam id scelerisque commodo in faucibus purus. Lacus proin ipsum sed iaculis eget nunc eu imperdiet.</p>
-                  <ul className="list-disc pl-5 space-y-1.5 opacity-60">
-                    <li>Lorem ipsum dolor sit amet consectetur.</li>
-                    <li>In arcu vivamus orci scelerisque purus sed et.</li>
-                    <li>Nisi cursus tortor commodo nibh velit nulla.</li>
-                    <li>Metus mauris diam id scelerisque commodo in faucibus purus.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
+            <img src="/media_1786406428644.png" alt="Desktop App Mockup" className="w-[180%] max-w-none h-full object-cover object-right opacity-95 hover:opacity-100 transition-opacity duration-500" style={{ objectPosition: "right center" }} />
+            {/* Gradient overlay to blend left edge with background */}
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
           </div>
         </div>
       </section>      {/* Compatibility Green Banner */}
