@@ -12,6 +12,20 @@ function LandingPage() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
+
+  const reviewers = [
+    ['Luffy', '/reviewers/luffy.png'],
+    ['Nilesh Kumar', '/reviewers/nilesh-kumar.png'],
+    ['Priyanshu Kumar', '/reviewers/priyanshu-kumar.png'],
+    ['Abhinav Asthana', '/reviewers/abhinav-asthana.png'],
+    ['Prem Kumar', '/reviewers/prem-kumar.png'],
+    ['Krishna', '/reviewers/krishna.png'],
+    ['Astitva Yadav', '/reviewers/astitva-yadav.png'],
+    ['Yash Raj', '/reviewers/yash-raj.png'],
+    ['Harsh Shadeo', '/reviewers/harsh-shadeo.png'],
+    ['Subrat Yadav', '/reviewers/subrat-yadav.png'],
+    ['Prince Yadav', '/reviewers/prince-yadav.png'],
+  ];
   
   // Custom legal & support modals
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -709,18 +723,24 @@ class Solution {
         </div>
       </section>
 
-      {/* Early access section */}
+      {/* Early access reviewer section */}
       <section id="reviews" className="px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-sky-500/20 bg-slate-950 px-6 py-10 text-center shadow-2xl sm:px-12">
-          <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-300">
-            <Users size={14} /> Early access
-          </span>
-          <h2 className="mt-6 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">Built carefully before it scales.</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">AnazkAI is currently being reviewed by 10 people. Their feedback is helping us improve reliability, clarity, and privacy before we invite a wider audience.</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-300">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">No paid endorsements</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">No inflated numbers</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">Feedback-led launch</span>
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 text-center sm:mb-12">
+            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-300">
+              <Users size={14} /> Early access reviewers
+            </span>
+            <h2 className="font-display text-3xl font-black tracking-tight text-white sm:text-5xl">Reviewed by the people helping us make it better.</h2>
+            <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {reviewers.map(([name, image]) => (
+              <div key={name} className="group rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-center transition duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:bg-white/[0.08]">
+                <img src={image} alt={`${name}, Anazk AI reviewer`} className="mx-auto size-16 rounded-full border border-white/15 object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0 sm:size-20" />
+                <p className="mt-3 truncate text-xs font-black text-slate-200 sm:text-sm">{name}</p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-300/70">Review group</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
