@@ -15,17 +15,17 @@ function LandingPage() {
   const [expandedReviewer, setExpandedReviewer] = useState(null);
 
   const reviewers = [
-    { name: 'Luffy', image: '/reviewers/luffy.png', rating: 5, review: 'This is a literal cheat code for interviews. It runs smoothly without slowing down my PC, and the whole experience feels surprisingly seamless.' },
-    { name: 'Nilesh Yadav', image: '/reviewers/nilesh-kumar.png', rating: 4, review: 'The setup was super easy. I especially liked the screen-share protection because it stayed out of view during my Google Meet and Zoom calls.' },
-    { name: 'Priyanshu Kumar', image: '/reviewers/priyanshu-kumar.png', rating: 5, review: 'The transcription speed is crazy. Even with accents and complex topics like Redis, it captured the conversation clearly and helped me stay calm.' },
+    { name: 'Prince Yadav', image: '/reviewers/luffy.png', rating: 5, review: 'This is a literal cheat code for interviews. It runs smoothly without slowing down my PC, and the whole experience feels surprisingly seamless.' },
+    { name: 'Prem Sharma', image: '/reviewers/nilesh-kumar.png', rating: 4, review: 'The setup was super easy. I especially liked the screen-share protection because it stayed out of view during my Google Meet and Zoom calls.' },
+    { name: 'Luffy', image: '/reviewers/priyanshu-kumar.png', rating: 5, review: 'The transcription speed is crazy. Even with accents and complex topics like Redis, it captured the conversation clearly and helped me stay calm.' },
     { name: 'Abhinav Asthana', image: '/reviewers/abhinav-asthana.png', rating: 5, review: 'Honestly, this app is a lifesaver. During a tough coding interview, it helped me organize my thoughts quickly instead of panicking.' },
-    { name: 'Prem Sharma', image: '/reviewers/prem-kumar.png', rating: 4, review: 'Behavioral rounds became much easier. The answers felt connected to my resume, so I could respond naturally instead of searching for examples.' },
-    { name: 'Krishna Sharma', image: '/reviewers/krishna.png', rating: 5, review: 'I was skeptical about the invisible overlay, but testing it with a friend on Microsoft Teams changed my mind. It worked exactly as expected.' },
-    { name: 'Astitva Yadav', image: '/reviewers/astitva-yadav.png', rating: 4, review: 'The system design suggestions were genuinely useful. It picked up the microservices discussion and gave me a clear structure to talk through.' },
-    { name: 'Yashraj Singh', image: '/reviewers/yash-raj.png', rating: 5, review: 'Maza aa gaya! I used to get nervous during live coding, but having a backup helped me communicate much more clearly.' },
-    { name: 'Harsh Shadeo', image: '/reviewers/harsh-shadeo.png', rating: 4, review: 'Setup took about two minutes. The solution was practical, and I liked that it also explained the time complexity instead of only showing an answer.' },
-    { name: 'Subrat Yadav', image: '/reviewers/subrat-yadav.png', rating: 5, review: 'Worth every penny for the low latency. It felt practical during a fast-paced interview because the suggestions arrived without interrupting my flow.' },
-    { name: 'Prince Yadav', image: '/reviewers/prince-yadav.png', rating: 4, review: 'I used it for a frontend interview and liked how it handled React concepts. It felt like having a senior developer helping me think through the question.' },
+    { name: 'Nilesh Yadav', image: '/reviewers/prem-kumar.png', rating: 4, review: 'Behavioral rounds became much easier. The answers felt connected to my resume, so I could respond naturally instead of searching for examples.' },
+    { name: 'Priyanshu Kumar', image: '/reviewers/krishna.png', rating: 5, review: 'I was skeptical about the invisible overlay, but testing it with a friend on Microsoft Teams changed my mind. It worked exactly as expected.' },
+    { name: 'Subrat Yadav', image: '/reviewers/astitva-yadav.png', rating: 4, review: 'The system design suggestions were genuinely useful. It picked up the microservices discussion and gave me a clear structure to talk through.' },
+    { name: 'YashRaj Singh', image: '/reviewers/yash-raj.png', rating: 5, review: 'Maza aa gaya! I used to get nervous during live coding, but having a backup helped me communicate much more clearly.' },
+    { name: 'Krishna Sharma', image: '/reviewers/harsh-shadeo.png', rating: 4, review: 'Setup took about two minutes. The solution was practical, and I liked that it also explained the time complexity instead of only showing an answer.' },
+    { name: 'Harsh Shadeo', image: '/reviewers/subrat-yadav.png', rating: 5, review: 'Worth every penny for the low latency. It felt practical during a fast-paced interview because the suggestions arrived without interrupting my flow.' },
+    { name: 'Astitva Yadav', image: '/reviewers/prince-yadav.png', rating: 4, review: 'I used it for a frontend interview and liked how it handled React concepts. It felt like having a senior developer helping me think through the question.' },
   ];
   
   // Custom legal & support modals
