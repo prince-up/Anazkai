@@ -14,7 +14,7 @@ function LandingPage() {
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
   const [expandedReviewer, setExpandedReviewer] = useState(null);
 
-  const reviewEmail = 'support@anazkai.com';
+  const reviewEmail = 'supportanazkai@gmail.com';
   const reviewComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${reviewEmail}&su=${encodeURIComponent('Anazk AI reviewer feedback')}&body=${encodeURIComponent('Name:\nEmail:\nPlan purchased:\nInterview platform:\nUse case:\nRating out of 5:\nYour experience:\nPermission to publish this review: Yes / No')}`;
 
   const reviewers = [
@@ -427,7 +427,7 @@ class Solution {
                   </div>
 
                   {/* Left Top Panel: White Card (Video) - Overlaps AI Response slightly */}
-                  <div className="absolute left-0 top-0 w-[54%] h-[310px] z-10 bg-black rounded-2xl overflow-hidden border border-gray-200/50 shadow-md flex flex-col justify-between p-4 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=250&q=80')" }}>
+                  <div className="absolute left-0 top-0 w-[54%] h-[310px] z-10 bg-black rounded-2xl overflow-hidden border border-gray-200/50 shadow-md flex flex-col justify-between p-4 bg-cover bg-center" style={{ backgroundImage: "url('/anazk-hero-generated.png?v=4')" }}>
                     <div className="absolute inset-0 bg-black/35 z-0"></div>
                     
                     <div className="flex justify-between items-center z-10 w-full">
@@ -531,12 +531,7 @@ class Solution {
           
           {/* Right Image/Mockup */}
           <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
-            <img src="/anazk-hero-laptop.png?v=2" alt="Anazk AI laptop experience" className="h-full w-full object-contain object-center p-5 opacity-95 hover:opacity-100 transition-opacity duration-500" />
-            {/* Rebranded in-image header */}
-            <div className="absolute left-[27%] top-[18%] z-20 flex items-center gap-1.5 rounded-md bg-[#25262a] px-2 py-1 shadow-lg">
-              <span className="flex size-4 items-center justify-center rounded-full bg-gradient-to-br from-teal-300 to-cyan-500 text-[8px] font-black text-slate-950">A</span>
-              <span className="text-[10px] font-black tracking-tight text-white">Anazk AI</span>
-            </div>
+            <img src="/anazk-hero-generated.png?v=4" alt="Anazk AI interview copilot in action" className="h-full w-full object-contain object-center p-5 opacity-95 transition duration-500 hover:scale-[1.015] hover:opacity-100" />
             {/* Gradient overlay to blend left edge with background */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
           </div>
@@ -1262,6 +1257,8 @@ class Solution {
               <p className="mt-4 text-sm leading-relaxed text-slate-400">A focused AI copilot for the moments where preparation matters most.</p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-300">
+              <a href="mailto:supportanazkai@gmail.com" className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Email support</a>
+              <a href="https://www.linkedin.com/in/anazk-ai-422894429" target="_blank" rel="noreferrer" className="rounded-full border border-sky-400/30 bg-sky-400/10 px-4 py-2.5 text-sky-200 transition hover:border-sky-300 hover:bg-sky-400/20 hover:text-white">Connect on LinkedIn</a>
               <button onClick={() => setShowSupportModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Support</button>
               <button onClick={() => setShowTermsModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Terms</button>
               <button onClick={() => setShowPrivacyModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Privacy</button>
