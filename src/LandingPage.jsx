@@ -531,7 +531,12 @@ class Solution {
           
           {/* Right Image/Mockup */}
           <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
-            <img src="/anazk-product-laptop.jpeg" alt="Anazk AI laptop experience" className="h-full w-full object-contain object-center p-5 opacity-95 hover:opacity-100 transition-opacity duration-500" />
+            <img src="/anazk-hero-laptop.png?v=2" alt="Anazk AI laptop experience" className="h-full w-full object-contain object-center p-5 opacity-95 hover:opacity-100 transition-opacity duration-500" />
+            {/* Rebranded in-image header */}
+            <div className="absolute left-[27%] top-[18%] z-20 flex items-center gap-1.5 rounded-md bg-[#25262a] px-2 py-1 shadow-lg">
+              <span className="flex size-4 items-center justify-center rounded-full bg-gradient-to-br from-teal-300 to-cyan-500 text-[8px] font-black text-slate-950">A</span>
+              <span className="text-[10px] font-black tracking-tight text-white">Anazk AI</span>
+            </div>
             {/* Gradient overlay to blend left edge with background */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
           </div>
