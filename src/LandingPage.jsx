@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Star, ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, 
+  ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
-  Shield, EyeOff, User, ChevronLeft, ChevronRight, Lock, Laptop, Check
+  Shield, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check
 } from 'lucide-react';
 
 function LandingPage() {
@@ -19,16 +19,7 @@ function LandingPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
 
-  // Review rotation carousel idx
-  const [activeReviewIdx, setActiveReviewIdx] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveReviewIdx((prev) => (prev + 1) % 4);
-    }, 40000); // 40 seconds
-    return () => clearInterval(timer);
-  }, []);
-  
   // Interactive Sandbox state
   const [sandboxQuestion, setSandboxQuestion] = useState('');
   const [sandboxResponse, setSandboxResponse] = useState('');
@@ -183,37 +174,6 @@ class Solution {
     }, 1500);
   };
 
-  const reviews = [
-    {
-      name: "Nitesh Kumar",
-      email: "nitesh... @gmail.com",
-      avatar: "/abhinav.png",
-      content: "I used Anazk AI during my tech interviews at top startups. The real-time coding suggestions and speed are incredibly helpful, letting me stay focused on the logical explanation.",
-      date: "Apr 12, 2026"
-    },
-    {
-      name: "Priyanshu Kumar",
-      email: "priyanshu... @gmail.com",
-      avatar: "/priyanshu.png",
-      content: "Bhai setup is super easy. The best part is screen share invisible protection. I shared my screen on Google Meet and Zoom, and they saw nothing. Highly recommend.",
-      date: "May 18, 2026"
-    },
-    {
-      name: "Abhinav Asthana",
-      email: "abhinav... @gmail.com",
-      avatar: "/nitesh.png",
-      content: "The transcription speed is crazy. Even with my interviewer's accent and complex topics like Redis, it transcribed everything perfectly. Saved me so much stress.",
-      date: "Jun 04, 2026"
-    },
-    {
-      name: "Prem Kumar",
-      email: "prem... @gmail.com",
-      avatar: "/prem.png",
-      content: "Behavioral rounds became so easy. It Tailored answers using my actual resume experience. I just read from the overlay. Really a game changer.",
-      date: "Jul 21, 2026"
-    }
-  ];
-
   const faqs = [
     {
       q: "Is Anazk AI really undetectable on screen sharing platforms?",
@@ -257,7 +217,7 @@ class Solution {
         {/* Desktop Links */}
         <div className={`hidden md:flex items-center gap-8 text-xs font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
-          <a href="#reviews" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Reviews</a>
+          <a href="#reviews" className="hover:text-sky-400 transition-colors flex items-center gap-1">Early access</a>
           <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
           <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
@@ -298,7 +258,7 @@ class Solution {
         <div className="fixed top-24 left-1/2 -translate-x-1/2 w-[90%] bg-white border border-emerald-500/10 rounded-2xl p-6 shadow-xl z-40 md:hidden flex flex-col space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
           <a href="#features" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Features</a>
           <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Interactive Demo</a>
-          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Reviews</a>
+          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-sky-400 py-1.5 border-b border-gray-50">Early access</a>
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Pricing</a>
           <a href="#privacy" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Privacy</a>
           <div className="pt-2 flex flex-col space-y-3">
@@ -352,23 +312,14 @@ class Solution {
             </div>
           </div>
 
-          {/* Social Proof */}
-          <div className="pt-6 border-t border-emerald-500/10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-            <div className="flex -space-x-3">
-              <img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md" src="/penguin.jpg" alt="Anazk Mascot" />
+          {/* Transparent early-access note */}
+          <div className="pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-center lg:justify-start text-left">
+            <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
+              <Users size={16} />
             </div>
-            <div className="text-xs font-medium text-left">
-              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-800'}`}>Used by <span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>1,534,135+</span> people</span>
-              <div className="flex items-center gap-1 mt-0.5 text-gray-500 font-semibold">
-                <div className="flex text-amber-500 gap-0.5">
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                  <Star size={12} fill="currentColor" />
-                </div>
-                <span><span className={`font-extrabold transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-300' : 'text-gray-855'}`}>4.86</span> (340,066+ reviews)</span>
-              </div>
+            <div className="text-xs font-medium">
+              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 10 people</span>
+              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500">We are validating the experience with a small review group before a wider launch.</span>
             </div>
           </div>
         </div>
@@ -758,117 +709,19 @@ class Solution {
         </div>
       </section>
 
-      {/* Testimonials section */}
-      <section id="reviews" className="py-24 px-6 max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-4">
-          <span className="inline-block bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider">
-            Reviews
+      {/* Early access section */}
+      <section id="reviews" className="px-6 py-20 sm:py-24">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-sky-500/20 bg-slate-950 px-6 py-10 text-center shadow-2xl sm:px-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-300">
+            <Users size={14} /> Early access
           </span>
-          <h2 className="font-display font-black text-3xl sm:text-5xl text-[#0d2e27] flex items-center justify-center gap-2">
-            People love AnazkAI
-            <span className="inline-flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-500 rounded-full w-9 h-9 text-base">💬</span>
-          </h2>
-          <p className="text-gray-600 text-base sm:text-lg font-semibold tracking-wide">
-            Real developers who landed offers at top companies using our stealth companion
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch max-w-6xl mx-auto">
-          
-          {/* Card 1: Prem Kumar */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <img src="/prem.png" alt="Prem Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
-                <div className="flex-1">
-                  <span className="block font-black text-sm text-gray-900 uppercase">Prem Kumar</span>
-                  <a href="https://www.instagram.com/_its_prem__7/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_its_prem__7</a>
-                </div>
-                <div className="flex text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={11} fill="currentColor" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
-                Behavioral rounds became so easy. It Tailored answers using my actual resume experience. I just read from the overlay. Really a game changer.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="font-extrabold uppercase">Verified Candidate</span>
-              <span>Jul 21, 2026</span>
-            </div>
+          <h2 className="mt-6 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">Built carefully before it scales.</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">AnazkAI is currently being reviewed by 10 people. Their feedback is helping us improve reliability, clarity, and privacy before we invite a wider audience.</p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-300">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">No paid endorsements</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">No inflated numbers</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">Feedback-led launch</span>
           </div>
-
-          {/* Card 2: Priyanshu Kumar */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <img src="/priyanshu.png" alt="Priyanshu Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
-                  <div>
-                    <span className="block font-black text-sm text-gray-900 uppercase">Priyanshu Kumar</span>
-                    <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@007_priyanshu_</a>
-                  </div>
-                </div>
-                <a href="https://www.instagram.com/007_priyanshu_/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
-              </div>
-              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
-                Bhai setup is super easy. The best part is screen share invisible protection. I shared my screen on Google Meet and Zoom, and they saw nothing. Highly recommend.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 986 <span className="pl-2">💬 Reply</span></span>
-              <span>11:15 PM - Jan 17, 2026</span>
-            </div>
-          </div>
-
-          {/* Card 3: Abhinav Asthana */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <img src="/nitesh.png" alt="Abhinav Asthana" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
-                  <div>
-                    <span className="block font-black text-sm text-gray-900 uppercase">Abhinav Asthana</span>
-                    <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@abhinav.asthana__</a>
-                  </div>
-                </div>
-                <a href="https://www.instagram.com/abhinav.asthana__/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
-              </div>
-              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
-                The transcription speed is crazy. Even with my interviewer's accent and complex topics like Redis, it transcribed everything perfectly. Saved me so much stress.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 412 <span className="pl-2">💬 Reply</span></span>
-              <span>10:42 PM - Feb 14, 2026</span>
-            </div>
-          </div>
-
-          {/* Card 4: Nitesh Kumar */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between text-left hover:border-emerald-500/20 hover:shadow-md transition-all">
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <img src="/abhinav.png" alt="Nitesh Kumar" className="w-11 h-11 rounded-full object-cover border border-emerald-500/10" />
-                  <div>
-                    <span className="block font-black text-sm text-gray-900 uppercase">Nitesh Kumar</span>
-                    <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="block text-xs font-bold text-emerald-600 hover:underline">@_.nitesh__kumar._</a>
-                  </div>
-                </div>
-                <a href="https://www.instagram.com/_.nitesh__kumar._/" target="_blank" rel="noreferrer" className="text-sky-500 font-extrabold text-[10px] bg-sky-50 border border-sky-100 px-3 py-1 rounded-full hover:bg-sky-100 cursor-pointer">Follow</a>
-              </div>
-              <p className="text-gray-700 text-[14px] leading-relaxed font-medium">
-                Honestly, this app is a life saver. I had a tough coding interview last week, it transcribed everything and gave me the answer in seconds. Cleared the round easily!
-              </p>
-            </div>
-            <div className="pt-3 border-t border-gray-50 flex items-center justify-between text-[10px] text-gray-400 font-semibold mt-4">
-              <span className="flex items-center gap-1 font-extrabold uppercase text-gray-500">❤️ 385 <span className="pl-2">💬 Reply</span></span>
-              <span>11:06 PM - Jan 7, 2026</span>
-            </div>
-          </div>
-
         </div>
       </section>
 

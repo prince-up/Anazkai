@@ -110,3 +110,17 @@ code, pre { border-radius: 14px; }
 img { max-width: 100%; }
  a { color: inherit; }
  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #8b83ff; outline-offset: 3px; }
+
+/* Worldwide launch polish: remove legacy green/white product-marketing treatment. */
+.font-sans .bg-white, .font-sans .bg-\[\#ffffff\] { background: rgba(15, 23, 42, .78) !important; }
+.font-sans .bg-gradient-to-r.from-emerald-600, .font-sans .bg-\[\#0d2e27\] { background: linear-gradient(135deg, #172554, #312e81) !important; }
+.font-sans .text-\[\#0d2e27\], .font-sans .text-gray-900, .font-sans .text-gray-800 { color: #f8fafc !important; }
+.font-sans .border-gray-100, .font-sans .border-gray-200, .font-sans .border-gray-50 { border-color: rgba(148, 163, 184, .14) !important; }
+.font-sans .bg-gradient-to-tr.from-\[\#edf9f3\], .font-sans .bg-\[\#f0f8ff\] { background: #070a12 !important; }
+.font-sans .bg-\[\#0d2e27\] { color: #f8fafc !important; }
+.font-sans section[id="reviews"] > div { background: linear-gradient(135deg, rgba(23,37,84,.82), rgba(30,27,75,.82)) !important; }
+
+@media (max-width: 640px) {
+  .font-sans nav span.font-display { font-size: 1.15rem !important; }
+  .font-sans header { min-height: auto !important; padding-bottom: 4rem !important; }
+}
