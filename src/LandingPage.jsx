@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, 
+  ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, Star, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
   Shield, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check
 } from 'lucide-react';
@@ -12,19 +12,20 @@ function LandingPage() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
+  const [expandedReviewer, setExpandedReviewer] = useState(null);
 
   const reviewers = [
-    ['Luffy', '/reviewers/luffy.png'],
-    ['Nilesh Kumar', '/reviewers/nilesh-kumar.png'],
-    ['Priyanshu Kumar', '/reviewers/priyanshu-kumar.png'],
-    ['Abhinav Asthana', '/reviewers/abhinav-asthana.png'],
-    ['Prem Kumar', '/reviewers/prem-kumar.png'],
-    ['Krishna', '/reviewers/krishna.png'],
-    ['Astitva Yadav', '/reviewers/astitva-yadav.png'],
-    ['Yash Raj', '/reviewers/yash-raj.png'],
-    ['Harsh Shadeo', '/reviewers/harsh-shadeo.png'],
-    ['Subrat Yadav', '/reviewers/subrat-yadav.png'],
-    ['Prince Yadav', '/reviewers/prince-yadav.png'],
+    { name: 'Luffy', image: '/reviewers/luffy.png', rating: 5, review: 'This is a literal cheat code for interviews. It runs smoothly without slowing down my PC, and the whole experience feels surprisingly seamless.' },
+    { name: 'Nilesh Yadav', image: '/reviewers/nilesh-kumar.png', rating: 4, review: 'The setup was super easy. I especially liked the screen-share protection because it stayed out of view during my Google Meet and Zoom calls.' },
+    { name: 'Priyanshu Kumar', image: '/reviewers/priyanshu-kumar.png', rating: 5, review: 'The transcription speed is crazy. Even with accents and complex topics like Redis, it captured the conversation clearly and helped me stay calm.' },
+    { name: 'Abhinav Asthana', image: '/reviewers/abhinav-asthana.png', rating: 5, review: 'Honestly, this app is a lifesaver. During a tough coding interview, it helped me organize my thoughts quickly instead of panicking.' },
+    { name: 'Prem Sharma', image: '/reviewers/prem-kumar.png', rating: 4, review: 'Behavioral rounds became much easier. The answers felt connected to my resume, so I could respond naturally instead of searching for examples.' },
+    { name: 'Krishna Sharma', image: '/reviewers/krishna.png', rating: 5, review: 'I was skeptical about the invisible overlay, but testing it with a friend on Microsoft Teams changed my mind. It worked exactly as expected.' },
+    { name: 'Astitva Yadav', image: '/reviewers/astitva-yadav.png', rating: 4, review: 'The system design suggestions were genuinely useful. It picked up the microservices discussion and gave me a clear structure to talk through.' },
+    { name: 'Yashraj Singh', image: '/reviewers/yash-raj.png', rating: 5, review: 'Maza aa gaya! I used to get nervous during live coding, but having a backup helped me communicate much more clearly.' },
+    { name: 'Harsh Shadeo', image: '/reviewers/harsh-shadeo.png', rating: 4, review: 'Setup took about two minutes. The solution was practical, and I liked that it also explained the time complexity instead of only showing an answer.' },
+    { name: 'Subrat Yadav', image: '/reviewers/subrat-yadav.png', rating: 5, review: 'Worth every penny for the low latency. It felt practical during a fast-paced interview because the suggestions arrived without interrupting my flow.' },
+    { name: 'Prince Yadav', image: '/reviewers/prince-yadav.png', rating: 4, review: 'I used it for a frontend interview and liked how it handled React concepts. It felt like having a senior developer helping me think through the question.' },
   ];
   
   // Custom legal & support modals
@@ -734,13 +735,26 @@ class Solution {
             <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {reviewers.map(([name, image]) => (
-              <div key={name} className="group rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-center transition duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:bg-white/[0.08]">
-                <img src={image} alt={`${name}, Anazk AI reviewer`} className="mx-auto size-16 rounded-full border border-white/15 object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0 sm:size-20" />
-                <p className="mt-3 truncate text-xs font-black text-slate-200 sm:text-sm">{name}</p>
-                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-300/70">Review group</p>
-              </div>
-            ))}
+            {reviewers.map((reviewer, index) => {
+              const isExpanded = expandedReviewer === index;
+              return (
+                <button
+                  key={reviewer.name}
+                  type="button"
+                  onClick={() => setExpandedReviewer(isExpanded ? null : index)}
+                  aria-expanded={isExpanded}
+                  className="group rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-center text-left transition duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:bg-white/[0.08]"
+                >
+                  <img src={reviewer.image} alt={`${reviewer.name}, Anazk AI reviewer`} className="mx-auto size-16 rounded-full border border-white/15 object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0 sm:size-20" />
+                  <p className="mt-3 truncate text-xs font-black text-slate-200 sm:text-sm">{reviewer.name}</p>
+                  <div className="mt-2 flex justify-center gap-0.5 text-amber-300" aria-label={`${reviewer.rating} out of 5 stars`}>
+                    {Array.from({ length: 5 }, (_, star) => <Star key={star} size={13} fill="currentColor" className={star < reviewer.rating ? 'opacity-100' : 'opacity-25'} aria-hidden="true" />)}
+                  </div>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-300/70">{isExpanded ? 'Hide feedback' : 'View feedback'}</p>
+                  {isExpanded && <p className="mt-3 border-t border-white/10 pt-3 text-left text-xs font-medium leading-relaxed text-slate-300">“{reviewer.review}”</p>}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
