@@ -14,6 +14,9 @@ function LandingPage() {
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
   const [expandedReviewer, setExpandedReviewer] = useState(null);
 
+  const reviewEmail = 'support@anazkai.com';
+  const reviewComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${reviewEmail}&su=${encodeURIComponent('Anazk AI reviewer feedback')}&body=${encodeURIComponent('Name:\nEmail:\nPlan purchased:\nInterview platform:\nUse case:\nRating out of 5:\nYour experience:\nPermission to publish this review: Yes / No')}`;
+
   const reviewers = [
     { name: 'Prince Yadav', image: '/reviewers/luffy.png', rating: 5, review: 'This is a literal cheat code for interviews. It runs smoothly without slowing down my PC, and the whole experience feels surprisingly seamless.' },
     { name: 'Prem Sharma', image: '/reviewers/nilesh-kumar.png', rating: 4, review: 'The setup was super easy. I especially liked the screen-share protection because it stayed out of view during my Google Meet and Zoom calls.' },
@@ -233,6 +236,7 @@ class Solution {
         <div className={`hidden md:flex items-center gap-8 text-xs font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
           <a href="#reviews" className="hover:text-sky-400 transition-colors flex items-center gap-1">Early access</a>
+          <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
           <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
           <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
@@ -333,7 +337,7 @@ class Solution {
               <Users size={16} />
             </div>
             <div className="text-xs font-medium">
-              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 10 people</span>
+              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 11 people</span>
               <span className="mt-1 block max-w-sm leading-relaxed text-slate-500">We are validating the experience with a small review group before a wider launch.</span>
             </div>
           </div>
@@ -527,7 +531,7 @@ class Solution {
           
           {/* Right Image/Mockup */}
           <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
-            <img src="/media_1786406428644.png" alt="Desktop App Mockup" className="w-[180%] max-w-none h-full object-cover object-right opacity-95 hover:opacity-100 transition-opacity duration-500" style={{ objectPosition: "right center" }} />
+            <img src="/anazk-product-laptop.jpeg" alt="Anazk AI laptop experience" className="h-full w-full object-contain object-center p-5 opacity-95 hover:opacity-100 transition-opacity duration-500" />
             {/* Gradient overlay to blend left edge with background */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
           </div>
@@ -561,9 +565,9 @@ class Solution {
             {/* Mascot Image Displayed beautifully */}
             <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-white/10 border border-white/20 p-2 flex items-center justify-center relative shadow-inner overflow-hidden">
               <img 
-                src="/penguin.jpg" 
-                alt="Anazk Mascot" 
-                className="w-[90%] h-[90%] object-cover rounded-full shadow-lg"
+                src="/anazk-product-laptop.jpeg" 
+                alt="Anazk AI product preview" 
+                className="h-full w-full object-contain rounded-2xl shadow-lg"
               />
             </div>
             
@@ -755,6 +759,14 @@ class Solution {
                 </button>
               );
             })}
+          </div>
+          <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.08] p-6 text-center sm:p-8">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Want to be next?</p>
+            <h3 className="mt-3 font-display text-2xl font-black text-white sm:text-3xl">Buy Premium, share your experience.</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">Tell us what you used, how it helped, your rating, and whether we can publish your feedback. The button opens a pre-filled Gmail review form.</p>
+            <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-400 px-6 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-300">
+              Be the next reviewer <ArrowRight size={16} />
+            </a>
           </div>
         </div>
       </section>
@@ -1238,7 +1250,7 @@ class Solution {
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-md">
               <div className="mb-4 flex items-center gap-3">
-                <img src="/penguin.jpg" alt="Anazk AI mark" className="size-10 rounded-2xl border border-white/10 object-cover" />
+                <img src="/anazk-product-laptop.jpeg" alt="Anazk AI product mark" className="size-10 rounded-2xl border border-white/10 object-cover" />
                 <span className="font-display text-xl font-black tracking-tight text-white">Anazk AI</span>
               </div>
               <h3 className="font-display text-3xl font-black leading-tight tracking-[-0.04em] text-white sm:text-4xl">Think clearly. Respond confidently.</h3>
