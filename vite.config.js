@@ -13,4 +13,8 @@ const removeCrossOrigin = () => ({
 export default defineConfig({
   plugins: [react(), removeCrossOrigin()],
   base: './', // important for electron
+  server: {
+    host: true,
+    allowedHosts: true,
+  },
 })
