@@ -120,6 +120,32 @@ img { max-width: 100%; }
 .font-sans .bg-\[\#0d2e27\] { color: #f8fafc !important; }
 .font-sans section[id="reviews"] > div { background: linear-gradient(135deg, rgba(23,37,84,.82), rgba(30,27,75,.82)) !important; }
 
+/* Anazk AI mode system: teal for focus, violet-blue for coding. */
+.font-sans.min-h-screen:not(.dark-theme-active) {
+  background:
+    radial-gradient(circle at 76% 10%, rgba(45, 212, 191, .18), transparent 28rem),
+    radial-gradient(circle at 10% 42%, rgba(14, 165, 233, .11), transparent 24rem),
+    #07131a !important;
+}
+.font-sans.min-h-screen.dark-theme-active {
+  background:
+    radial-gradient(circle at 75% 8%, rgba(139, 92, 246, .24), transparent 28rem),
+    radial-gradient(circle at 14% 44%, rgba(59, 130, 246, .14), transparent 24rem),
+    #070713 !important;
+}
+.font-sans.min-h-screen:not(.dark-theme-active) h1 { text-shadow: 0 0 55px rgba(45, 212, 191, .12); }
+.font-sans.min-h-screen.dark-theme-active h1 { text-shadow: 0 0 55px rgba(139, 92, 246, .22); }
+.font-sans.min-h-screen:not(.dark-theme-active) .bg-\[\#0d2e27\],
+.font-sans.min-h-screen:not(.dark-theme-active) button.bg-emerald-500 { background: linear-gradient(135deg, #14b8a6, #0f766e) !important; }
+.font-sans.min-h-screen.dark-theme-active .bg-\[\#0d2e27\],
+.font-sans.min-h-screen.dark-theme-active button.bg-emerald-500 { background: linear-gradient(135deg, #8b5cf6, #2563eb) !important; }
+.font-sans.min-h-screen:not(.dark-theme-active) [class*="border-emerald-500"] { border-color: rgba(45, 212, 191, .32) !important; }
+.font-sans.min-h-screen.dark-theme-active [class*="border-emerald-500"] { border-color: rgba(139, 92, 246, .38) !important; }
+.font-sans.min-h-screen:not(.dark-theme-active) [class*="text-emerald"] { color: #5eead4 !important; }
+.font-sans.min-h-screen.dark-theme-active [class*="text-emerald"] { color: #a78bfa !important; }
+.font-sans.min-h-screen:not(.dark-theme-active) .premium-footer { background: linear-gradient(180deg, #0b2528, #07131a); }
+.font-sans.min-h-screen.dark-theme-active .premium-footer { background: linear-gradient(180deg, #11102b, #070713); }
+
 @media (max-width: 640px) {
   .font-sans nav span.font-display { font-size: 1.15rem !important; }
   .font-sans header { min-height: auto !important; padding-bottom: 4rem !important; }

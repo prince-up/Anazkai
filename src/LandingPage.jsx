@@ -287,11 +287,11 @@ class Solution {
         <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
           
           <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-            Your AI Copilot for Every Interview
+            Your calm advantage in every interview
           </h1>
 
           <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl mx-auto lg:mx-0 font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
-            Listen. Understand. Answer. In real time. Get intelligent guidance for coding, technical, behavioral, and system design interviews — powered by advanced AI
+            Listen clearly. Think faster. Answer with confidence. Get intelligent guidance for coding, technical, behavioral, and system design interviews — powered by advanced AI
           </p>
 
           {/* Action Buttons */}
@@ -332,13 +332,13 @@ class Solution {
               onClick={() => setActiveTab('non-coding')}
               className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
-              📁 Non-Coding
+              Non-Coding
             </button>
             <button 
               onClick={() => setActiveTab('coding')}
               className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
-              &lt;/&gt; Coding
+              Coding
             </button>
           </div>
 
@@ -414,7 +414,7 @@ class Solution {
                     <div className="flex justify-between items-center z-10 w-full">
                       <span className="text-[10px] text-white font-bold flex items-center gap-1">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                        What is ParakeetAI? Explained
+                        Anazk AI in action
                       </span>
                       <span className="text-[9px] bg-red-600 text-white font-black px-2 py-0.5 rounded">LIVE</span>
                     </div>
@@ -440,7 +440,7 @@ class Solution {
                     </div>
                     
                     <p className="text-gray-700 italic text-[11px] leading-relaxed pr-2 overflow-y-auto max-h-[160px] no-scrollbar">
-                      &quot;this position parakeet i provides answers&quot;
+                      &quot;this position Anazk AI i provides answers&quot;
                     </p>
                     
                     <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-gray-400 text-[10px] font-semibold">
@@ -494,7 +494,7 @@ class Solution {
           <div className="p-10 md:p-14 lg:w-[45%] flex flex-col items-start justify-center text-left space-y-6 z-10 bg-[#111315]">
             <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Desktop App</span>
             <h2 className="text-white text-3xl md:text-[38px] font-bold leading-[1.15] tracking-tight">
-              Make sure you're getting the most from ParakeetAI.
+              Turn every conversation into your next best answer.
             </h2>
             <p className="text-gray-300 text-sm md:text-base leading-relaxed">
               The desktop app runs quietly in the background, listening to your call and surfacing the best answers in real time. No switching windows.
@@ -1198,54 +1198,29 @@ class Solution {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#041c16] text-[#94a3b8] py-16 px-6 relative overflow-hidden text-left border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-12">
-          
-          {/* Left Side: Large Penguin Mascot */}
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="w-48 h-48 md:w-60 md:h-60 relative">
-              <img 
-                src="/penguin.jpg" 
-                alt="Anazk Penguin Mascot" 
-                className="w-full h-full object-cover rounded-3xl border border-white/10 shadow-2xl" 
-              />
+      {/* Premium Footer */}
+      <footer className="premium-footer border-t border-white/10 px-6 py-14 text-left">
+        <div className="mx-auto flex max-w-7xl flex-col gap-10">
+          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <div className="max-w-md">
+              <div className="mb-4 flex items-center gap-3">
+                <img src="/penguin.jpg" alt="Anazk AI mark" className="size-10 rounded-2xl border border-white/10 object-cover" />
+                <span className="font-display text-xl font-black tracking-tight text-white">Anazk AI</span>
+              </div>
+              <h3 className="font-display text-3xl font-black leading-tight tracking-[-0.04em] text-white sm:text-4xl">Think clearly. Respond confidently.</h3>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">A focused AI copilot for the moments where preparation matters most.</p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-300">
+              <button onClick={() => setShowSupportModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Support</button>
+              <button onClick={() => setShowTermsModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Terms</button>
+              <button onClick={() => setShowPrivacyModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Privacy</button>
+              <button onClick={() => setShowRefundModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Refunds</button>
             </div>
           </div>
-
-          {/* Right Side: Navigation & Social Links */}
-          <div className="flex-1 max-w-2xl space-y-8">
-            <h3 className="font-display font-bold text-2xl text-white flex items-center gap-2">
-              <span>✈️</span> Have a question? Let's chat!
-            </h3>
-
-            {/* Pill Buttons Rows */}
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2">
-                <a href="#comparisons" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Comparisons</a>
-                <a href="#feedback" className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all">Feedback</a>
-                <button onClick={() => setShowSupportModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Support</button>
-                <button onClick={() => setShowTermsModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Terms & Conditions</button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={() => setShowPrivacyModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Privacy Policy</button>
-                <button onClick={() => setShowRefundModal(true)} className="px-4 py-2 border border-white/10 hover:border-emerald-500 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition-all cursor-pointer">Refund Policy</button>
-              </div>
-            </div>
-
-
-
-            {/* Other Projects */}
-            <div className="text-xs text-gray-500">
-              Our other projects: <a href="https://hiremind.ai" target="_blank" rel="noreferrer" className="text-gray-400 hover:underline">Hiremind AI (agentic AI interview platform)</a>
-            </div>
-
-            {/* Copyright */}
-            <div className="text-xs text-gray-600 font-semibold pt-4 border-t border-white/5">
-              AnazkAI d.o.o. All Rights Reserved.
-            </div>
+          <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-xs font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <span>© 2026 Anazk AI. All rights reserved.</span>
+            <span>Built for better conversations.</span>
           </div>
-
         </div>
       </footer>
 
@@ -1357,7 +1332,7 @@ class Solution {
             
             <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
               <p>We operate the website (the “Site”), as well as any other related products and services that refer or link to these legal terms (the “Legal Terms”) (collectively, the “Services”).</p>
-              <p>These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”), and ParakeetAI d.o.o., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</p>
+              <p>These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”), and Anazk AI d.o.o., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</p>
               <p className="font-bold text-red-650 bg-red-50 p-3 rounded-xl border border-red-100">YOU ARE RESPONSIBLE FOR USING THE SERVICES ONLY FOR LEGAL AND ETHICAL PURPOSES. You are solely responsible for ensuring that your use of the Services complies with all applicable laws, regulations, and third-party rules that apply to you, including without limitation laws governing recording, wiretapping, consent, privacy, data protection, intellectual property, confidentiality, employment, education, professional licensing, examinations, and unfair or deceptive practices.</p>
               <p>You agree that you will not use the Services in any manner that is illegal, deceptive, fraudulent, harmful, harassing, or otherwise unethical, and that you will not use the Services to violate any obligations you owe to a third party (including but not limited to your employer, school, examination provider, certification body, interviewer, counterparty, or any platform whose terms of service or code of conduct apply to your interaction). Where the law, institution, employer, platform, or other person requires notice, disclosure, or consent before recording, processing, or being assisted by AI in a conversation, meeting, interview, examination, or other interaction, it is your sole responsibility to obtain that notice, disclosure, or consent. We provide the Services as a general-purpose tool and do not endorse, encourage, or condone any unlawful or unethical use, and any such use is a material breach of these Legal Terms.</p>
               <p>Supplemental terms and conditions or documents that may be posted on the Services from time to time are hereby expressly incorporated herein by reference. We reserve the right, in our sole discretion, to make changes or modifications to these Legal Terms from time to time. We will alert you about any changes by updating the “Last updated” date of these Legal Terms, and you waive any right to receive specific notice of each such change.</p>
@@ -1410,11 +1385,11 @@ class Solution {
               <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">24. Contact us</div>
               <p>In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:</p>
               <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 font-mono text-[11px] leading-relaxed text-gray-500">
-                ParakeetAI d.o.o.<br />
+                Anazk AI d.o.o.<br />
                 Slovenska cesta 55b<br />
                 Ljubljana, Notranjska 1000<br />
                 Slovenia<br />
-                Email: support@parakeet-ai.com
+                Email: support@Anazk AI-ai.com
               </div>
             </div>
           </div>
@@ -1435,7 +1410,7 @@ class Solution {
             <p className="text-gray-400 text-xs font-semibold mb-4">Last Update: August 30, 2024</p>
             
             <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
-              <p>This Privacy Notice for ParakeetAI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at parakeet-ai.com, or any website of ours that links to this Privacy Notice.</p>
+              <p>This Privacy Notice for Anazk AI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at Anazk AI-ai.com, or any website of ours that links to this Privacy Notice.</p>
               
               <div className="font-bold text-gray-800 pt-2 text-sm border-t border-gray-100">SUMMARY OF KEY POINTS</div>
               <p>We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. We do not process sensitive personal information, and we do not collect any information from third parties.</p>
@@ -1470,7 +1445,7 @@ class Solution {
             
             <div className="text-xs text-gray-600 font-medium leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
               <p>Yes, we offer a 7-day refund window for accidental purchases or unused purchases. If you haven't used the service (for example, by activating a call session), you can request a full refund within 7 days of purchase via the money refund form in your dashboard.</p>
-              <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because ParakeetAI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
+              <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because Anazk AI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
               <p>If any credit has been used, the purchase is no longer eligible for a refund. We do not issue partial refunds for unused credits.</p>
               <p>We encourage everybody to test the tool thoroughly before purchasing.</p>
               <p className="font-bold text-[#0d2e27]">Important: This applies to one refund per person/user (not per account). If you've already received a refund, later purchases aren't eligible.</p>
