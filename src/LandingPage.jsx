@@ -228,8 +228,7 @@ class Solution {
             className="w-10 h-10 rounded-full border border-emerald-500/20 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:scale-105 transition-transform duration-200" 
           />
           <span className="font-display font-black text-2xl text-[#0d2e27] tracking-tight flex items-center">
-            Anazk<span className="text-emerald-500 font-extrabold">AI</span>
-            <span className="ml-2 text-[9px] bg-emerald-500 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">v2.0</span>
+            Anazk<span className="text-emerald-500 font-extrabold"> AI</span>
           </span>
         </div>
 
@@ -1370,7 +1369,7 @@ class Solution {
             </div>
             
             <p className="mt-4 text-[10px] text-center text-gray-400 font-semibold">
-              Stable Build v2.0.0. Developed by Prince Yadav.
+              Anazk AI. Developed by Prince Yadav.
             </p>
           </div>
         </div>

@@ -560,7 +560,7 @@ function App() {
           </div>
           <div className="flex flex-col">
             <h1 className="text-lg font-black bg-gradient-to-r from-lime-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.2)] tracking-tight">
-              Anazk v2.0
+              Anazk AI
             </h1>
           </div>
           <span className="text-[8px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest ml-1 animate-pulse">
