@@ -199,3 +199,41 @@ body { background: #ffffff; color: #111827; }
 .font-sans h2,
 .font-sans h3 { font-weight: 700 !important; letter-spacing: -0.035em !important; }
 .font-sans h1 { line-height: 1.08 !important; }
+
+/* Contrast repair for every legacy section and theme tab. */
+.font-sans .text-white,
+.font-sans .text-gray-100,
+.font-sans .text-gray-200,
+.font-sans .text-gray-300,
+.font-sans .text-slate-200,
+.font-sans .text-slate-300,
+.font-sans .text-slate-400,
+.font-sans .text-slate-500,
+.font-sans .text-slate-600,
+.font-sans .text-gray-650,
+.font-sans .text-gray-750 { color: #1f2937 !important; }
+.font-sans .text-white.font-bold,
+.font-sans button.text-white,
+.font-sans a.text-white,
+.font-sans .bg-\[\#0d2e27\] .text-white { color: #ffffff !important; }
+.font-sans section[id="reviews"] > div,
+.font-sans [class*="bg-\[#111315\]"],
+.font-sans [class*="bg-\[#030712\]"],
+.font-sans [class*="bg-\[#0b1227\]"] { background: #ffffff !important; color: #111827 !important; border-color: #e5e7eb !important; }
+.font-sans section[id="reviews"] > div h1,
+.font-sans section[id="reviews"] > div h2,
+.font-sans section[id="reviews"] > div h3,
+.font-sans section[id="reviews"] > div p,
+.font-sans section[id="reviews"] > div span,
+.font-sans [class*="bg-\[#111315\]"] h2,
+.font-sans [class*="bg-\[#111315\]"] p { color: #1f2937 !important; }
+.font-sans footer a,
+.font-sans footer button,
+.font-sans footer span { color: #334155 !important; opacity: 1 !important; }
+.font-sans footer h1,
+.font-sans footer h2,
+.font-sans footer h3,
+.font-sans footer p { color: #111827 !important; }
+.font-sans .text-gray-400,
+.font-sans .text-gray-500,
+.font-sans .text-gray-600 { color: #4b5563 !important; opacity: 1 !important; }
