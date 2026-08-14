@@ -129,3 +129,73 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 code, pre { border-radius: 14px; }
 .font-mono { color: #cbd5e1; }
  a { color: inherit; }
+
+/* Final readability pass: clean white startup canvas with dark, high-contrast type. */
+.font-sans.min-h-screen,
+.font-sans.min-h-screen:not(.dark-theme-active),
+.font-sans.min-h-screen.dark-theme-active {
+  background: #ffffff !important;
+  color: #111827 !important;
+  --ink: #111827;
+  --muted: #4b5563;
+  --line: #e5e7eb;
+  --surface: #ffffff;
+}
+.font-sans.min-h-screen > .absolute { opacity: 0 !important; }
+.font-sans nav {
+  background: rgba(255,255,255,.96) !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 10px 30px rgba(15,23,42,.08) !important;
+}
+.font-sans nav span,
+.font-sans nav a,
+.font-sans nav button,
+.font-sans nav span.font-display { color: #111827 !important; }
+.font-sans nav a:hover,
+.font-sans nav button:hover { color: #047857 !important; }
+.font-sans h1,
+.font-sans h2,
+.font-sans h3,
+.font-sans h4 { color: #111827 !important; text-shadow: none !important; }
+.font-sans p,
+.font-sans .text-gray-400,
+.font-sans .text-gray-500,
+.font-sans .text-gray-600,
+.font-sans .text-slate-500 { color: #4b5563 !important; }
+.font-sans .text-gray-700,
+.font-sans .text-gray-800,
+.font-sans .text-gray-900,
+.font-sans .text-\[\#0d2e27\] { color: #1f2937 !important; }
+.font-sans .glass-card,
+.font-sans .glass-panel,
+.font-sans .bg-white,
+.font-sans .bg-\[\#ffffff\],
+.font-sans .rounded-3xl.bg-white,
+.font-sans .rounded-2xl.bg-white {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
+  box-shadow: 0 16px 40px rgba(15,23,42,.07) !important;
+}
+.font-sans .bg-\[\#f8fafc\],
+.font-sans .bg-\[\#f1f5f9\] { background: #f8fafc !important; color: #1f2937 !important; }
+.font-sans input,
+.font-sans textarea { background: #ffffff !important; color: #111827 !important; border-color: #d1d5db !important; }
+.font-sans input::placeholder,
+.font-sans textarea::placeholder { color: #6b7280 !important; }
+.font-sans .font-mono,
+.font-sans pre { color: #1f2937 !important; }
+.fixed.inset-0 > div { background: #ffffff !important; color: #111827 !important; border-color: #e5e7eb !important; }
+.fixed.inset-0 > div h2,
+.fixed.inset-0 > div h3 { color: #111827 !important; }
+.fixed.inset-0 > div p,
+.fixed.inset-0 > div label { color: #4b5563 !important; }
+body { background: #ffffff; color: #111827; }
+/* Replace the oversized display face with a clean, readable startup sans. */
+.font-sans,
+.font-sans * { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }
+.font-sans .font-display,
+.font-sans h1,
+.font-sans h2,
+.font-sans h3 { font-weight: 700 !important; letter-spacing: -0.035em !important; }
+.font-sans h1 { line-height: 1.08 !important; }
