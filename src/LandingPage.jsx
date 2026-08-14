@@ -220,7 +220,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[96%] lg:w-[98%] max-w-none z-50 backdrop-blur-xl border px-6 py-3 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1120px] z-50 backdrop-blur-xl border px-6 py-3 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -302,16 +302,16 @@ class Solution {
 
       {/* Hero Section */}
       <header className="min-h-screen pt-32 pb-24 px-4 sm:px-8 lg:px-12 w-full mx-auto flex items-center justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full">
          {/* Hero Left Content */}
         <div className="lg:col-span-4 space-y-8 text-center lg:text-left">
           
           <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-            Your calm advantage in every interview
+            The calm advantage for high-stakes interviews
           </h1>
 
           <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl mx-auto lg:mx-0 font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
-            Listen clearly. Think faster. Answer with confidence. Get intelligent guidance for coding, technical, behavioral, and system design interviews — powered by advanced AI
+            Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
           </p>
 
           {/* Action Buttons */}
