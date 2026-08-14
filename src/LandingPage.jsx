@@ -530,10 +530,16 @@ class Solution {
             </div>
           </div>
           
-          {/* Right Image/Mockup */}
-          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
-            {/* Gradient overlay to blend left edge with background */}
-            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
+          {/* Right product visual: Anazk AI running on a laptop during an interview */}
+          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-center bg-[#f4f1e8] p-8 md:p-12">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_40%,rgba(16,185,129,0.18),transparent_48%)]"></div>
+            <div className="relative z-10 w-full max-w-[620px] rounded-[28px] bg-white/70 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.18)] ring-1 ring-black/10 backdrop-blur-sm">
+              <img
+                src="/anazk-product-laptop.jpeg"
+                alt="Laptop displaying Anazk AI providing real-time interview guidance"
+                className="block w-full rounded-[20px] object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>      {/* Compatibility Green Banner */}
