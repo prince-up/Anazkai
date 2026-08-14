@@ -13,6 +13,7 @@ function LandingPage() {
   const [activeFaq, setActiveFaq] = useState(null);
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
   const [expandedReviewer, setExpandedReviewer] = useState(null);
+  const [showAllReviewers, setShowAllReviewers] = useState(false);
 
   const reviewEmail = 'supportanazkai@gmail.com';
   const reviewComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${reviewEmail}&su=${encodeURIComponent('Anazk AI reviewer feedback')}&body=${encodeURIComponent('Name:\nEmail:\nPlan purchased:\nInterview platform:\nUse case:\nRating out of 5:\nYour experience:\nPermission to publish this review: Yes / No')}`;
@@ -303,7 +304,7 @@ class Solution {
       <header className="min-h-screen pt-32 pb-24 px-4 sm:px-8 lg:px-12 w-full mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
          {/* Hero Left Content */}
-        <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
+        <div className="lg:col-span-4 space-y-8 text-center lg:text-left">
           
           <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             Your calm advantage in every interview
@@ -343,7 +344,7 @@ class Solution {
           </div>
         </div>
              {/* Hero Right - Interactive Mockup Window */}
-        <div className="lg:col-span-6 flex flex-col items-center relative select-none">
+        <div className="lg:col-span-8 flex flex-col items-center relative select-none w-full">
           
           {/* Window Tabs (Floating above mockup container) */}
           <div className={`flex justify-center border p-1 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
@@ -506,7 +507,7 @@ class Solution {
 
 
       {/* Desktop App CTA Banner */}
-      <section className="px-6 py-10 max-w-[1200px] mx-auto mt-4">
+      <section className="px-6 py-10 w-full mx-auto mt-4">
         <div className="bg-[#111315] rounded-[32px] overflow-hidden flex flex-col lg:flex-row items-stretch justify-between border border-gray-800 shadow-2xl">
           
           {/* Left Content */}
@@ -531,13 +532,12 @@ class Solution {
           
           {/* Right Image/Mockup */}
           <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-end bg-[#111315]">
-            <img src="/anazk-hero-generated.png?v=4" alt="Anazk AI interview copilot in action" className="h-full w-full object-contain object-center p-5 opacity-95 transition duration-500 hover:scale-[1.015] hover:opacity-100" />
             {/* Gradient overlay to blend left edge with background */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#111315] to-transparent z-10"></div>
           </div>
         </div>
       </section>      {/* Compatibility Green Banner */}
-      <section id="features" className="py-20 px-6 max-w-7xl mx-auto">
+      <section id="features" className="py-20 px-6 w-full mx-auto">
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
           {/* Decorative backdrop graphics */}
@@ -564,11 +564,6 @@ class Solution {
           <div className="lg:col-span-5 flex flex-col items-center relative">
             {/* Mascot Image Displayed beautifully */}
             <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-white/10 border border-white/20 p-2 flex items-center justify-center relative shadow-inner overflow-hidden">
-              <img 
-                src="/anazk-product-laptop.jpeg" 
-                alt="Anazk AI product preview" 
-                className="h-full w-full object-contain rounded-2xl shadow-lg"
-              />
             </div>
             
             {/* Floating Logo Badges */}
@@ -580,7 +575,7 @@ class Solution {
       </section>
 
       {/* Main Features Grid */}
-      <section className="py-16 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+      <section className="py-16 px-6 w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
         
         {/* Card 1: Coding Support */}
         <div className="md:col-span-7 bg-white rounded-3xl p-8 border border-emerald-500/5 shadow-[0_10px_40px_rgba(16,185,129,0.02)] space-y-6 flex flex-col justify-between hover:border-emerald-500/25 transition-all">
@@ -730,7 +725,7 @@ class Solution {
 
       {/* Early access reviewer section */}
       <section id="reviews" className="px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto w-full">
           <div className="mb-10 flex flex-col gap-4 text-center sm:mb-12">
             <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-300">
               <Users size={14} /> Early access reviewers
@@ -739,7 +734,7 @@ class Solution {
             <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {reviewers.map((reviewer, index) => {
+            {(showAllReviewers ? reviewers : reviewers.slice(0, 5)).map((reviewer, index) => {
               const isExpanded = expandedReviewer === index;
               return (
                 <button
@@ -760,6 +755,16 @@ class Solution {
               );
             })}
           </div>
+          {!showAllReviewers && (
+            <div className="mt-8 flex justify-center">
+              <button 
+                onClick={() => setShowAllReviewers(true)}
+                className="px-6 py-2.5 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-400 font-bold hover:bg-sky-500/20 transition-all cursor-pointer"
+              >
+                Show more
+              </button>
+            </div>
+          )}
           <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.08] p-6 text-center sm:p-8">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Want to be next?</p>
             <h3 className="mt-3 font-display text-2xl font-black text-white sm:text-3xl">Buy Premium, share your experience.</h3>
@@ -1250,7 +1255,7 @@ class Solution {
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-md">
               <div className="mb-4 flex items-center gap-3">
-                <img src="/anazk-product-laptop.jpeg" alt="Anazk AI product mark" className="size-10 rounded-2xl border border-white/10 object-cover" />
+                <img src="/penguin.jpg" alt="Anazk AI Logo" className="size-10 rounded-2xl border border-white/10 object-cover" />
                 <span className="font-display text-xl font-black tracking-tight text-white">Anazk AI</span>
               </div>
               <h3 className="font-display text-3xl font-black leading-tight tracking-[-0.04em] text-white sm:text-4xl">Think clearly. Respond confidently.</h3>
@@ -1553,26 +1558,7 @@ class Solution {
         </div>
       )}
 
-      {/* Floating Right Scroll Navigator */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-center gap-3.5 p-3.5 bg-white/80 backdrop-blur-md border border-gray-200/50 rounded-full shadow-xl">
-        <button 
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="text-gray-400 hover:text-sky-600 transition-all p-1.5 rounded-full hover:bg-gray-100 cursor-pointer font-bold text-sm"
-          title="Scroll to Top"
-        >
-          ▲
-        </button>
-        <div className="w-1.5 h-1.5 rounded-full bg-sky-500 shadow-sm"></div>
-        <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-        <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-        <button 
-          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
-          className="text-gray-400 hover:text-sky-600 transition-all p-1.5 rounded-full hover:bg-gray-100 cursor-pointer font-bold text-sm"
-          title="Scroll to Bottom"
-        >
-          ▼
-        </button>
-      </div>
+      {/* Floating Right Scroll Navigator Removed */}
 
     </div>
   );
