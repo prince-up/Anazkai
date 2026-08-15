@@ -243,8 +243,7 @@ function LandingPage() {
       actions: [
         { label: '💳 How to buy credits?', query: 'how to buy credits' },
         { label: '🧭 Guide me around', query: 'where to go on website' },
-        { label: '🛡️ Is it undetectable?', query: 'is it undetectable on zoom meet' },
-        { label: '📥 Download Desktop App', query: 'how to download desktop app' }
+        { label: '🛡️ Is it undetectable?', query: 'is it undetectable on zoom meet' }
       ]
     }
   ]);
@@ -334,8 +333,7 @@ function LandingPage() {
       return {
         text: "🛡️ **100% Private & Undetectable:**\n\nAnazk AI runs natively at your OS level and intercepts low-level window draw calls:\n• **Screen Share Invisible:** When you share your entire screen on Zoom, Google Meet, Teams, or Discord, interviewers ONLY see your regular desktop—never the Anazk AI overlay.\n• **No Taskbar/Dock Presence:** Operates as a background system service.\n• **Tab-Switch Safe:** Bypasses browser tab-change listeners on HackerRank, LeetCode, and CoderPad.",
         actions: [
-          { label: '🛡️ View Stealth Mode Details', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } },
-          { label: '📥 Download Desktop App', onClick: () => { setShowDownloadModal(true); setChatOpen(false); } }
+          { label: '🛡️ View Stealth Mode Details', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } }
         ]
       };
     }
@@ -347,9 +345,9 @@ function LandingPage() {
       query.includes('setup') || query.includes('exe') || query.includes('dmg')
     ) {
       return {
-        text: "📥 **Download Anazk AI Desktop App:**\n\n• Available for **Windows 10/11 (.exe)** and **macOS (.dmg / .zip)**.\n• Lightweight and installs in under 30 seconds.\n• Uses global shortcut keys to toggle the assistant quietly during calls.",
+        text: "📥 **Anazk AI Desktop App:**\n\n• Available for **Windows 10/11 (.exe)** and **macOS (.dmg / .zip)**.\n• Lightweight and installs in under 30 seconds.\n• Uses global shortcut keys to toggle the assistant quietly during calls.",
         actions: [
-          { label: '📥 Download App Now', onClick: () => { setShowDownloadModal(true); setChatOpen(false); } }
+          { label: '👉 Go to Pricing Plans', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } }
         ]
       };
     }
@@ -386,8 +384,7 @@ function LandingPage() {
       actions: [
         { label: '💳 How to buy credits?', query: 'how to buy credits' },
         { label: '🧭 Guide me around website', query: 'where to go on website' },
-        { label: '🛡️ Stealth Mode on Zoom/Meet', query: 'is it undetectable on zoom meet' },
-        { label: '📥 Download Desktop App', query: 'how to download desktop app' }
+        { label: '🛡️ Stealth Mode on Zoom/Meet', query: 'is it undetectable on zoom meet' }
       ]
     };
   };
@@ -709,23 +706,6 @@ class Solution {
             Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-start gap-4">
-            <button 
-              onClick={() => setShowDownloadModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-[#0d2e27] hover:bg-emerald-950 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold text-base rounded-full transition-all shadow-[0_10px_25px_rgba(13,46,39,0.15)] flex items-center justify-center gap-2 cursor-pointer animate-pulse-glow"
-            >
-              Try for free
-              <ArrowRight size={18} />
-            </button>
-            <div className="text-xs text-gray-500 font-semibold text-left">
-              <div className="flex items-center justify-start gap-1.5 text-emerald-600">
-                <CheckCircle2 size={14} />
-                No Credit Card Required
-              </div>
-              <span className="block mt-0.5 text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Credits, Subscriptions, Lifetime</span>
-            </div>
-          </div>
 
           {/* Transparent early-access note */}
           <div className="pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
