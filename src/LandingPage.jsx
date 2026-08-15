@@ -651,14 +651,6 @@ class Solution {
 
         {/* Buttons */}
         <div className="hidden md:flex items-center space-x-3">
-          <button 
-            onClick={() => setShowDownloadModal(true)} 
-            className="w-11 h-11 rounded-full border-2 border-gray-200 hover:border-emerald-500 flex items-center justify-center text-gray-800 bg-white hover:bg-emerald-50 transition-all cursor-pointer shadow-sm"
-            title="Download App"
-          >
-            <Download size={18} />
-          </button>
-          
           {user ? (
             <button 
               onClick={() => supabase.auth.signOut()}
