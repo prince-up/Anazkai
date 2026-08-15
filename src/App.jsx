@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import LandingPage from './LandingPage';
+import SubscriptionGuard from './components/SubscriptionGuard';
 
 
 function App() {
@@ -458,6 +459,7 @@ function App() {
   }
 
   return (
+    <SubscriptionGuard>
     <div className="flex flex-col h-screen bg-[#070b19]/80 backdrop-blur-3xl text-gray-100 p-4 font-sans select-none relative overflow-hidden rounded-2xl border border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.2)]">
       
       {/* Background Decorative Glows */}
@@ -735,6 +737,7 @@ function App() {
         </p>
       </div>
     </div>
+    </SubscriptionGuard>
   );
 }
 
