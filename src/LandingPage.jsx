@@ -1196,38 +1196,63 @@ class Solution {
             <h2 className="font-display text-3xl font-black tracking-tight text-white sm:text-5xl">Reviewed by the people helping us make it better.</h2>
             <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {(showAllReviewers ? reviewers : reviewers.slice(0, 5)).map((reviewer, index) => {
-              const isExpanded = expandedReviewer === index;
-              return (
-                <button
-                  key={reviewer.name}
-                  type="button"
-                  onClick={() => setExpandedReviewer(isExpanded ? null : index)}
-                  aria-expanded={isExpanded}
-                  className="group rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-center text-left transition duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:bg-white/[0.08]"
-                >
-                  <img src={reviewer.image} alt={`${reviewer.name}, Anazk AI reviewer`} className="mx-auto size-16 rounded-full border border-white/15 object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0 sm:size-20" />
-                  <p className="mt-3 truncate text-xs font-black text-slate-200 sm:text-sm">{reviewer.name}</p>
-                  <div className="mt-2 flex justify-center gap-0.5 text-amber-300" aria-label={`${reviewer.rating} out of 5 stars`}>
-                    {Array.from({ length: 5 }, (_, star) => <Star key={star} size={13} fill="currentColor" className={star < reviewer.rating ? 'opacity-100' : 'opacity-25'} aria-hidden="true" />)}
-                  </div>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-300/70">{isExpanded ? 'Hide feedback' : 'View feedback'}</p>
-                  {isExpanded && <p className="mt-3 border-t border-white/10 pt-3 text-left text-xs font-medium leading-relaxed text-slate-300">“{reviewer.review}”</p>}
-                </button>
-              );
-            })}
-          </div>
-          {!showAllReviewers && (
-            <div className="mt-8 flex justify-center">
-              <button 
-                onClick={() => setShowAllReviewers(true)}
-                className="px-6 py-2.5 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-400 font-bold hover:bg-sky-500/20 transition-all cursor-pointer"
+          {/* Testimonial Cards Grid (Balanced 3-column layout, feedback always visible) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(showAllReviewers ? reviewers : reviewers.slice(0, 6)).map((reviewer, index) => (
+              <div
+                key={index}
+                className="group rounded-3xl border border-white/12 bg-white/[0.05] p-6 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-400/50 hover:bg-white/[0.09] shadow-lg flex flex-col justify-between"
               >
-                Show more
-              </button>
-            </div>
-          )}
+                <div>
+                  {/* Top: Avatar, Name & Stars */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={reviewer.image}
+                      alt={`${reviewer.name}, Anazk AI reviewer`}
+                      className="w-14 h-14 rounded-full border-2 border-emerald-400/40 object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                    />
+                    <div>
+                      <h4 className="text-base sm:text-lg font-black text-slate-100 flex items-center gap-1.5">
+                        {reviewer.name}
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30">Verified</span>
+                      </h4>
+                      <div className="flex items-center gap-0.5 text-amber-300 mt-1" aria-label={`${reviewer.rating} out of 5 stars`}>
+                        {Array.from({ length: 5 }, (_, star) => (
+                          <Star
+                            key={star}
+                            size={14}
+                            fill="currentColor"
+                            className={star < reviewer.rating ? 'opacity-100 text-amber-400' : 'opacity-25'}
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Feedback Text — Always visible */}
+                  <p className="text-slate-200 text-sm leading-relaxed font-medium italic pt-2 border-t border-white/10">
+                    &ldquo;{reviewer.review}&rdquo;
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+                  <span className="text-sky-300">Anazk AI Early Tester</span>
+                  <span>⭐ 5.0 Rating</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Show More / Show Less Toggle */}
+          <div className="mt-8 flex justify-center">
+            <button 
+              onClick={() => setShowAllReviewers(!showAllReviewers)}
+              className="px-7 py-3 rounded-full bg-sky-500/15 border-2 border-sky-400/30 hover:border-sky-400 text-sky-200 hover:text-white font-black text-sm hover:bg-sky-500/25 transition-all cursor-pointer shadow-md active:scale-95 flex items-center gap-2"
+            >
+              {showAllReviewers ? 'Show less reviews ↑' : `Show all ${reviewers.length} reviews ↓`}
+            </button>
+          </div>
           <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.08] p-6 text-center sm:p-8">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Want to be next?</p>
             <h3 className="mt-3 font-display text-2xl font-black text-white sm:text-3xl">Buy Premium, share your experience.</h3>
