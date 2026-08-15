@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, Star, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
-  Shield, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
-  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard
+  Shield, Eye, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
+  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail
 } from 'lucide-react';
 import { getSubscriptionPlan } from './plans';
 import { supabase } from './supabaseClient';
@@ -35,6 +35,7 @@ function LandingPage() {
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState('');
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
@@ -621,7 +622,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[1680px] z-50 backdrop-blur-xl border px-8 py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] sm:w-[calc(100%-4rem)] max-w-[1480px] z-50 backdrop-blur-xl border px-6 sm:px-8 py-3.5 sm:py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -693,7 +694,7 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-10 w-full max-w-[1680px] mx-auto flex items-center justify-center">
+      <header className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
          {/* Hero Left Content */}
         <div className="lg:col-span-5 space-y-7 text-left pl-0 pr-2">
@@ -895,7 +896,7 @@ class Solution {
 
 
       {/* Desktop App CTA Banner */}
-      <section className="px-6 py-10 w-full mx-auto mt-4">
+      <section className="px-6 sm:px-10 lg:px-16 py-10 w-full max-w-[1480px] mx-auto mt-4">
         <div className="bg-[#111315] rounded-[32px] overflow-hidden flex flex-col lg:flex-row items-stretch justify-between border border-gray-800 shadow-2xl">
           
           {/* Left Content */}
@@ -949,8 +950,10 @@ class Solution {
             </div>
           </div>
         </div>
-      </section>      {/* Compatibility Green Banner */}
-      <section id="features" className="py-20 px-6 w-full mx-auto">
+      </section>
+
+      {/* Compatibility Green Banner */}
+      <section id="features" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto">
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
           {/* Decorative backdrop graphics */}
@@ -998,7 +1001,7 @@ class Solution {
       </section>
 
       {/* Main Features Grid */}
-      <section className="py-16 px-6 w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+      <section className="py-16 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
         
         {/* Card 1: Coding Support */}
         <div className="md:col-span-7 bg-white rounded-3xl p-8 border border-emerald-500/5 shadow-[0_10px_40px_rgba(16,185,129,0.02)] space-y-6 flex flex-col justify-between hover:border-emerald-500/25 transition-all">
@@ -1147,8 +1150,8 @@ class Solution {
       </section>
 
       {/* Early access reviewer section (Light Green Background & Natural Cards) */}
-      <section id="reviews" className="px-6 py-20 sm:py-24 bg-gradient-to-b from-emerald-50/90 via-[#f0fdf4] to-emerald-50/60 border-y border-emerald-100">
-        <div className="mx-auto w-full max-w-[1680px]">
+      <section id="reviews" className="px-6 sm:px-10 lg:px-16 py-20 sm:py-24 bg-gradient-to-b from-emerald-50/90 via-[#f0fdf4] to-emerald-50/60 border-y border-emerald-100">
+        <div className="mx-auto w-full max-w-[1480px]">
           <div className="mb-12 flex flex-col gap-3 text-center">
             <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/80 px-4 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-emerald-900 shadow-xs">
               <Users size={14} className="text-emerald-700" /> Early access reviewers
@@ -1754,98 +1757,211 @@ class Solution {
       {/* Modals */}
       {/* 1. Sign In / Sign Up Modal */}
       {showSignInModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 overflow-hidden">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-[28px] max-w-[440px] w-full border border-emerald-500/15 shadow-[0_25px_70px_rgba(0,0,0,0.3)] relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 overflow-hidden my-auto">
             
-            {/* Header with image */}
-            <div className="relative h-28 overflow-hidden bg-[#0d2e27]">
-              <img src="/user-laptop-photo.png" alt="" className="w-full h-full object-cover object-top opacity-40" />
-              <div className="absolute inset-0 flex flex-col items-start justify-end p-6 pb-4">
-                <h3 className="font-display font-black text-2xl text-white">{isLoginMode ? 'Welcome back' : 'Create Account'}</h3>
-                <p className="text-emerald-200 text-xs font-semibold">{isLoginMode ? 'Sign in to your Anazk account' : 'Start your free account today'}</p>
+            {/* Modal Header */}
+            <div className="relative bg-gradient-to-br from-[#0d2e27] via-[#123e35] to-[#071d18] p-6 text-white overflow-hidden">
+              {/* Background ambient lighting */}
+              <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-cyan-400/10 rounded-full blur-xl pointer-events-none" />
+
+              <div className="relative z-10">
+                {/* Top Row with Branding and Close Button */}
+                <div className="flex items-center justify-between pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <img 
+                      src="/penguin.jpg" 
+                      alt="Anazk AI Logo" 
+                      className="w-9 h-9 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_12px_rgba(16,185,129,0.5)]" 
+                    />
+                    <div>
+                      <span className="font-display font-black text-lg tracking-tight text-white flex items-center">
+                        Anazk<span className="text-emerald-400 ml-0.5">AI</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-300 font-semibold block leading-none">Authentication</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => { setShowSignInModal(false); setAuthError(''); setAuthSuccess(''); }}
+                    className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all cursor-pointer"
+                    title="Close"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Switcher Pill Tabs */}
+                <div className="mt-3 grid grid-cols-2 p-1 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => { setIsLoginMode(true); setAuthError(''); setAuthSuccess(''); }}
+                    className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                      isLoginMode 
+                        ? 'bg-white text-[#0d2e27] shadow-md font-black' 
+                        : 'text-gray-300 hover:text-white font-semibold'
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsLoginMode(false); setAuthError(''); setAuthSuccess(''); }}
+                    className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                      !isLoginMode 
+                        ? 'bg-white text-[#0d2e27] shadow-md font-black' 
+                        : 'text-gray-300 hover:text-white font-semibold'
+                    }`}
+                  >
+                    Create Account
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="p-7">
-              <button 
-                onClick={() => { setShowSignInModal(false); setAuthError(''); setAuthSuccess(''); }}
-                className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-
+            {/* Modal Body */}
+            <div className="p-6 sm:p-7">
               {authSuccess ? (
-                <div className="py-4 flex flex-col items-center gap-3 text-center">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <CheckCircle2 size={28} className="text-emerald-600" />
+                <div className="py-6 flex flex-col items-center gap-3 text-center animate-in fade-in zoom-in duration-200">
+                  <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center shadow-inner">
+                    <CheckCircle2 size={32} className="text-emerald-600" />
                   </div>
-                  <p className="text-emerald-700 font-bold text-sm">{authSuccess}</p>
+                  <h4 className="font-extrabold text-lg text-[#0d2e27]">Verification link sent!</h4>
+                  <p className="text-gray-600 text-xs font-medium leading-relaxed max-w-xs">{authSuccess}</p>
                   <button
                     onClick={() => { setAuthSuccess(''); setIsLoginMode(true); }}
-                    className="mt-2 text-xs text-emerald-600 hover:underline font-semibold cursor-pointer"
-                  >Go to Sign In →</button>
+                    className="mt-3 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
+                  >
+                    Proceed to Sign In →
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleAuthSubmit} className="space-y-4">
                   {!isLoginMode && (
                     <div>
-                      <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Full Name</label>
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="Your full name" 
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
-                      />
+                      <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                        Full Name
+                      </label>
+                      <div className="relative flex items-center">
+                        <User size={16} className="absolute left-3.5 text-gray-400 pointer-events-none" />
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Jane Doe" 
+                          value={authName}
+                          onChange={(e) => setAuthName(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                        />
+                      </div>
                     </div>
                   )}
+
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Email Address</label>
-                    <input 
-                      type="email" 
-                      required
-                      placeholder="name@company.com" 
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
-                    />
+                    <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                      Email Address
+                    </label>
+                    <div className="relative flex items-center">
+                      <Mail size={16} className="absolute left-3.5 text-gray-400 pointer-events-none" />
+                      <input 
+                        type="email" 
+                        required
+                        placeholder="you@example.com" 
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                      />
+                    </div>
                   </div>
+
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Password</label>
-                    <input 
-                      type="password" 
-                      required
-                      placeholder="••••••••" 
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider">
+                        Password
+                      </label>
+                      {isLoginMode && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!authEmail) {
+                              setAuthError('Please enter your email address above first to reset your password.');
+                            } else {
+                              supabase.auth.resetPasswordForEmail(authEmail)
+                                .then(() => setAuthSuccess('Password reset link sent to your email!'))
+                                .catch((err) => setAuthError(err.message));
+                            }
+                          }}
+                          className="text-[11px] text-emerald-600 hover:text-emerald-700 font-bold hover:underline cursor-pointer"
+                        >
+                          Forgot?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative flex items-center">
+                      <Lock size={16} className="absolute left-3.5 text-gray-400 pointer-events-none" />
+                      <input 
+                        type={showPassword ? 'text' : 'password'} 
+                        required
+                        placeholder="••••••••" 
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full pl-10 pr-11 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer"
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                   
                   {authError && (
-                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold px-3 py-2.5 rounded-xl">
-                      <X size={12} className="shrink-0" />
-                      {authError}
+                    <div className="flex items-center gap-2.5 bg-red-50 border border-red-200/80 text-red-600 text-xs font-semibold p-3 rounded-xl animate-in fade-in">
+                      <X size={14} className="shrink-0 text-red-500" />
+                      <span className="leading-snug">{authError}</span>
                     </div>
                   )}
                   
                   <button 
                     type="submit"
                     disabled={authLoading}
-                    className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
                   >
-                    {authLoading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Create Account')}
+                    {authLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Authenticating...
+                      </span>
+                    ) : (
+                      <>
+                        {isLoginMode ? 'Sign In to Account' : 'Create Your Account'}
+                        <ArrowRight size={16} />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
               
               {!authSuccess && (
-                <div className="mt-5 text-center text-xs text-gray-500 font-semibold border-t border-gray-100 pt-4">
-                  {isLoginMode ? "Don't have an account? " : 'Already have an account? '}
-                  <span onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); setAuthSuccess(''); }} className="text-emerald-600 hover:underline cursor-pointer font-bold">
-                    {isLoginMode ? 'Sign up free' : 'Sign in'}
-                  </span>
+                <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col items-center gap-3">
+                  <div className="text-xs text-gray-500 font-semibold">
+                    {isLoginMode ? "Don't have an account yet? " : 'Already registered? '}
+                    <button 
+                      type="button"
+                      onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); setAuthSuccess(''); }} 
+                      className="text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer font-extrabold"
+                    >
+                      {isLoginMode ? 'Sign up free' : 'Sign in here'}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
+                    <Shield size={12} className="text-emerald-600" />
+                    <span>Protected by 256-bit encryption</span>
+                  </div>
                 </div>
               )}
             </div>
