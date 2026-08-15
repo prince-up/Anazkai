@@ -622,20 +622,20 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] sm:w-[calc(100%-4rem)] max-w-[1480px] z-50 backdrop-blur-xl border px-6 sm:px-8 py-3.5 sm:py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
-        <div className="flex items-center space-x-3 cursor-pointer">
+      <nav className={`fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[calc(100%-1.25rem)] sm:w-[calc(100%-3rem)] max-w-[1480px] z-50 backdrop-blur-xl border px-3.5 sm:px-8 py-2.5 sm:py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/85 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
+        <div className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
             alt="AnazkAI Logo" 
-            className="w-11 h-11 rounded-full border-2 border-emerald-500/30 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.2)] hover:scale-105 transition-transform duration-200" 
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-emerald-500/30 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.2)] hover:scale-105 transition-transform duration-200" 
           />
-          <span className="font-display font-black text-2xl sm:text-[26px] text-[#0d2e27] tracking-tight flex items-center">
+          <span className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] tracking-tight flex items-center">
             Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
           </span>
         </div>
 
         {/* Desktop Links */}
-        <div className={`hidden md:flex items-center gap-9 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
+        <div className={`hidden md:flex items-center gap-7 lg:gap-9 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
           <a href="#reviews" className="hover:text-sky-500 transition-colors flex items-center gap-1">Early access</a>
           <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
@@ -648,7 +648,7 @@ class Solution {
           {user ? (
             <button 
               onClick={() => supabase.auth.signOut()}
-              className={`px-7 py-3 border-2 font-black text-base rounded-full transition-all shadow-sm flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+              className={`px-6 lg:px-7 py-2.5 sm:py-3 border-2 font-black text-sm sm:text-base rounded-full transition-all shadow-sm flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
             >
               <User size={16} />
               Sign out
@@ -656,7 +656,7 @@ class Solution {
           ) : (
             <button 
               onClick={() => setShowSignInModal(true)}
-              className="px-7 py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-base rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
+              className="px-6 lg:px-7 py-2.5 sm:py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-sm sm:text-base rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               Sign in
               <ArrowRight size={16} />
@@ -665,57 +665,78 @@ class Solution {
         </div>
 
         {/* Mobile Menu Icon */}
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-[#0d2e27] hover:bg-emerald-50 rounded-lg transition-all"
-        >
-          <Menu size={20} />
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          {!user && (
+            <button 
+              onClick={() => setShowSignInModal(true)}
+              className="px-3.5 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-full"
+            >
+              Sign in
+            </button>
+          )}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 text-[#0d2e27] hover:bg-emerald-50 rounded-lg transition-all"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 w-[90%] bg-white border border-emerald-500/10 rounded-2xl p-6 shadow-xl z-40 md:hidden flex flex-col space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
-          <a href="#features" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Features</a>
-          <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Interactive Demo</a>
-          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-sky-400 py-1.5 border-b border-gray-50">Early access</a>
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Pricing</a>
-          <a href="#privacy" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Privacy</a>
-          <div className="pt-2 flex flex-col space-y-3">
-            <button 
-              onClick={() => { setMobileMenuOpen(false); setShowSignInModal(true); }}
-              className="w-full py-3 bg-[#0d2e27] hover:bg-[#061713] text-white rounded-xl font-bold flex items-center justify-center gap-2"
-            >
-              Sign in
-              <ArrowRight size={16} />
-            </button>
+        <div className="fixed top-18 left-1/2 -translate-x-1/2 w-[calc(100%-1.25rem)] max-w-md bg-white/95 backdrop-blur-2xl border border-emerald-500/20 rounded-3xl p-5 shadow-2xl z-40 md:hidden flex flex-col space-y-3.5 animate-in fade-in slide-in-from-top-5 duration-200">
+          <a href="#features" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Features</a>
+          <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Interactive Demo</a>
+          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-sky-500 py-2 border-b border-gray-100 text-sm">Early access</a>
+          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Pricing</a>
+          <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="text-left font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Privacy</button>
+          <div className="pt-2 flex flex-col space-y-2">
+            {user ? (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); supabase.auth.signOut(); }}
+                className="w-full py-3 border border-gray-200 bg-gray-50 text-gray-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <User size={16} />
+                Sign out
+              </button>
+            ) : (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setShowSignInModal(true); }}
+                className="w-full py-3 bg-[#0d2e27] hover:bg-[#061713] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+              >
+                Sign in
+                <ArrowRight size={16} />
+              </button>
+            )}
           </div>
         </div>
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-28 pb-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
+      <header className="min-h-screen pt-24 sm:pt-28 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
          {/* Hero Left Content */}
-        <div className="lg:col-span-5 space-y-7 text-left pl-0 pr-2">
+        <div className="lg:col-span-5 space-y-5 sm:space-y-7 text-left pl-0 pr-0 sm:pr-2">
           
-          <h1 className={`font-display font-black text-[42px] sm:text-[56px] lg:text-[70px] leading-[1.08] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
+          <h1 className={`font-display font-black text-[30px] xs:text-[36px] sm:text-[50px] lg:text-[66px] leading-[1.12] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             The calm advantage for high-stakes interviews
           </h1>
 
-          <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
+          <p className={`text-sm sm:text-[18px] lg:text-[20px] max-w-2xl font-semibold leading-relaxed transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
             Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
           </p>
 
 
           {/* Transparent early-access note */}
-          <div className="pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
+          <div className="pt-4 sm:pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
             <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
               <Users size={16} />
             </div>
             <div className="text-xs font-medium text-left">
-              <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 11 people</span>
-              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500">We are validating the experience with a small review group before a wider launch.</span>
+              <span className={`block font-black text-xs sm:text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 11 people</span>
+              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500 text-[11px] sm:text-xs">We are validating the experience with a small review group before a wider launch.</span>
             </div>
           </div>
         </div>
@@ -723,53 +744,53 @@ class Solution {
         <div className="lg:col-span-7 flex flex-col items-center relative select-none w-full">
           
           {/* Window Tabs (Floating above mockup container) */}
-          <div className={`flex justify-center border p-1.5 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
+          <div className={`flex justify-center border p-1 sm:p-1.5 rounded-full shadow-md relative z-20 -mb-4 sm:-mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
             <button 
               onClick={() => setActiveTab('non-coding')}
-              className={`flex items-center gap-1.5 px-7 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+              className={`flex items-center gap-1.5 px-4 sm:px-7 py-2 sm:py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               Non-Coding
             </button>
             <button 
               onClick={() => setActiveTab('coding')}
-              className={`flex items-center gap-1.5 px-7 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+              className={`flex items-center gap-1.5 px-4 sm:px-7 py-2 sm:py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               Coding
             </button>
           </div>
 
           {/* Window Mockup Outer Container */}
-          <div className="w-full bg-white rounded-3xl p-1.5 border border-gray-200 shadow-2xl relative pt-9">
+          <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-1 sm:p-1.5 border border-gray-200 shadow-2xl relative pt-8 sm:pt-9">
             {/* Window Dots (macOS style) */}
-            <div className="absolute top-4 left-6 flex space-x-1.5">
-              <span className="w-3.5 h-3.5 bg-[#ff5f56] rounded-full inline-block"></span>
-              <span className="w-3.5 h-3.5 bg-[#ffbd2e] rounded-full inline-block"></span>
-              <span className="w-3.5 h-3.5 bg-[#27c93f] rounded-full inline-block"></span>
+            <div className="absolute top-3.5 sm:top-4 left-4 sm:left-6 flex space-x-1.5">
+              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#ff5f56] rounded-full inline-block"></span>
+              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#ffbd2e] rounded-full inline-block"></span>
+              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#27c93f] rounded-full inline-block"></span>
             </div>
 
             {/* Window Content Area */}
-            <div className="p-5 md:p-6 bg-[#f8fafc] rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
+            <div className="p-3 sm:p-5 md:p-6 bg-[#f8fafc] rounded-b-2xl sm:rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
               {activeTab === 'non-coding' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch font-sans">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch font-sans">
                   
-                  {/* Left Column: Live Interview Video Demo Player (Larger, prominent display) */}
-                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[440px] md:min-h-[480px]">
+                  {/* Left Column: Live Interview Video Demo Player */}
+                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-xl sm:rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[260px] sm:min-h-[380px] lg:min-h-[440px]">
                     {/* Video Top Bar */}
-                    <div className="flex justify-between items-center px-4 py-3 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-                        <span className="text-[12px] text-white font-bold tracking-wide">Anazk AI — Live Interview Assistant</span>
+                    <div className="flex justify-between items-center px-3 sm:px-4 py-2.5 sm:py-3 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
+                      <div className="flex items-center gap-1.5 sm:gap-2 truncate mr-2">
+                        <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block shrink-0"></span>
+                        <span className="text-[11px] sm:text-[12px] text-white font-bold tracking-wide truncate">Anazk AI — Live Demo</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] bg-red-600 text-white font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <span className="text-[9px] sm:text-[10px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> LIVE
                         </span>
-                        <span className="text-[11px] text-gray-300 font-mono">54 mins</span>
+                        <span className="text-[10px] sm:text-[11px] text-gray-300 font-mono">54 mins</span>
                       </div>
                     </div>
 
                     {/* Main Video Stream Player with Autoplay */}
-                    <div className="relative w-full h-full flex-1 bg-black flex items-center justify-center min-h-[320px]">
+                    <div className="relative w-full flex-1 bg-black flex items-center justify-center min-h-[180px] sm:min-h-[260px]">
                       <video
                         src="/hero-video.mp4"
                         autoPlay
@@ -777,7 +798,7 @@ class Solution {
                         muted
                         playsInline
                         controls
-                        className="w-full h-full object-contain bg-black max-h-[420px]"
+                        className="w-full h-auto aspect-video object-contain bg-black max-h-[320px] sm:max-h-[400px]"
                         poster="/anazk-hero-generated.png"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -788,7 +809,7 @@ class Solution {
                       <iframe
                         id="hero-drive-fallback"
                         src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
-                        className="w-full h-full min-h-[360px] border-0 hidden"
+                        className="w-full h-full min-h-[240px] border-0 hidden"
                         allow="autoplay"
                         allowFullScreen
                         title="Anazk AI Live Demo"
@@ -796,21 +817,21 @@ class Solution {
                     </div>
 
                     {/* Bottom Live Transcript Strip */}
-                    <div className="px-4 py-3.5 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
-                      <div className="flex items-center gap-2 overflow-hidden mr-2">
-                        <span className="text-[11px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
-                        <p className="text-gray-200 italic text-[12px] truncate font-medium">
-                          &quot;Can you explain how Anazk AI assists in real-time during candidate interviews?&quot;
+                    <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
+                      <div className="flex items-center gap-1.5 overflow-hidden mr-2">
+                        <span className="text-[10px] sm:text-[11px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
+                        <p className="text-gray-200 italic text-[11px] sm:text-[12px] truncate font-medium">
+                          &quot;Can you explain how Anazk AI assists in real-time?&quot;
                         </p>
                       </div>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-0.5 rounded font-bold shrink-0">
+                      <span className="text-[9px] sm:text-[10px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold shrink-0">
                         Listening...
                       </span>
                     </div>
                   </div>
 
                   {/* Right Column: Real-time AI Assistant Response Panel */}
-                  <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200 shadow-md p-5 flex flex-col justify-between space-y-4 text-left min-h-[440px] md:min-h-[480px]">
+                  <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-md p-4 sm:p-5 flex flex-col justify-between space-y-3.5 text-left min-h-[300px] sm:min-h-[380px] lg:min-h-[440px]">
                     <div>
                       <div className="flex justify-between items-center pb-2.5 border-b border-gray-150">
                         <span className="text-[11px] text-[#0d2e27] font-black uppercase tracking-wider flex items-center gap-1.5">
@@ -825,18 +846,18 @@ class Solution {
                         </div>
                       </div>
                       
-                      <div className="space-y-2.5 text-[11px] text-gray-800 leading-relaxed font-sans pt-3 overflow-y-auto max-h-[220px] no-scrollbar">
+                      <div className="space-y-2.5 text-[11px] text-gray-800 leading-relaxed font-sans pt-2.5 overflow-y-auto max-h-[200px] sm:max-h-[240px] no-scrollbar">
                         <div className="bg-emerald-50/70 border border-emerald-100/80 rounded-xl p-2.5">
-                          <span className="block text-emerald-800 font-bold text-[10px] uppercase mb-0.5">💡 Interview Question Detected</span>
+                          <span className="block text-emerald-800 font-bold text-[10px] uppercase mb-0.5">💡 Question Detected</span>
                           <p className="font-extrabold text-[#0d2e27] text-[11px]">What are the core advantages of microservices architecture?</p>
                         </div>
 
-                        <div className="space-y-1.5 pl-1 text-gray-700 font-medium">
-                          <p className="text-emerald-700 font-extrabold text-[11px]">⭐ Recommended Talking Points:</p>
+                        <div className="space-y-1 pl-0.5 text-gray-700 font-medium">
+                          <p className="text-emerald-700 font-extrabold text-[10px] sm:text-[11px]">⭐ Recommended Talking Points:</p>
                           <ul className="space-y-1 pl-3 text-gray-600 list-disc text-[10px]">
-                            <li><strong>Independent Scalability:</strong> Scale high-load services without duplicating the whole application.</li>
-                            <li><strong>Fault Isolation:</strong> Failure in one service doesn&apos;t bring down the entire system.</li>
-                            <li><strong>Tech Stack Flexibility:</strong> Different teams can use optimal tools per service.</li>
+                            <li><strong>Independent Scalability:</strong> Scale high-load services independently.</li>
+                            <li><strong>Fault Isolation:</strong> Failure in one service doesn&apos;t bring down everything.</li>
+                            <li><strong>Tech Stack Flexibility:</strong> Different teams can use optimal tools.</li>
                           </ul>
                         </div>
                       </div>
@@ -844,16 +865,16 @@ class Solution {
 
                     {/* Pro Tip Card */}
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 text-emerald-900 p-2.5 rounded-xl text-[10px] leading-relaxed font-medium">
-                      🎯 <strong>How it works:</strong> Anazk AI listens silently and displays talking points in real-time, giving you total confidence.
+                      🎯 <strong>Stealth guidance:</strong> Anazk AI listens silently and displays talking points in real-time.
                     </div>
 
                     {/* Action Controls */}
                     <div className="pt-2 border-t border-gray-150 flex items-center justify-between gap-2">
-                      <button className="px-4 py-2 bg-[#0d2e27] hover:bg-emerald-900 text-white font-bold text-[10px] rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                      <button className="px-3 sm:px-4 py-2 bg-[#0d2e27] hover:bg-emerald-900 text-white font-bold text-[10px] rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
                         <Sparkles size={12} />
-                        Generate Next Point
+                        Next Point
                       </button>
-                      <div className="flex items-center gap-2 text-[10px] text-gray-500 font-semibold">
+                      <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-semibold">
                         <span className="flex items-center gap-1 text-emerald-600 font-bold">
                           <CheckCircle2 size={12} /> Ready
                         </span>
@@ -865,20 +886,20 @@ class Solution {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch font-sans">
                   {/* Left panel: Code captured */}
-                  <div className="bg-white rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
+                  <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
                     <div className="border-b border-gray-100 pb-2">
                       <span className="block text-[10px] text-teal-600 font-black uppercase tracking-wider mb-1">🖥️ captured coding task</span>
                       <p className="text-[#0d2e27] font-mono text-[10px] font-bold leading-relaxed">{codingProblem.question}</p>
                     </div>
-                    <pre className="bg-gray-50 border border-gray-100 p-3 rounded-xl text-emerald-800 font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[180px] no-scrollbar">{simulatedCode || '// loading code context...'}</pre>
+                    <pre className="bg-gray-50 border border-gray-100 p-2.5 sm:p-3 rounded-xl text-emerald-800 font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[160px] sm:max-h-[180px] no-scrollbar">{simulatedCode || '// loading code context...'}</pre>
                   </div>
 
                   {/* Right panel: Solution output */}
-                  <div className="bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-4 shadow-sm flex flex-col justify-between space-y-3">
+                  <div className="bg-[#f1f5f9] rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
                     <div className="border-b border-gray-250 pb-2">
                       <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider">🤖 AI Solutions (Java)</span>
                     </div>
-                    <pre className="text-gray-700 font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[160px] no-scrollbar whitespace-pre">{simulatedSolution}</pre>
+                    <pre className="text-gray-700 font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[140px] sm:max-h-[160px] no-scrollbar whitespace-pre">{simulatedSolution}</pre>
                     <div className="pt-2 border-t border-gray-200 flex justify-end">
                       <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-sm">
                         Copy Solution
@@ -1478,91 +1499,90 @@ class Solution {
         </div>
 
         {/* Slider Card Row */}
-        <div className="flex items-center justify-center gap-4 mt-12 max-w-5xl mx-auto">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12 max-w-5xl mx-auto w-full">
           
-          {/* Scroll Left Button */}
+          {/* Scroll Left Button (Desktop only) */}
           <button 
             onClick={() => setPricingOption(pricingOption === 'credits' ? 'subscription' : 'credits')}
-            className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
+            className="hidden md:flex w-10 h-10 rounded-full border border-gray-200 bg-white items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
+            aria-label="Switch to Subscription"
           >
             <ChevronLeft size={20} />
           </button>
 
           {/* Cards Frame */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
             {pricingOption === 'subscription' ? (
               <>
                 {/* Card 1: Weekly */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Weekly</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹1,500</span>
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Weekly</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹1,500</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($19.90) per week</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>∞ Unlimited Calls</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => startCheckout('weekly')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Subscribe
                   </button>
                 </div>
 
                 {/* Card 2: Monthly */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Monthly</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹3,000</span>
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Monthly</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹3,000</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($39.90) per month</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>∞ Unlimited Calls</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => startCheckout('monthly')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Subscribe
                   </button>
                 </div>
 
                 {/* Card 3: Yearly (Recommended) */}
-                <div className="bg-white p-8 rounded-3xl border-2 border-emerald-500 shadow-xl space-y-6 flex flex-col justify-between relative text-left">
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
                   {/* Best Deal Tag */}
-                  <div className="absolute top-0 left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
                     Best deal
                   </div>
                   
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">Yearly</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹6,000</span>
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">Yearly</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹6,000</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($79.90) per year</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Check size={16} className="text-emerald-500" />
-                          <span>∞ Unlimited Calls</span>
-                        </div>
+                        <Check size={16} className="text-emerald-500 shrink-0" />
+                        <span>∞ Unlimited Calls</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => startCheckout('yearly')}
-                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-sm font-black shadow-lg transition-all cursor-pointer"
+                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
                   >
                     Subscribe
                   </button>
@@ -1571,85 +1591,85 @@ class Solution {
             ) : (
               <>
                 {/* Card 1: 45 min for ₹300 */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">45 Minutes Session</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹300</span>
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">45 Minutes Session</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹300</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($3.90) one-time</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>45 min AI response session</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>Stealth Mode active</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => setShowSignInModal(true)}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
                 </div>
 
                 {/* Card 2: 1 Session Credit */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Session Credit</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹990</span>
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Session Credit</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹990</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($10.00) one-time</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>1 Interview Session (Up to 2h)</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>Stealth Mode active</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => setShowSignInModal(true)}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-sm font-bold shadow-sm transition-all cursor-pointer"
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
                 </div>
 
                 {/* Card 3: Developer Value Pack */}
-                <div className="bg-white p-8 rounded-3xl border-2 border-emerald-500 shadow-xl space-y-6 flex flex-col justify-between relative text-left">
-                  <div className="absolute top-0 left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
+                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
                     Best value
                   </div>
 
-                  <div className="space-y-4">
-                    <span className="block text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Session Credits</span>
-                    <div className="pt-2">
-                      <span className="font-display font-black text-4xl text-[#0d2e27]">₹7,900</span>
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Session Credits</span>
+                    <div className="pt-1 sm:pt-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹7,900</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($89.00) one-time</span>
                     </div>
-                    <ul className="space-y-3 text-sm text-gray-600 font-semibold pt-4 border-t border-gray-50">
+                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>10 Interview Sessions</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500" />
+                        <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>Save over 20% on credits</span>
                       </li>
                     </ul>
                   </div>
                   <button 
                     onClick={() => setShowSignInModal(true)}
-                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-sm font-black shadow-lg transition-all cursor-pointer"
+                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
@@ -1658,10 +1678,11 @@ class Solution {
             )}
           </div>
 
-          {/* Scroll Right Button */}
+          {/* Scroll Right Button (Desktop only) */}
           <button 
             onClick={() => setPricingOption(pricingOption === 'credits' ? 'subscription' : 'credits')}
-            className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
+            className="hidden md:flex w-10 h-10 rounded-full border border-gray-200 bg-white items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
+            aria-label="Switch to Credits"
           >
             <ChevronRight size={20} />
           </button>
@@ -2152,27 +2173,27 @@ class Solution {
       )}
 
       {/* 6. Corner Floating AI Support Chatbot Widget */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
         {/* Floating Chat Window */}
         {chatOpen && (
-          <div className="mb-3 w-[92vw] sm:w-[410px] h-[520px] max-h-[80vh] bg-white rounded-3xl border border-gray-200 shadow-[0_20px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200 text-left">
+          <div className="mb-3 w-[calc(100vw-2rem)] sm:w-[410px] h-[490px] max-h-[75vh] bg-white rounded-3xl border border-gray-200 shadow-[0_20px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200 text-left">
             {/* Chat Header */}
-            <div className="px-5 py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-3">
+            <div className="px-4 sm:px-5 py-3.5 sm:py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <div className="relative">
                   <img 
                     src="/penguin.jpg" 
                     alt="Anazk AI Logo" 
-                    className="w-10 h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
                   />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 sm:w-3 h-2.5 sm:h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
+                  <h4 className="font-extrabold text-xs sm:text-sm text-white flex items-center gap-1.5">
                     Anazk AI Guide
                     <span className="text-[9px] bg-emerald-500/25 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/40">ONLINE</span>
                   </h4>
-                  <p className="text-[10px] text-emerald-200/80 font-medium">Ask about pricing, navigation & stealth</p>
+                  <p className="text-[9px] sm:text-[10px] text-emerald-200/80 font-medium">Ask about pricing, navigation & stealth</p>
                 </div>
               </div>
               <button
@@ -2185,7 +2206,7 @@ class Solution {
             </div>
 
             {/* Chat Messages Body */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-gray-50/60 text-xs no-scrollbar">
+            <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3 bg-gray-50/60 text-xs no-scrollbar">
               {chatMessages.map((msg) => (
                 <div
                   key={msg.id}
