@@ -624,7 +624,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1400px] z-50 backdrop-blur-xl border px-6 py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[1680px] z-50 backdrop-blur-xl border px-8 py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -637,7 +637,7 @@ class Solution {
         </div>
 
         {/* Desktop Links */}
-        <div className={`hidden md:flex items-center gap-8 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
+        <div className={`hidden md:flex items-center gap-9 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
           <a href="#reviews" className="hover:text-sky-500 transition-colors flex items-center gap-1">Early access</a>
           <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
@@ -715,21 +715,21 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 w-full max-w-[1440px] mx-auto flex items-center justify-center">
+      <header className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-10 w-full max-w-[1680px] mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
          {/* Hero Left Content */}
-        <div className="lg:col-span-5 space-y-7 text-center lg:text-left">
+        <div className="lg:col-span-5 space-y-7 text-left pl-0 pr-2">
           
-          <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
+          <h1 className={`font-display font-black text-[42px] sm:text-[56px] lg:text-[70px] leading-[1.08] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             The calm advantage for high-stakes interviews
           </h1>
 
-          <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl mx-auto lg:mx-0 font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
+          <p className={`text-base sm:text-[20px] lg:text-[21px] max-w-2xl font-semibold leading-relaxed mt-6 transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
             Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
           </p>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-4">
             <button 
               onClick={() => setShowDownloadModal(true)}
               className="w-full sm:w-auto px-8 py-4 bg-[#0d2e27] hover:bg-emerald-950 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold text-base rounded-full transition-all shadow-[0_10px_25px_rgba(13,46,39,0.15)] flex items-center justify-center gap-2 cursor-pointer animate-pulse-glow"
@@ -737,8 +737,8 @@ class Solution {
               Try for free
               <ArrowRight size={18} />
             </button>
-            <div className="text-xs text-gray-500 font-semibold text-center sm:text-left">
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-emerald-600">
+            <div className="text-xs text-gray-500 font-semibold text-left">
+              <div className="flex items-center justify-start gap-1.5 text-emerald-600">
                 <CheckCircle2 size={14} />
                 No Credit Card Required
               </div>
@@ -747,11 +747,11 @@ class Solution {
           </div>
 
           {/* Transparent early-access note */}
-          <div className="pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-center lg:justify-start text-left">
+          <div className="pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
             <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
               <Users size={16} />
             </div>
-            <div className="text-xs font-medium">
+            <div className="text-xs font-medium text-left">
               <span className={`block font-black text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 11 people</span>
               <span className="mt-1 block max-w-sm leading-relaxed text-slate-500">We are validating the experience with a small review group before a wider launch.</span>
             </div>
@@ -761,53 +761,53 @@ class Solution {
         <div className="lg:col-span-7 flex flex-col items-center relative select-none w-full">
           
           {/* Window Tabs (Floating above mockup container) */}
-          <div className={`flex justify-center border p-1 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
+          <div className={`flex justify-center border p-1.5 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
             <button 
               onClick={() => setActiveTab('non-coding')}
-              className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+              className={`flex items-center gap-1.5 px-7 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               Non-Coding
             </button>
             <button 
               onClick={() => setActiveTab('coding')}
-              className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+              className={`flex items-center gap-1.5 px-7 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
             >
               Coding
             </button>
           </div>
 
           {/* Window Mockup Outer Container */}
-          <div className="w-full bg-white rounded-3xl p-1 border border-gray-200 shadow-2xl relative pt-8">
+          <div className="w-full bg-white rounded-3xl p-1.5 border border-gray-200 shadow-2xl relative pt-9">
             {/* Window Dots (macOS style) */}
             <div className="absolute top-4 left-6 flex space-x-1.5">
-              <span className="w-3 h-3 bg-[#ff5f56] rounded-full inline-block"></span>
-              <span className="w-3 h-3 bg-[#ffbd2e] rounded-full inline-block"></span>
-              <span className="w-3 h-3 bg-[#27c93f] rounded-full inline-block"></span>
+              <span className="w-3.5 h-3.5 bg-[#ff5f56] rounded-full inline-block"></span>
+              <span className="w-3.5 h-3.5 bg-[#ffbd2e] rounded-full inline-block"></span>
+              <span className="w-3.5 h-3.5 bg-[#27c93f] rounded-full inline-block"></span>
             </div>
 
             {/* Window Content Area */}
-            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
+            <div className="p-5 md:p-6 bg-[#f8fafc] rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
               {activeTab === 'non-coding' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch font-sans">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch font-sans">
                   
-                  {/* Left Column: Live Interview Video Demo Player (Autoplays on page load) */}
-                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[380px]">
+                  {/* Left Column: Live Interview Video Demo Player (Larger, prominent display) */}
+                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[440px] md:min-h-[480px]">
                     {/* Video Top Bar */}
-                    <div className="flex justify-between items-center px-4 py-2.5 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
+                    <div className="flex justify-between items-center px-4 py-3 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-                        <span className="text-[11px] text-white font-bold tracking-wide">Anazk AI — Live Interview Assistant</span>
+                        <span className="text-[12px] text-white font-bold tracking-wide">Anazk AI — Live Interview Assistant</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                        <span className="text-[10px] bg-red-600 text-white font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> LIVE
                         </span>
-                        <span className="text-[10px] text-gray-300 font-mono">54 mins</span>
+                        <span className="text-[11px] text-gray-300 font-mono">54 mins</span>
                       </div>
                     </div>
 
                     {/* Main Video Stream Player with Autoplay */}
-                    <div className="relative w-full h-full flex-1 bg-black flex items-center justify-center min-h-[280px]">
+                    <div className="relative w-full h-full flex-1 bg-black flex items-center justify-center min-h-[320px]">
                       <video
                         src="/hero-video.mp4"
                         autoPlay
@@ -815,10 +815,9 @@ class Solution {
                         muted
                         playsInline
                         controls
-                        className="w-full h-full object-contain bg-black max-h-[360px]"
+                        className="w-full h-full object-contain bg-black max-h-[420px]"
                         poster="/anazk-hero-generated.png"
                         onError={(e) => {
-                          // Fallback to Google Drive embed iframe if direct mp4 isn't supported
                           e.target.style.display = 'none';
                           const iframe = document.getElementById('hero-drive-fallback');
                           if (iframe) iframe.style.display = 'block';
@@ -827,7 +826,7 @@ class Solution {
                       <iframe
                         id="hero-drive-fallback"
                         src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
-                        className="w-full h-full min-h-[320px] border-0 hidden"
+                        className="w-full h-full min-h-[360px] border-0 hidden"
                         allow="autoplay"
                         allowFullScreen
                         title="Anazk AI Live Demo"
@@ -835,21 +834,21 @@ class Solution {
                     </div>
 
                     {/* Bottom Live Transcript Strip */}
-                    <div className="px-4 py-3 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
+                    <div className="px-4 py-3.5 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
                       <div className="flex items-center gap-2 overflow-hidden mr-2">
-                        <span className="text-[10px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
-                        <p className="text-gray-200 italic text-[11px] truncate font-medium">
+                        <span className="text-[11px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
+                        <p className="text-gray-200 italic text-[12px] truncate font-medium">
                           &quot;Can you explain how Anazk AI assists in real-time during candidate interviews?&quot;
                         </p>
                       </div>
-                      <span className="text-[9px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold shrink-0">
+                      <span className="text-[10px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-0.5 rounded font-bold shrink-0">
                         Listening...
                       </span>
                     </div>
                   </div>
 
                   {/* Right Column: Real-time AI Assistant Response Panel */}
-                  <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200 shadow-md p-4 flex flex-col justify-between space-y-3 text-left">
+                  <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200 shadow-md p-5 flex flex-col justify-between space-y-4 text-left min-h-[440px] md:min-h-[480px]">
                     <div>
                       <div className="flex justify-between items-center pb-2.5 border-b border-gray-150">
                         <span className="text-[11px] text-[#0d2e27] font-black uppercase tracking-wider flex items-center gap-1.5">
