@@ -624,7 +624,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1120px] z-50 backdrop-blur-xl border px-6 py-3 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1400px] z-50 backdrop-blur-xl border px-6 py-3.5 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
@@ -637,7 +637,7 @@ class Solution {
         </div>
 
         {/* Desktop Links */}
-        <div className={`hidden md:flex items-center gap-8 text-xs font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
+        <div className={`hidden md:flex items-center gap-8 text-sm font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
           <a href="#reviews" className="hover:text-sky-400 transition-colors flex items-center gap-1">Early access</a>
           <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
@@ -645,7 +645,7 @@ class Solution {
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
           <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
             Desktop App
-            <span className="text-[9px] bg-[#10b981] text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left">New</span>
+            <span className="text-[10px] bg-[#10b981] text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left">New</span>
           </a>
         </div>
 

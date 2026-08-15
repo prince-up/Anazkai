@@ -10,9 +10,24 @@
   text-rendering: optimizeLegibility;
 }
 
-html { scroll-behavior: smooth; background: #080b12; }
-body { margin: 0; min-width: 320px; background: #080b12; }
-button, a, input, textarea { font: inherit; }
+html {
+  font-size: 18px;
+  scroll-behavior: smooth;
+  background: #080b12;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+button, a, input, textarea {
+  font: inherit;
+}
 button { cursor: pointer; }
 
 /* Anazk AI — precise, midnight product system */
