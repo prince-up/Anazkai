@@ -643,10 +643,6 @@ class Solution {
           <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
           <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
-          <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
-            Desktop App
-            <span className="text-[10px] bg-[#10b981] text-white font-black px-2 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left shadow-xs">New</span>
-          </a>
         </div>
 
         {/* Buttons */}
@@ -688,13 +684,6 @@ class Solution {
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Pricing</a>
           <a href="#privacy" onClick={() => setMobileMenuOpen(false)} className="font-semibold text-gray-700 hover:text-emerald-600 py-1.5 border-b border-gray-50">Privacy</a>
           <div className="pt-2 flex flex-col space-y-3">
-            <button 
-              onClick={() => { setMobileMenuOpen(false); setShowDownloadModal(true); }}
-              className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 border border-emerald-100"
-            >
-              <Download size={16} />
-              Download App
-            </button>
             <button 
               onClick={() => { setMobileMenuOpen(false); setShowSignInModal(true); }}
               className="w-full py-3 bg-[#0d2e27] hover:bg-[#061713] text-white rounded-xl font-bold flex items-center justify-center gap-2"
