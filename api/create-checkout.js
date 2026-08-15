@@ -1,9 +1,11 @@
 import Stripe from 'stripe'
 
 const PLANS = {
-  weekly: { name: 'Anazk AI Weekly', amount: 150000, interval: 'week' },
-  monthly: { name: 'Anazk AI Monthly', amount: 300000, interval: 'month' },
-  yearly: { name: 'Anazk AI Yearly', amount: 600000, interval: 'year' },
+  '45-min': { name: 'Anazk 45 Mins', amount: 15000, interval: 'day', durationMinutes: 45 },
+  '2-hour': { name: 'Anazk 2 Hours', amount: 30000, interval: 'day', durationMinutes: 120 },
+  weekly: { name: 'Anazk AI Weekly', amount: 150000, interval: 'week', durationMinutes: 10080 },
+  monthly: { name: 'Anazk AI Monthly', amount: 300000, interval: 'month', durationMinutes: 43200 },
+  yearly: { name: 'Anazk AI Yearly', amount: 600000, interval: 'year', durationMinutes: 525600 },
 }
 
 export default async function handler(req, res) {
@@ -38,6 +40,9 @@ export default async function handler(req, res) {
         cancel_url: `${origin}/?payment=cancelled`,
         billing_address_collection: 'auto',
         integration_identifier: `anazk_${Math.random().toString(36).slice(2, 10)}`,
+        metadata: {
+          durationMinutes: plan.durationMinutes.toString()
+        }
       },
       { idempotencyKey: `anazk-${planId}-${Date.now()}` },
     )

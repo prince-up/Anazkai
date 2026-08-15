@@ -2,9 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, Star, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
-  Shield, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check
+  Shield, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
+  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard
 } from 'lucide-react';
 import { getSubscriptionPlan } from './plans';
+import { supabase } from './supabaseClient';
+
+const loadRazorpay = () => new Promise((resolve) => {
+  const script = document.createElement('script');
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  script.onload = () => resolve(true);
+  script.onerror = () => resolve(false);
+  document.body.appendChild(script);
+});
 
 function LandingPage() {
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
@@ -18,6 +28,31 @@ function LandingPage() {
   const [checkoutState, setCheckoutState] = useState('idle');
   const [checkoutError, setCheckoutError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [user, setUser] = useState(null);
+  
+  // Auth Form State
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authSuccess, setAuthSuccess] = useState('');
+
+  // Key Generation State
+  const [generatedKey, setGeneratedKey] = useState('');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const status = new URLSearchParams(window.location.search).get('payment');
@@ -25,22 +60,153 @@ function LandingPage() {
   }, []);
 
   const startCheckout = async (planId) => {
+    if (!user) {
+      setShowSignInModal(true);
+      return;
+    }
+
     const plan = getSubscriptionPlan(planId);
     if (!plan) return;
     setCheckoutState('loading');
     setCheckoutError('');
     try {
-      const response = await fetch('/api/create-checkout', {
+      const res = await loadRazorpay();
+      if (!res) {
+        throw new Error('Razorpay SDK failed to load. Are you online?');
+      }
+
+      const response = await fetch('/api/create-razorpay-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: plan.id }),
       });
       const data = await response.json();
-      if (!response.ok || !data.url) throw new Error(data.error || 'Checkout could not be started.');
-      window.location.assign(data.url);
+      if (!response.ok || !data.orderId) throw new Error(data.error || 'Checkout could not be started.');
+      
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: 'Anazk AI',
+        description: plan.name,
+        order_id: data.orderId,
+        handler: async function (response) {
+          try {
+            setCheckoutState('verifying');
+            const verifyRes = await fetch('/api/verify-razorpay-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                planId: plan.id,
+                email: user.email
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok) {
+              setGeneratedKey(verifyData.key);
+              setCheckoutState('idle');
+            } else {
+              throw new Error(verifyData.error || 'Payment verification failed');
+            }
+          } catch (err) {
+            setCheckoutState('error');
+            setCheckoutError(err.message);
+          }
+        },
+        prefill: {
+          email: user.email,
+        },
+        theme: {
+          color: '#10b981',
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response) {
+        setCheckoutState('error');
+        setCheckoutError(response.error.description);
+      });
+      paymentObject.open();
+      setCheckoutState('idle');
     } catch (error) {
       setCheckoutState('error');
       setCheckoutError(error.message || 'Checkout could not be started.');
+    }
+  };
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+    setAuthLoading(true);
+    
+    try {
+      if (isLoginMode) {
+        // --- LOGIN ---
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        setShowSignInModal(false);
+      } else {
+        // --- SIGN UP ---
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: {
+            data: { full_name: authName }
+          }
+        });
+        if (error) throw error;
+        
+        // Save profile — in its own isolated try/catch so it NEVER blocks signup
+        if (data?.user) {
+          try {
+            await supabase
+              .from('profiles')
+              .upsert([
+                {
+                  id: data.user.id,
+                  email: authEmail,
+                  full_name: authName,
+                  created_at: new Date().toISOString(),
+                }
+              ]);
+          } catch (profileErr) {
+            // Table may not exist yet — non-blocking
+            console.warn('[Anazk] Profile table not ready:', profileErr?.message);
+          }
+        }
+        
+        setAuthSuccess('Account created! Check your email to confirm your address, then sign in.');
+        setAuthName('');
+        setAuthEmail('');
+        setAuthPassword('');
+        setTimeout(() => setIsLoginMode(true), 4000);
+        return;
+      }
+    } catch (err) {
+      const msg = err?.message || '';
+      const lmsg = msg.toLowerCase();
+      if (msg === 'AUTH_NETWORK_ERROR' || lmsg.includes('auth_network') || lmsg.includes('fetch') || lmsg.includes('network') || lmsg.includes('resolve') || lmsg.includes('failed')) {
+        setAuthError('⚠️ Cannot reach Supabase — your project may be paused. Go to supabase.com/dashboard to resume it, then try again.');
+      } else if (lmsg.includes('invalid login') || lmsg.includes('invalid credentials')) {
+        setAuthError('Incorrect email or password. Please try again.');
+      } else if (lmsg.includes('already registered') || lmsg.includes('already exists')) {
+        setAuthError('An account with this email already exists. Try signing in instead.');
+      } else if (lmsg.includes('password')) {
+        setAuthError('Password must be at least 6 characters.');
+      } else if (lmsg.includes('email')) {
+        setAuthError('Please enter a valid email address.');
+      } else {
+        setAuthError(msg || 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -66,6 +232,165 @@ function LandingPage() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+
+  // Corner Floating AI Support Chatbot State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      sender: 'bot',
+      text: "👋 Hi! I'm the Anazk AI Website Assistant. Ask me anything about how Anazk AI works, how to make payment & buy credits, or where to go on this website!",
+      actions: [
+        { label: '💳 How to buy credits?', query: 'how to buy credits' },
+        { label: '🧭 Guide me around', query: 'where to go on website' },
+        { label: '🛡️ Is it undetectable?', query: 'is it undetectable on zoom meet' },
+        { label: '📥 Download Desktop App', query: 'how to download desktop app' }
+      ]
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const chatMessagesEndRef = useRef(null);
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSendChatMessage = (rawQuery) => {
+    const queryText = (typeof rawQuery === 'string' ? rawQuery : chatInput).trim();
+    if (!queryText) return;
+
+    // Add user message
+    const userMsgId = Date.now();
+    setChatMessages((prev) => [
+      ...prev,
+      { id: userMsgId, sender: 'user', text: queryText }
+    ]);
+    setChatInput('');
+    setIsBotTyping(true);
+
+    setTimeout(() => {
+      const botResponse = generateBotAnswer(queryText);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: botResponse.text,
+          actions: botResponse.actions || []
+        }
+      ]);
+      setIsBotTyping(false);
+    }, 450);
+  };
+
+  const generateBotAnswer = (userText) => {
+    const query = userText.toLowerCase().trim();
+
+    // 1. Payment & Buying Credits
+    if (
+      query.includes('payment') || query.includes('credit') || query.includes('buy') || 
+      query.includes('price') || query.includes('pricing') || query.includes('cost') || 
+      query.includes('plan') || query.includes('paisa') || query.includes('khareed') || 
+      query.includes('razorpay') || query.includes('upi') || query.includes('card')
+    ) {
+      return {
+        text: "💳 **How to Buy Credits & Make Payment:**\n\n1. Go to the **Pricing Plans** section.\n2. Choose between **Starter Credits**, **Monthly Pro**, or **Lifetime Access**.\n3. Click **Get Started / Buy Now** on your preferred plan.\n4. Sign in with your email if you haven't already.\n5. Complete payment securely via **Razorpay** (Supports UPI, Google Pay, PhonePe, Cards, Netbanking).\n6. Your **License Key & Credits** will be generated and ready immediately!",
+        actions: [
+          { label: '👉 Go to Pricing Plans', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } },
+          { label: '🔐 Sign In / Create Account', onClick: () => { setShowSignInModal(true); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // 2. Navigation & Where to Go
+    if (
+      query.includes('where') || query.includes('path') || query.includes('navigate') || 
+      query.includes('kaha') || query.includes('guide') || query.includes('menu') || 
+      query.includes('section') || query.includes('route') || query.includes('look')
+    ) {
+      return {
+        text: "🧭 **Website Roadmap & Quick Links:**\n\nHere is what you'll find on this page:\n• **Top:** Live video demo & interactive interview assistant preview\n• **Features:** Compatibility with Zoom, Meet, Teams, LeetCode\n• **Stealth Mode:** Undetectability & screen share invisibility\n• **Pricing:** Purchase credits & subscription packages\n• **Reviews:** 100+ verified customer ratings & testimonials\n• **FAQ:** Common interview preparation questions",
+        actions: [
+          { label: '⚡ Features', onClick: () => { scrollToSection('features'); setChatOpen(false); } },
+          { label: '🛡️ Stealth Mode', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } },
+          { label: '💳 Pricing', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } },
+          { label: '⭐ Reviews', onClick: () => { scrollToSection('reviews'); setChatOpen(false); } },
+          { label: '❓ FAQ', onClick: () => { scrollToSection('faq'); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // 3. Stealth, Privacy, Screen Share, Zoom, Meet, Teams
+    if (
+      query.includes('zoom') || query.includes('meet') || query.includes('team') || 
+      query.includes('private') || query.includes('undetect') || query.includes('detect') || 
+      query.includes('stealth') || query.includes('visible') || query.includes('hidden') || 
+      query.includes('invisible') || query.includes('safe') || query.includes('share')
+    ) {
+      return {
+        text: "🛡️ **100% Private & Undetectable:**\n\nAnazk AI runs natively at your OS level and intercepts low-level window draw calls:\n• **Screen Share Invisible:** When you share your entire screen on Zoom, Google Meet, Teams, or Discord, interviewers ONLY see your regular desktop—never the Anazk AI overlay.\n• **No Taskbar/Dock Presence:** Operates as a background system service.\n• **Tab-Switch Safe:** Bypasses browser tab-change listeners on HackerRank, LeetCode, and CoderPad.",
+        actions: [
+          { label: '🛡️ View Stealth Mode Details', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } },
+          { label: '📥 Download Desktop App', onClick: () => { setShowDownloadModal(true); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // 4. Download & Installation
+    if (
+      query.includes('download') || query.includes('install') || query.includes('app') || 
+      query.includes('mac') || query.includes('windows') || query.includes('desktop') || 
+      query.includes('setup') || query.includes('exe') || query.includes('dmg')
+    ) {
+      return {
+        text: "📥 **Download Anazk AI Desktop App:**\n\n• Available for **Windows 10/11 (.exe)** and **macOS (.dmg / .zip)**.\n• Lightweight and installs in under 30 seconds.\n• Uses global shortcut keys to toggle the assistant quietly during calls.",
+        actions: [
+          { label: '📥 Download App Now', onClick: () => { setShowDownloadModal(true); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // 5. License Key & Activation
+    if (
+      query.includes('key') || query.includes('license') || query.includes('activate') || 
+      query.includes('code') || query.includes('token')
+    ) {
+      return {
+        text: "🔑 **License Key & Activation:**\n\n• Once your payment completes, your license key is displayed instantly on screen and linked to your email.\n• Open the Anazk AI Desktop App, go to **Settings → License Key**, paste your key, and you're ready to go!",
+        actions: [
+          { label: '💳 View Pricing & Get Key', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // 6. Account & Sign In
+    if (
+      query.includes('login') || query.includes('sign in') || query.includes('signup') || 
+      query.includes('register') || query.includes('account') || query.includes('email')
+    ) {
+      return {
+        text: "🔐 **Account & Sign In:**\n\n• You can sign in or create an account with your email & password.\n• All your purchased credits, plans, and session histories are saved to your account.",
+        actions: [
+          { label: '🔐 Open Sign In Modal', onClick: () => { setShowSignInModal(true); setChatOpen(false); } }
+        ]
+      };
+    }
+
+    // Default response
+    return {
+      text: "I'm your Anazk AI website assistant! What would you like help with?",
+      actions: [
+        { label: '💳 How to buy credits?', query: 'how to buy credits' },
+        { label: '🧭 Guide me around website', query: 'where to go on website' },
+        { label: '🛡️ Stealth Mode on Zoom/Meet', query: 'is it undetectable on zoom meet' },
+        { label: '📥 Download Desktop App', query: 'how to download desktop app' }
+      ]
+    };
+  };
 
 
   // Interactive Sandbox state
@@ -259,7 +584,39 @@ class Solution {
     <div className="fixed inset-x-4 top-4 z-[100] mx-auto max-w-2xl rounded-2xl border border-amber-200 bg-white p-5 text-sm text-gray-700 shadow-2xl">Checkout was cancelled. You can choose a plan whenever you are ready.</div>
   )}
   {checkoutState === 'error' && (
-    <div className="fixed inset-x-4 top-4 z-[100] mx-auto max-w-2xl rounded-2xl border border-red-200 bg-white p-5 text-sm text-red-700 shadow-2xl">{checkoutError}</div>
+    <div className="fixed inset-x-4 top-4 z-[100] mx-auto max-w-2xl rounded-2xl border border-red-200 bg-white p-5 text-sm text-red-700 shadow-2xl flex justify-between items-center">
+      {checkoutError}
+      <button onClick={() => setCheckoutError('')}><X size={16}/></button>
+    </div>
+  )}
+  {generatedKey && (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl">
+        <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+          <Check size={32} />
+        </div>
+        <h2 className="text-2xl font-black text-[#0d2e27] mb-2">Payment Successful!</h2>
+        <p className="text-gray-500 mb-6 text-sm">Here is your License Key. Copy this and paste it into the Anazk Desktop App to start your session.</p>
+        
+        <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center justify-between mb-8">
+          <code className="text-emerald-700 font-mono font-bold text-lg select-all">{generatedKey}</code>
+          <button 
+            onClick={() => navigator.clipboard.writeText(generatedKey)}
+            className="text-gray-400 hover:text-emerald-600 transition-colors p-2"
+            title="Copy Key"
+          >
+            <Copy size={20} />
+          </button>
+        </div>
+        
+        <button 
+          onClick={() => setGeneratedKey('')}
+          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg"
+        >
+          I have copied my key
+        </button>
+      </div>
+    </div>
   )}
   
   {/* Dynamic Background Glows */}
@@ -301,13 +658,24 @@ class Solution {
           >
             <Download size={16} />
           </button>
-          <button 
-            onClick={() => setShowSignInModal(true)}
-            className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
-          >
-            Sign in
-            <ArrowRight size={14} />
-          </button>
+          
+          {user ? (
+            <button 
+              onClick={() => supabase.auth.signOut()}
+              className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+            >
+              <User size={14} />
+              Sign out
+            </button>
+          ) : (
+            <button 
+              onClick={() => setShowSignInModal(true)}
+              className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+            >
+              Sign in
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu Icon */}
@@ -347,10 +715,10 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-32 pb-24 px-4 sm:px-8 lg:px-12 w-full mx-auto flex items-center justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full">
+      <header className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 w-full max-w-[1440px] mx-auto flex items-center justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
          {/* Hero Left Content */}
-        <div className="lg:col-span-4 space-y-8 text-center lg:text-left">
+        <div className="lg:col-span-5 space-y-7 text-center lg:text-left">
           
           <h1 className={`font-display font-black text-[40px] sm:text-[54px] lg:text-[68px] leading-[1.1] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             The calm advantage for high-stakes interviews
@@ -390,7 +758,7 @@ class Solution {
           </div>
         </div>
              {/* Hero Right - Interactive Mockup Window */}
-        <div className="lg:col-span-8 flex flex-col items-center relative select-none w-full">
+        <div className="lg:col-span-7 flex flex-col items-center relative select-none w-full">
           
           {/* Window Tabs (Floating above mockup container) */}
           <div className={`flex justify-center border p-1 rounded-full shadow-md relative z-20 -mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
@@ -418,103 +786,117 @@ class Solution {
             </div>
 
             {/* Window Content Area */}
-            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-[660px] text-left font-mono relative overflow-hidden">
+            <div className="p-4 bg-[#f8fafc] rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
               {activeTab === 'non-coding' ? (
-                <div className="relative w-full h-[620px] font-sans">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch font-sans">
                   
-                  {/* Right Panel: Light Grey Card (AI Response) - Placed in background on right */}
-                  <div className="absolute right-0 top-0 bottom-0 w-[52%] bg-[#f1f5f9] rounded-2xl border border-gray-200/60 p-5 shadow-sm flex flex-col justify-between space-y-3 z-0 text-left">
+                  {/* Left Column: Live Interview Video Demo Player (Autoplays on page load) */}
+                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[380px]">
+                    {/* Video Top Bar */}
+                    <div className="flex justify-between items-center px-4 py-2.5 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+                        <span className="text-[11px] text-white font-bold tracking-wide">Anazk AI — Live Interview Assistant</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> LIVE
+                        </span>
+                        <span className="text-[10px] text-gray-300 font-mono">54 mins</span>
+                      </div>
+                    </div>
+
+                    {/* Main Video Stream Player with Autoplay */}
+                    <div className="relative w-full h-full flex-1 bg-black flex items-center justify-center min-h-[280px]">
+                      <video
+                        src="/hero-video.mp4"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls
+                        className="w-full h-full object-contain bg-black max-h-[360px]"
+                        poster="/anazk-hero-generated.png"
+                        onError={(e) => {
+                          // Fallback to Google Drive embed iframe if direct mp4 isn't supported
+                          e.target.style.display = 'none';
+                          const iframe = document.getElementById('hero-drive-fallback');
+                          if (iframe) iframe.style.display = 'block';
+                        }}
+                      />
+                      <iframe
+                        id="hero-drive-fallback"
+                        src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
+                        className="w-full h-full min-h-[320px] border-0 hidden"
+                        allow="autoplay"
+                        allowFullScreen
+                        title="Anazk AI Live Demo"
+                      ></iframe>
+                    </div>
+
+                    {/* Bottom Live Transcript Strip */}
+                    <div className="px-4 py-3 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
+                      <div className="flex items-center gap-2 overflow-hidden mr-2">
+                        <span className="text-[10px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
+                        <p className="text-gray-200 italic text-[11px] truncate font-medium">
+                          &quot;Can you explain how Anazk AI assists in real-time during candidate interviews?&quot;
+                        </p>
+                      </div>
+                      <span className="text-[9px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold shrink-0">
+                        Listening...
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Real-time AI Assistant Response Panel */}
+                  <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200 shadow-md p-4 flex flex-col justify-between space-y-3 text-left">
                     <div>
-                      <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                        <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">🖥️ AI Response</span>
-                        <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-semibold">
+                      <div className="flex justify-between items-center pb-2.5 border-b border-gray-150">
+                        <span className="text-[11px] text-[#0d2e27] font-black uppercase tracking-wider flex items-center gap-1.5">
+                          <Sparkles size={14} className="text-emerald-600" />
+                          AI Smart Response
+                        </span>
+                        <div className="flex items-center gap-1.5 text-[9px] text-gray-500 font-semibold bg-gray-100 px-2 py-0.5 rounded-full">
                           <span>AutoScroll</span>
-                          <span className="w-6 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2.5 h-2.5 bg-white rounded-full block float-right"></span></span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3 text-[10px] text-gray-750 leading-relaxed font-sans overflow-y-auto max-h-[360px] no-scrollbar pr-1 pt-2">
-                        <span className="block text-gray-400 font-mono text-[9px]">all you have to do</span>
-                        <p className="font-extrabold text-[#0d2e27]">• Summarized question: What are the three highest mountains in Africa?</p>
-                        <p className="text-yellow-600 font-extrabold">⭐ Answer:</p>
-                        <ul className="space-y-1.5 pl-2 text-gray-600 font-semibold list-disc">
-                          <li>Mount Kilimanjaro in Tanzania, standing at 5,895 meters (19,341 feet).</li>
-                          <li>Mount Kenya in Kenya, with a height of 5,199 meters (17,057 feet).</li>
-                          <li>Mount Stanley in Uganda, which reaches 5,109 meters (16,762 feet).</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Instruction Backdrop */}
-                    <div className="bg-blue-50 border border-blue-100 text-blue-750 p-3 rounded-2xl text-[9px] leading-normal font-sans font-semibold">
-                      you have to do is click the generate response button, read the generated responses, and speak them out naturally.
-                    </div>
-
-                    {/* Controls Row */}
-                    <div className="pt-2 border-t border-gray-200 flex flex-col gap-2">
-                      <div className="flex justify-between items-center w-full">
-                        <button className="px-3.5 py-1.5 bg-[#0b0f19] border border-emerald-500/20 text-[#10b981] font-black text-[10px] rounded-lg hover:bg-black transition-all cursor-pointer">
-                          Generate Response
-                        </button>
-                        <div className="flex items-center gap-2 text-[9px] text-gray-400 font-semibold">
-                          <span>⏱️ 54 mins</span>
-                          <span className="px-1.5 py-0.5 bg-red-50 text-red-500 font-black border border-red-100 rounded cursor-pointer hover:bg-red-100 transition-colors">Exit</span>
-                          <span className="flex items-center gap-0.5 text-emerald-600 font-extrabold">
-                            🎤 Live
+                          <span className="w-5 h-3 bg-[#10b981] rounded-full inline-block relative p-0.5">
+                            <span className="w-2 h-2 bg-white rounded-full block float-right"></span>
                           </span>
                         </div>
                       </div>
-                      {/* Watch on YouTube Row */}
-                      <div className="flex justify-end text-[9px] font-semibold text-gray-500">
-                        <a href="#youtube" className="flex items-center gap-1 hover:text-red-650 transition-colors">
-                          <span>Watch on</span> <span className="bg-red-600 text-white font-extrabold px-1 rounded">YouTube</span>
-                        </a>
+                      
+                      <div className="space-y-2.5 text-[11px] text-gray-800 leading-relaxed font-sans pt-3 overflow-y-auto max-h-[220px] no-scrollbar">
+                        <div className="bg-emerald-50/70 border border-emerald-100/80 rounded-xl p-2.5">
+                          <span className="block text-emerald-800 font-bold text-[10px] uppercase mb-0.5">💡 Interview Question Detected</span>
+                          <p className="font-extrabold text-[#0d2e27] text-[11px]">What are the core advantages of microservices architecture?</p>
+                        </div>
+
+                        <div className="space-y-1.5 pl-1 text-gray-700 font-medium">
+                          <p className="text-emerald-700 font-extrabold text-[11px]">⭐ Recommended Talking Points:</p>
+                          <ul className="space-y-1 pl-3 text-gray-600 list-disc text-[10px]">
+                            <li><strong>Independent Scalability:</strong> Scale high-load services without duplicating the whole application.</li>
+                            <li><strong>Fault Isolation:</strong> Failure in one service doesn&apos;t bring down the entire system.</li>
+                            <li><strong>Tech Stack Flexibility:</strong> Different teams can use optimal tools per service.</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Left Top Panel: White Card (Video) - Overlaps AI Response slightly */}
-                  <div className="absolute left-0 top-0 w-[54%] h-[310px] z-10 bg-black rounded-2xl overflow-hidden border border-gray-200/50 shadow-md flex flex-col justify-between p-4 bg-cover bg-center" style={{ backgroundImage: "url('/anazk-hero-generated.png?v=4')" }}>
-                    <div className="absolute inset-0 bg-black/35 z-0"></div>
-                    
-                    <div className="flex justify-between items-center z-10 w-full">
-                      <span className="text-[10px] text-white font-bold flex items-center gap-1">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                        Anazk AI in action
-                      </span>
-                      <span className="text-[9px] bg-red-600 text-white font-black px-2 py-0.5 rounded">LIVE</span>
+                    {/* Pro Tip Card */}
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 text-emerald-900 p-2.5 rounded-xl text-[10px] leading-relaxed font-medium">
+                      🎯 <strong>How it works:</strong> Anazk AI listens silently and displays talking points in real-time, giving you total confidence.
                     </div>
 
-                    {/* Centered Right Overlap Play Button */}
-                    <div className="absolute right-[-22px] top-[50%] -translate-y-[50%] z-20">
-                      <button className="w-11 h-11 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-xl transition-transform hover:scale-105 cursor-pointer border-2 border-white">
-                        <Play size={16} fill="currentColor" className="ml-0.5" />
+                    {/* Action Controls */}
+                    <div className="pt-2 border-t border-gray-150 flex items-center justify-between gap-2">
+                      <button className="px-4 py-2 bg-[#0d2e27] hover:bg-emerald-900 text-white font-bold text-[10px] rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                        <Sparkles size={12} />
+                        Generate Next Point
                       </button>
-                    </div>
-
-                    <div className="z-10"></div>
-                  </div>
-
-                  {/* Left Bottom Panel: Transcript - Overlaps AI Response slightly */}
-                  <div className="absolute left-0 bottom-0 w-[54%] h-[270px] z-10 bg-white rounded-2xl border border-gray-200 p-5 shadow-md flex flex-col justify-between text-left">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                      <span className="text-[10px] text-[#0d2e27] font-black uppercase tracking-wider">📝 Transcript</span>
-                      <div className="flex items-center gap-1 text-[9px] text-gray-400 font-semibold">
-                        <span>AutoScroll</span>
-                        <span className="w-5 h-3.5 bg-[#10b981] rounded-full inline-block relative p-0.5"><span className="w-2 h-2 bg-white rounded-full block float-right"></span></span>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-500 font-semibold">
+                        <span className="flex items-center gap-1 text-emerald-600 font-bold">
+                          <CheckCircle2 size={12} /> Ready
+                        </span>
                       </div>
-                    </div>
-                    
-                    <p className="text-gray-700 italic text-[11px] leading-relaxed pr-2 overflow-y-auto max-h-[160px] no-scrollbar">
-                      &quot;this position Anazk AI i provides answers&quot;
-                    </p>
-                    
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-gray-400 text-[10px] font-semibold">
-                      <div className="flex items-center gap-3">
-                        <span className="hover:text-gray-600 cursor-pointer">🔄</span>
-                        <span className="hover:text-gray-600 cursor-pointer">⏱️</span>
-                      </div>
-                      <button className="text-gray-400 hover:text-red-500 font-bold transition-colors cursor-pointer">Clear Transcript</button>
                     </div>
                   </div>
 
@@ -576,15 +958,34 @@ class Solution {
             </div>
           </div>
           
-          {/* Right product visual: Anazk AI running on a laptop during an interview */}
-          <div className="w-full lg:w-[55%] min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-center bg-[#f4f1e8] p-8 md:p-12">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_40%,rgba(16,185,129,0.18),transparent_48%)]"></div>
-            <div className="relative z-10 w-full max-w-[620px] rounded-[28px] bg-white/70 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.18)] ring-1 ring-black/10 backdrop-blur-sm">
-              <img
-                src="/anazk-product-laptop.jpeg"
-                alt="Laptop displaying Anazk AI providing real-time interview guidance"
-                className="block w-full rounded-[20px] object-cover"
-              />
+          {/* Right product visual: photo inside a styled laptop-frame container */}
+          <div className="w-full lg:w-[55%] min-h-[420px] lg:min-h-full relative overflow-hidden flex items-center justify-center bg-[#0a0a0a] p-8 md:p-10">
+            {/* Subtle radial glow behind */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_50%,rgba(16,185,129,0.12),transparent_65%)] pointer-events-none" />
+            {/* Laptop frame */}
+            <div className="relative w-full max-w-[560px]">
+              {/* Screen bezel */}
+              <div className="bg-[#1a1a1e] rounded-t-2xl pt-3 px-3 pb-0 shadow-[0_0_0_1px_rgba(255,255,255,0.07)]">
+                {/* Notch bar */}
+                <div className="flex items-center gap-1.5 mb-2 px-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                </div>
+                {/* Screen image */}
+                <div className="overflow-hidden rounded-t-lg">
+                  <img
+                    src="/user-laptop-photo.png"
+                    alt="Person using Anazk AI on laptop during an interview"
+                    className="block w-full object-cover"
+                    style={{ aspectRatio: '16/10', objectPosition: 'center 30%' }}
+                  />
+                </div>
+              </div>
+              {/* Keyboard base */}
+              <div className="h-5 bg-gradient-to-b from-[#2a2a2e] to-[#1e1e22] rounded-b-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
+              {/* Stand notch */}
+              <div className="mx-auto w-24 h-2 bg-[#141416] rounded-b-lg" />
             </div>
           </div>
         </div>
@@ -614,8 +1015,18 @@ class Solution {
           </div>
 
           <div className="lg:col-span-5 flex flex-col items-center relative">
-            {/* Mascot Image Displayed beautifully */}
-            <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-white/10 border border-white/20 p-2 flex items-center justify-center relative shadow-inner overflow-hidden">
+            {/* Laptop screen photo in circle */}
+            <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-white/10 border-2 border-white/25 overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.3)] relative">
+              <img
+                src="/user-desktop-section.png"
+                alt="Anazk AI running on laptop"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                }}
+              />
             </div>
             
             {/* Floating Logo Badges */}
@@ -1330,48 +1741,102 @@ class Solution {
       </footer>
 
       {/* Modals */}
-      {/* 1. Sign In Modal */}
+      {/* 1. Sign In / Sign Up Modal */}
       {showSignInModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800">
-            <button 
-              onClick={() => setShowSignInModal(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2">Welcome to Anazk AI</h3>
-            <p className="text-gray-500 text-xs font-semibold mb-6">Enter your details to log into your SaaS workspace</p>
+          <div className="bg-white rounded-3xl max-w-md w-full border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 overflow-hidden">
             
-            <form onSubmit={(e) => { e.preventDefault(); setShowSignInModal(false); }} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Email Address</label>
-                <input 
-                  type="email" 
-                  required
-                  placeholder="name@company.com" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
-                />
+            {/* Header with image */}
+            <div className="relative h-28 overflow-hidden bg-[#0d2e27]">
+              <img src="/user-laptop-photo.png" alt="" className="w-full h-full object-cover object-top opacity-40" />
+              <div className="absolute inset-0 flex flex-col items-start justify-end p-6 pb-4">
+                <h3 className="font-display font-black text-2xl text-white">{isLoginMode ? 'Welcome back' : 'Create Account'}</h3>
+                <p className="text-emerald-200 text-xs font-semibold">{isLoginMode ? 'Sign in to your Anazk account' : 'Start your free account today'}</p>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Password</label>
-                <input 
-                  type="password" 
-                  required
-                  placeholder="••••••••" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
-                />
-              </div>
+            </div>
+
+            <div className="p-7">
               <button 
-                type="submit"
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
+                onClick={() => { setShowSignInModal(false); setAuthError(''); setAuthSuccess(''); }}
+                className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
               >
-                Sign In to Workspace
+                <X size={16} />
               </button>
-            </form>
-            
-            <div className="mt-6 text-center text-xs text-gray-500 font-semibold border-t border-gray-100 pt-4">
-              Don't have an account? <span className="text-emerald-600 hover:underline cursor-pointer">Register now</span>
+
+              {authSuccess ? (
+                <div className="py-4 flex flex-col items-center gap-3 text-center">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <CheckCircle2 size={28} className="text-emerald-600" />
+                  </div>
+                  <p className="text-emerald-700 font-bold text-sm">{authSuccess}</p>
+                  <button
+                    onClick={() => { setAuthSuccess(''); setIsLoginMode(true); }}
+                    className="mt-2 text-xs text-emerald-600 hover:underline font-semibold cursor-pointer"
+                  >Go to Sign In →</button>
+                </div>
+              ) : (
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  {!isLoginMode && (
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Full Name</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Your full name" 
+                        value={authName}
+                        onChange={(e) => setAuthName(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Email Address</label>
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="name@company.com" 
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase mb-1.5">Password</label>
+                    <input 
+                      type="password" 
+                      required
+                      placeholder="••••••••" 
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-sm font-semibold placeholder-gray-400 transition-colors"
+                    />
+                  </div>
+                  
+                  {authError && (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold px-3 py-2.5 rounded-xl">
+                      <X size={12} className="shrink-0" />
+                      {authError}
+                    </div>
+                  )}
+                  
+                  <button 
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    {authLoading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Create Account')}
+                  </button>
+                </form>
+              )}
+              
+              {!authSuccess && (
+                <div className="mt-5 text-center text-xs text-gray-500 font-semibold border-t border-gray-100 pt-4">
+                  {isLoginMode ? "Don't have an account? " : 'Already have an account? '}
+                  <span onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); setAuthSuccess(''); }} className="text-emerald-600 hover:underline cursor-pointer font-bold">
+                    {isLoginMode ? 'Sign up free' : 'Sign in'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1559,56 +2024,146 @@ class Solution {
         </div>
       )}
 
-      {/* 6. AI Support Chat Modal */}
-      {showSupportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col h-[520px]">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-start">
-              <div>
-                <h3 className="font-display font-black text-xl text-[#0d2e27]">AI Support</h3>
-                <p className="text-[10px] text-gray-400 font-bold leading-normal mt-1">This is an AI assistant, not a human. It can make mistakes, so please double-check important information.</p>
+      {/* 6. Corner Floating AI Support Chatbot Widget */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {/* Floating Chat Window */}
+        {chatOpen && (
+          <div className="mb-3 w-[92vw] sm:w-[410px] h-[520px] max-h-[80vh] bg-white rounded-3xl border border-gray-200 shadow-[0_20px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200 text-left">
+            {/* Chat Header */}
+            <div className="px-5 py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-inner">
+                    <Bot size={20} />
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
+                    Anazk AI Guide
+                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30">ONLINE</span>
+                  </h4>
+                  <p className="text-[10px] text-emerald-200/80 font-medium">Ask about pricing, navigation & stealth</p>
+                </div>
               </div>
-              <button 
-                onClick={() => setShowSupportModal(false)}
-                className="text-gray-400 hover:text-gray-655 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer shrink-0 ml-4"
+              <button
+                onClick={() => setChatOpen(false)}
+                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
+                title="Close chat"
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* Conversation Messages */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50/50 no-scrollbar">
-              <div className="flex gap-3 items-start max-w-[85%]">
-                <img src="/penguin.jpg" alt="AI Agent" className="w-8 h-8 rounded-full border border-emerald-500/20 object-cover shadow-sm" />
-                <div className="bg-white border border-gray-150 p-3.5 rounded-2xl rounded-tl-none shadow-sm text-xs font-semibold text-gray-750 leading-relaxed">
-                  Hi! I'm Anazk's AI support assistant. How can I help you today?
+            {/* Chat Messages Body */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-gray-50/60 text-xs no-scrollbar">
+              {chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div className={`flex gap-2 max-w-[88%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {msg.sender === 'bot' && (
+                      <div className="w-7 h-7 rounded-xl bg-[#0d2e27] text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                        <Sparkles size={14} />
+                      </div>
+                    )}
+                    <div
+                      className={`p-3.5 rounded-2xl leading-relaxed whitespace-pre-line font-medium ${
+                        msg.sender === 'user'
+                          ? 'bg-[#0d2e27] text-white rounded-tr-none shadow-sm'
+                          : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+
+                  {/* Interactive Action Chips */}
+                  {msg.actions && msg.actions.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 max-w-[95%] pl-9">
+                      {msg.actions.map((act, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            if (act.onClick) {
+                              act.onClick();
+                            } else if (act.query) {
+                              handleSendChatMessage(act.query);
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 hover:text-emerald-900 border border-emerald-200 hover:border-emerald-400 rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                        >
+                          {act.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              ))}
+
+              {isBotTyping && (
+                <div className="flex gap-2 items-center text-gray-400 pl-1">
+                  <div className="w-7 h-7 rounded-xl bg-[#0d2e27] text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <Sparkles size={14} />
+                  </div>
+                  <div className="bg-white border border-gray-200 px-3 py-2 rounded-2xl rounded-tl-none shadow-xs flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatMessagesEndRef} />
             </div>
 
-            {/* Input Bar */}
-            <div className="p-4 border-t border-gray-100 bg-white rounded-b-3xl flex items-center gap-2">
-              <input 
-                type="text" 
-                placeholder="Type your message..." 
-                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-xs font-semibold placeholder-gray-400 transition-colors"
+            {/* Chat Input Bar */}
+            <div className="p-3 bg-white border-t border-gray-150 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Ask where to go or how to buy credits..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    e.currentTarget.value = '';
+                    e.preventDefault();
+                    handleSendChatMessage(chatInput);
                   }
                 }}
+                className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-xs font-semibold text-gray-800 placeholder-gray-400 transition-colors"
               />
-              <button 
-                onClick={() => {}} 
-                className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer"
+              <button
+                onClick={() => handleSendChatMessage(chatInput)}
+                disabled={!chatInput.trim()}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-sm shrink-0 ${
+                  chatInput.trim()
+                    ? 'bg-[#0d2e27] hover:bg-emerald-900 text-white cursor-pointer active:scale-95'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                title="Send message"
               >
-                <ArrowRight size={16} />
+                <Send size={15} />
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Floating Trigger Button */}
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          className="px-4 py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white rounded-full shadow-[0_10px_30px_rgba(13,46,39,0.35)] hover:shadow-[0_14px_40px_rgba(13,46,39,0.5)] border border-emerald-400/30 flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
+          aria-label="Open AI Support Chatbot"
+        >
+          <div className="relative">
+            <Bot size={20} className="text-emerald-300 group-hover:rotate-12 transition-transform" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
+          </div>
+          <span className="font-extrabold text-xs tracking-wide">
+            {chatOpen ? 'Close Guide' : 'AI Guide & Support'}
+          </span>
+        </button>
+      </div>
 
       {/* Floating Right Scroll Navigator Removed */}
 
