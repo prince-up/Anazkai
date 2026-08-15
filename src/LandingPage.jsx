@@ -2044,15 +2044,17 @@ class Solution {
             <div className="px-5 py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-inner">
-                    <Bot size={20} />
-                  </div>
+                  <img 
+                    src="/penguin.jpg" 
+                    alt="Anazk AI Logo" 
+                    className="w-10 h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
+                  />
                   <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
                     Anazk AI Guide
-                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30">ONLINE</span>
+                    <span className="text-[9px] bg-emerald-500/25 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/40">ONLINE</span>
                   </h4>
                   <p className="text-[10px] text-emerald-200/80 font-medium">Ask about pricing, navigation & stealth</p>
                 </div>
@@ -2075,9 +2077,11 @@ class Solution {
                 >
                   <div className={`flex gap-2 max-w-[88%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     {msg.sender === 'bot' && (
-                      <div className="w-7 h-7 rounded-xl bg-[#0d2e27] text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                        <Sparkles size={14} />
-                      </div>
+                      <img 
+                        src="/penguin.jpg" 
+                        alt="Anazk Bot" 
+                        className="w-7 h-7 rounded-full object-cover border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.3)] shrink-0 mt-0.5"
+                      />
                     )}
                     <div
                       className={`p-3.5 rounded-2xl leading-relaxed whitespace-pre-line font-medium ${
@@ -2115,9 +2119,11 @@ class Solution {
 
               {isBotTyping && (
                 <div className="flex gap-2 items-center text-gray-400 pl-1">
-                  <div className="w-7 h-7 rounded-xl bg-[#0d2e27] text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
-                    <Sparkles size={14} />
-                  </div>
+                  <img 
+                    src="/penguin.jpg" 
+                    alt="Anazk Bot" 
+                    className="w-7 h-7 rounded-full object-cover border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.3)] shrink-0"
+                  />
                   <div className="bg-white border border-gray-200 px-3 py-2 rounded-2xl rounded-tl-none shadow-xs flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
@@ -2162,17 +2168,26 @@ class Solution {
         {/* Floating Trigger Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className="px-4 py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white rounded-full shadow-[0_10px_30px_rgba(13,46,39,0.35)] hover:shadow-[0_14px_40px_rgba(13,46,39,0.5)] border border-emerald-400/30 flex items-center gap-2.5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
+          className="pl-2.5 pr-5 py-2.5 bg-gradient-to-r from-[#0d2e27] to-[#123e35] hover:from-[#061713] hover:to-[#0d2e27] text-white rounded-full shadow-[0_12px_35px_rgba(13,46,39,0.38)] hover:shadow-[0_16px_45px_rgba(16,185,129,0.4)] border border-emerald-500/30 flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
           aria-label="Open AI Support Chatbot"
         >
-          <div className="relative">
-            <Bot size={20} className="text-emerald-300 group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
+          <div className="relative flex items-center justify-center">
+            <img 
+              src="/penguin.jpg" 
+              alt="Anazk Penguin" 
+              className="w-8 h-8 rounded-full object-cover border-2 border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.5)] group-hover:rotate-12 transition-transform duration-300"
+            />
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0d2e27]"></span>
           </div>
-          <span className="font-extrabold text-xs tracking-wide">
-            {chatOpen ? 'Close Guide' : 'AI Guide & Support'}
-          </span>
+          <div className="text-left">
+            <span className="font-extrabold text-xs tracking-tight block text-white">
+              {chatOpen ? 'Close Guide' : 'AI Guide & Support'}
+            </span>
+            <span className="text-[10px] text-emerald-300 font-semibold block leading-none">
+              {chatOpen ? 'Click to hide' : 'Ask Anazk AI'}
+            </span>
+          </div>
         </button>
       </div>
 
