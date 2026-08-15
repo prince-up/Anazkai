@@ -1185,22 +1185,27 @@ class Solution {
         </div>
       </section>
 
-      {/* Early access reviewer section */}
-      <section id="reviews" className="px-6 py-20 sm:py-24">
-        <div className="mx-auto w-full">
-          <div className="mb-10 flex flex-col gap-4 text-center sm:mb-12">
-            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-300">
-              <Users size={14} /> Early access reviewers
+      {/* Early access reviewer section (Light Green Background & Natural Cards) */}
+      <section id="reviews" className="px-6 py-20 sm:py-24 bg-gradient-to-b from-emerald-50/90 via-[#f0fdf4] to-emerald-50/60 border-y border-emerald-100">
+        <div className="mx-auto w-full max-w-[1680px]">
+          <div className="mb-12 flex flex-col gap-3 text-center">
+            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/80 px-4 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-emerald-900 shadow-xs">
+              <Users size={14} className="text-emerald-700" /> Early access reviewers
             </span>
-            <h2 className="font-display text-3xl font-black tracking-tight text-white sm:text-5xl">Reviewed by the people helping us make it better.</h2>
-            <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-400 sm:text-lg">These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.</p>
+            <h2 className="font-display text-3xl font-black tracking-tight text-[#0d2e27] sm:text-5xl">
+              Reviewed by the people helping us make it better.
+            </h2>
+            <p className="mx-auto max-w-2xl text-base font-bold leading-relaxed text-gray-650 sm:text-lg">
+              These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.
+            </p>
           </div>
-          {/* Testimonial Cards Grid (Balanced 3-column layout, feedback always visible) */}
+
+          {/* Testimonial Cards Grid (Natural, clean cards with light green styling) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {(showAllReviewers ? reviewers : reviewers.slice(0, 6)).map((reviewer, index) => (
               <div
                 key={index}
-                className="group rounded-3xl border border-white/12 bg-white/[0.05] p-6 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-400/50 hover:bg-white/[0.09] shadow-lg flex flex-col justify-between"
+                className="group rounded-3xl border-2 border-emerald-100/90 bg-white p-6 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-400 hover:shadow-lg shadow-sm flex flex-col justify-between"
               >
                 <div>
                   {/* Top: Avatar, Name & Stars */}
@@ -1208,18 +1213,18 @@ class Solution {
                     <img
                       src={reviewer.image}
                       alt={`${reviewer.name}, Anazk AI reviewer`}
-                      className="w-14 h-14 rounded-full border-2 border-emerald-400/40 object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                      className="w-14 h-14 rounded-full border-2 border-emerald-200 object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0"
                     />
                     <div>
-                      <h4 className="text-base sm:text-lg font-black text-slate-100 flex items-center gap-1.5">
+                      <h4 className="text-base sm:text-lg font-black text-[#0d2e27] flex items-center gap-1.5">
                         {reviewer.name}
-                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30">Verified</span>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">Verified</span>
                       </h4>
-                      <div className="flex items-center gap-0.5 text-amber-300 mt-1" aria-label={`${reviewer.rating} out of 5 stars`}>
+                      <div className="flex items-center gap-0.5 text-amber-400 mt-1" aria-label={`${reviewer.rating} out of 5 stars`}>
                         {Array.from({ length: 5 }, (_, star) => (
                           <Star
                             key={star}
-                            size={14}
+                            size={15}
                             fill="currentColor"
                             className={star < reviewer.rating ? 'opacity-100 text-amber-400' : 'opacity-25'}
                             aria-hidden="true"
@@ -1230,33 +1235,35 @@ class Solution {
                   </div>
 
                   {/* Feedback Text — Always visible */}
-                  <p className="text-slate-200 text-sm leading-relaxed font-medium italic pt-2 border-t border-white/10">
+                  <p className="text-gray-750 text-sm sm:text-[15px] leading-relaxed font-semibold italic pt-3 border-t border-emerald-50">
                     &ldquo;{reviewer.review}&rdquo;
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
-                  <span className="text-sky-300">Anazk AI Early Tester</span>
-                  <span>⭐ 5.0 Rating</span>
+                <div className="mt-5 pt-3 border-t border-emerald-50 flex items-center justify-between text-xs text-gray-500 font-bold">
+                  <span className="text-emerald-700 font-extrabold">Anazk AI Early Tester</span>
+                  <span className="text-amber-600">⭐ {reviewer.rating}.0 Rating</span>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Show More / Show Less Toggle */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-10 flex justify-center">
             <button 
               onClick={() => setShowAllReviewers(!showAllReviewers)}
-              className="px-7 py-3 rounded-full bg-sky-500/15 border-2 border-sky-400/30 hover:border-sky-400 text-sky-200 hover:text-white font-black text-sm hover:bg-sky-500/25 transition-all cursor-pointer shadow-md active:scale-95 flex items-center gap-2"
+              className="px-8 py-3.5 rounded-full bg-white border-2 border-emerald-300 hover:border-emerald-500 text-emerald-900 hover:text-emerald-950 font-black text-sm hover:bg-emerald-50 transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-2"
             >
               {showAllReviewers ? 'Show less reviews ↑' : `Show all ${reviewers.length} reviews ↓`}
             </button>
           </div>
-          <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.08] p-6 text-center sm:p-8">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Want to be next?</p>
-            <h3 className="mt-3 font-display text-2xl font-black text-white sm:text-3xl">Buy Premium, share your experience.</h3>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">Tell us what you used, how it helped, your rating, and whether we can publish your feedback. The button opens a pre-filled Gmail review form.</p>
-            <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-400 px-6 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-300">
+
+          {/* Call to action card */}
+          <div className="mt-12 rounded-3xl border-2 border-emerald-200 bg-white/90 p-8 text-center sm:p-10 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">Want to be next?</p>
+            <h3 className="mt-3 font-display text-2xl font-black text-[#0d2e27] sm:text-3xl">Buy Premium, share your experience.</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-base font-semibold leading-relaxed text-gray-650">Tell us what you used, how it helped, your rating, and whether we can publish your feedback. The button opens a pre-filled Gmail review form.</p>
+            <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0d2e27] hover:bg-emerald-950 px-8 py-3.5 text-sm font-black text-white transition shadow-md hover:scale-[1.02] active:scale-98">
               Be the next reviewer <ArrowRight size={16} />
             </a>
           </div>

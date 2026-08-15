@@ -96,7 +96,6 @@ button { cursor: pointer; }
 .font-sans .border-gray-100, .font-sans .border-gray-200, .font-sans .border-gray-50 { border-color: var(--line) !important; }
 .font-sans .font-mono pre, .font-sans pre { background: #0b111c !important; border-color: rgba(142,240,212,.18) !important; color: #c8b9ff !important; }
 .font-sans .bg-emerald-600, .font-sans .bg-emerald-700 { background: linear-gradient(135deg, #20c7a5, #3858d6) !important; }
-.font-sans section[id="reviews"] > div { background: linear-gradient(135deg, rgba(15,42,50,.82), rgba(25,25,62,.82)) !important; }
 
 .fixed.inset-0 { background: rgba(2, 4, 10, .78) !important; backdrop-filter: blur(12px); }
 .fixed.inset-0 > div { background: #101722 !important; border-color: var(--line) !important; color: #eef2f8 !important; }
@@ -261,44 +260,34 @@ body { background: #ffffff; color: #111827; }
   color: #d1fae5 !important;
 }
 
-/* Reviews Section High-Contrast Styling */
+/* Reviews Section Light-Green Theme Styling */
 .font-sans section#reviews,
 .font-sans section#reviews > div {
-  color: #f1f5f9 !important;
+  background: #f0fdf4 !important;
+  color: #111827 !important;
 }
 
 .font-sans section#reviews h2,
-.font-sans section#reviews h3 {
-  color: #ffffff !important;
+.font-sans section#reviews h3,
+.font-sans section#reviews h4 {
+  color: #064e3b !important;
 }
 
 .font-sans section#reviews p {
-  color: #cbd5e1 !important;
+  color: #1f2937 !important;
 }
 
-.font-sans section#reviews .text-slate-200,
-.font-sans section#reviews [class*="text-slate-200"] {
-  color: #f8fafc !important;
+.font-sans section#reviews .group {
+  background: #ffffff !important;
+  border-color: #a7f3d0 !important;
 }
 
-.font-sans section#reviews .text-slate-300,
-.font-sans section#reviews [class*="text-slate-300"] {
-  color: #e2e8f0 !important;
+.font-sans section#reviews .group h4 {
+  color: #064e3b !important;
 }
 
-.font-sans section#reviews .text-slate-400,
-.font-sans section#reviews [class*="text-slate-400"] {
-  color: #cbd5e1 !important;
-}
-
-.font-sans section#reviews .text-sky-300,
-.font-sans section#reviews [class*="text-sky-300"] {
-  color: #7dd3fc !important;
-}
-
-.font-sans section#reviews .text-emerald-300,
-.font-sans section#reviews [class*="text-emerald-300"] {
-  color: #6ee7b7 !important;
+.font-sans section#reviews .group p {
+  color: #1f2937 !important;
 }
 
 .font-sans footer a,
