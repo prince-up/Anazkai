@@ -624,28 +624,28 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* Floating Header */}
-      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1400px] z-50 backdrop-blur-xl border px-6 py-3.5 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.05)] ${activeTab === 'coding' ? 'bg-[#0f172a]/70 border-emerald-500/20 text-white' : 'bg-white/70 border-emerald-500/10 text-[#0d2e27]'}`}>
+      <nav className={`fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1400px] z-50 backdrop-blur-xl border px-6 py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/80 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
         <div className="flex items-center space-x-3 cursor-pointer">
           <img 
             src="/penguin.jpg" 
             alt="AnazkAI Logo" 
-            className="w-10 h-10 rounded-full border border-emerald-500/20 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:scale-105 transition-transform duration-200" 
+            className="w-11 h-11 rounded-full border-2 border-emerald-500/30 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.2)] hover:scale-105 transition-transform duration-200" 
           />
-          <span className="font-display font-black text-2xl text-[#0d2e27] tracking-tight flex items-center">
-            Anazk<span className="text-emerald-500 font-extrabold"> AI</span>
+          <span className="font-display font-black text-2xl sm:text-[26px] text-[#0d2e27] tracking-tight flex items-center">
+            Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
           </span>
         </div>
 
         {/* Desktop Links */}
-        <div className={`hidden md:flex items-center gap-8 text-sm font-black transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
+        <div className={`hidden md:flex items-center gap-8 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
-          <a href="#reviews" className="hover:text-sky-400 transition-colors flex items-center gap-1">Early access</a>
+          <a href="#reviews" className="hover:text-sky-500 transition-colors flex items-center gap-1">Early access</a>
           <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
           <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
           <a href="#download" onClick={(e) => { e.preventDefault(); setShowDownloadModal(true); }} className="hover:text-emerald-600 transition-colors flex items-center gap-1">
             Desktop App
-            <span className="text-[10px] bg-[#10b981] text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left">New</span>
+            <span className="text-[10px] bg-[#10b981] text-white font-black px-2 py-0.5 rounded-full uppercase tracking-wider scale-95 origin-left shadow-xs">New</span>
           </a>
         </div>
 
@@ -653,27 +653,27 @@ class Solution {
         <div className="hidden md:flex items-center space-x-3">
           <button 
             onClick={() => setShowDownloadModal(true)} 
-            className="w-10 h-10 rounded-full border border-gray-200 hover:border-gray-300 flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 transition-all cursor-pointer shadow-sm"
+            className="w-11 h-11 rounded-full border-2 border-gray-200 hover:border-emerald-500 flex items-center justify-center text-gray-800 bg-white hover:bg-emerald-50 transition-all cursor-pointer shadow-sm"
             title="Download App"
           >
-            <Download size={16} />
+            <Download size={18} />
           </button>
           
           {user ? (
             <button 
               onClick={() => supabase.auth.signOut()}
-              className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+              className={`px-7 py-3 border-2 font-black text-base rounded-full transition-all shadow-sm flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
             >
-              <User size={14} />
+              <User size={16} />
               Sign out
             </button>
           ) : (
             <button 
               onClick={() => setShowSignInModal(true)}
-              className={`px-6 py-2.5 border font-extrabold text-sm rounded-full transition-all shadow-sm flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+              className="px-7 py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-base rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               Sign in
-              <ArrowRight size={14} />
+              <ArrowRight size={16} />
             </button>
           )}
         </div>
@@ -1713,29 +1713,48 @@ class Solution {
       </section>
 
       {/* Premium Footer */}
-      <footer className="premium-footer border-t border-white/10 px-6 py-14 text-left">
-        <div className="mx-auto flex max-w-7xl flex-col gap-10">
+      <footer className="border-t border-gray-200 bg-[#f8fafc] px-6 py-16 text-left">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-10">
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-            <div className="max-w-md">
-              <div className="mb-4 flex items-center gap-3">
-                <img src="/penguin.jpg" alt="Anazk AI Logo" className="size-10 rounded-2xl border border-white/10 object-cover" />
-                <span className="font-display text-xl font-black tracking-tight text-white">Anazk AI</span>
+            <div className="max-w-xl space-y-3">
+              <div className="flex items-center gap-3">
+                <img src="/penguin.jpg" alt="Anazk AI Logo" className="w-11 h-11 rounded-2xl border-2 border-emerald-500/30 object-cover shadow-sm" />
+                <span className="font-display text-2xl font-black tracking-tight text-[#0d2e27]">Anazk AI</span>
               </div>
-              <h3 className="font-display text-3xl font-black leading-tight tracking-[-0.04em] text-white sm:text-4xl">Think clearly. Respond confidently.</h3>
-              <p className="mt-4 text-sm leading-relaxed text-slate-400">A focused AI copilot for the moments where preparation matters most.</p>
+              <h3 className="font-display text-3xl sm:text-4xl font-black leading-tight tracking-tight text-[#0d2e27]">
+                Think clearly. Respond confidently.
+              </h3>
+              <p className="text-base sm:text-lg font-bold leading-relaxed text-gray-700">
+                A focused AI copilot for the moments where preparation matters most.
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-300">
-              <a href="mailto:supportanazkai@gmail.com" className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Email support</a>
-              <a href="https://www.linkedin.com/in/anazk-ai-422894429" target="_blank" rel="noreferrer" className="rounded-full border border-sky-400/30 bg-sky-400/10 px-4 py-2.5 text-sky-200 transition hover:border-sky-300 hover:bg-sky-400/20 hover:text-white">Connect on LinkedIn</a>
-              <button onClick={() => setShowSupportModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Support</button>
-              <button onClick={() => setShowTermsModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Terms</button>
-              <button onClick={() => setShowPrivacyModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Privacy</button>
-              <button onClick={() => setShowRefundModal(true)} className="rounded-full border border-white/10 px-4 py-2.5 transition hover:border-sky-400/50 hover:text-white">Refunds</button>
+            
+            {/* Quick Links & Buttons */}
+            <div className="flex flex-wrap gap-2.5 text-sm font-extrabold text-gray-800">
+              <a href="mailto:supportanazkai@gmail.com" className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs">
+                Email support
+              </a>
+              <a href="https://www.linkedin.com/in/anazk-ai-422894429" target="_blank" rel="noreferrer" className="rounded-full border-2 border-sky-300 bg-sky-50 px-5 py-2.5 text-sky-800 transition hover:border-sky-500 hover:bg-sky-100 shadow-xs">
+                Connect on LinkedIn
+              </a>
+              <button onClick={() => setChatOpen(true)} className="rounded-full border-2 border-emerald-300 bg-emerald-50 px-5 py-2.5 text-emerald-800 transition hover:border-emerald-500 hover:bg-emerald-100 shadow-xs cursor-pointer">
+                AI Guide & Support
+              </button>
+              <button onClick={() => setShowTermsModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
+                Terms
+              </button>
+              <button onClick={() => setShowPrivacyModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
+                Privacy
+              </button>
+              <button onClick={() => setShowRefundModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
+                Refunds
+              </button>
             </div>
           </div>
-          <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-xs font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>© 2026 Anazk AI. All rights reserved.</span>
-            <span>Built for better conversations.</span>
+          
+          <div className="flex flex-col gap-2 border-t border-gray-200 pt-6 text-sm font-bold text-gray-600 sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-extrabold text-gray-800">© 2026 Anazk AI. All rights reserved.</span>
+            <span className="text-emerald-700 font-black">Built for better conversations.</span>
           </div>
         </div>
       </footer>
