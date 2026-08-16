@@ -8,7 +8,8 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
 
-// Fallback / default built-in AI key for subscribed users
+// Fallback / default built-in AI keys for subscribed users
+const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
 function AppContent({ timeRemaining, onLogout }) {
@@ -58,26 +59,22 @@ function AppContent({ timeRemaining, onLogout }) {
     }
   }, [alwaysOnTop]);
 
-  // Handle hotkeys
+  // Global hotkeys (F1 for fullscreen capture, F3 for Ask AI, F4 for Region capture)
   useEffect(() => {
-    if (window.require) {
-      const { ipcRenderer } = window.require('electron');
-      
-      const handleShortcut = (event, shortcut) => {
-        if (shortcut === 'F1') {
-          handleCapture('full');
-        } else if (shortcut === 'F4') {
-          handleCapture('region');
-        } else if (shortcut === 'F3') {
-          handleAskAI();
-        }
-      };
-
-      ipcRenderer.on('shortcut-triggered', handleShortcut);
-      return () => {
-        ipcRenderer.removeListener('shortcut-triggered', handleShortcut);
-      };
-    }
+    const handleKeyDown = (e) => {
+      if (e.key === 'F1') {
+        e.preventDefault();
+        handleCapture('full');
+      } else if (e.key === 'F4') {
+        e.preventDefault();
+        handleCapture('region');
+      } else if (e.key === 'F3') {
+        e.preventDefault();
+        handleAskAI();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [screenshotData, inputText, apiKey, isLoading, opacity, alwaysOnTop, autoAsk]);
 
   // Auto scroll output
@@ -132,9 +129,11 @@ function AppContent({ timeRemaining, onLogout }) {
   const handleAskAI = async (overrideText = null, overrideImage = null) => {
     if (isLoading) return;
     
-    const activeKey = getEffectiveApiKey();
-    if (!activeKey) {
-      setOutputText('AI Cloud Engine is not configured. Please ensure VITE_GROQ_API_KEY is configured on your server.');
+    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+    const groqKey = getEffectiveApiKey();
+
+    if (!geminiKey && !groqKey) {
+      setOutputText('AI Cloud Engine is not configured. Please ensure VITE_GEMINI_API_KEY is configured on your server.');
       return;
     }
     
@@ -149,76 +148,125 @@ function AppContent({ timeRemaining, onLogout }) {
     setIsLoading(true);
     setOutputText('Analyzing question and generating calm response...');
 
-    try {
-      const url = `https://api.groq.com/openai/v1/chat/completions`;
-      const content = [];
-      let promptText = "You are an expert interview assistant helping a candidate in real-time. Provide clear, professional, and well-structured answers suitable for speaking in an interview. Use concise bullet points and bold key points for instant readability. If coding, provide the optimal code with brief time/space complexity.";
-      
-      if (resumeText) {
-        promptText += `\n\nCandidate Resume Context:\n${resumeText}\n(Incorporate resume experience if relevant)`;
-      }
-      
-      if (textToSend) {
-        promptText += `\n\nQuestion/Context: ${textToSend}`;
-      }
+    let promptText = "You are an expert interview assistant helping a candidate in real-time. Provide clear, professional, and well-structured answers suitable for speaking in an interview. Use concise bullet points and bold key points for instant readability. If coding, provide the optimal code with brief time/space complexity.";
+    
+    if (resumeText) {
+      promptText += `\n\nCandidate Resume Context:\n${resumeText}\n(Incorporate resume experience if relevant)`;
+    }
+    
+    if (textToSend) {
+      promptText += `\n\nQuestion/Context: ${textToSend}`;
+    }
 
-      content.push({ type: 'text', text: promptText });
+    let success = false;
+    let reply = '';
+    let lastErr = null;
 
+    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE
+    if (geminiKey) {
+      const geminiModels = ['gemini-3.7-flash', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-pro-latest'];
+      
+      let imageBase64 = null;
+      let imageMime = 'image/png';
       if (imageToSend) {
-        content.push({
-          type: 'image_url',
-          image_url: { url: imageToSend }
-        });
-      }
-
-      const modelsToTry = imageToSend ? [
-        'llama-3.2-11b-vision-preview',
-        'llama-3.2-90b-vision-preview',
-        'qwen-2.5-vl-72b-instruct'
-      ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
-
-      let response;
-      let data;
-      let success = false;
-      let lastErr = null;
-
-      for (const modelId of modelsToTry) {
-        try {
-          const requestBody = { model: modelId, messages: [{ role: 'user', content }] };
-          response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeKey}` },
-            body: JSON.stringify(requestBody)
-          });
-          data = await response.json();
-          
-          if (response.ok) {
-             success = true;
-             break;
-          } else {
-             lastErr = data.error?.message || 'Unknown API error';
-             if (response.status === 401) break;
-          }
-        } catch (fetchErr) {
-          lastErr = fetchErr.message;
+        const parts = imageToSend.split(',');
+        if (parts.length === 2) {
+          const match = parts[0].match(/:(.*?);/);
+          if (match) imageMime = match[1];
+          imageBase64 = parts[1];
+        } else {
+          imageBase64 = imageToSend;
         }
       }
 
-      if (!success) {
-        throw new Error(lastErr || 'Failed to connect to AI server.');
-      }
+      for (const modelId of geminiModels) {
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
+          const contentParts = [{ text: promptText }];
+          if (imageBase64) {
+            contentParts.push({
+              inlineData: {
+                mimeType: imageMime,
+                data: imageBase64
+              }
+            });
+          }
 
-      const reply = data.choices?.[0]?.message?.content || 'No response generated.';
+          const response = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: contentParts }] })
+          });
+          const data = await response.json();
+
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            reply = data.candidates[0].content.parts[0].text;
+            success = true;
+            break;
+          } else {
+            lastErr = data.error?.message || 'Gemini error';
+          }
+        } catch (geminiErr) {
+          lastErr = geminiErr.message;
+        }
+      }
+    }
+
+    // 2. SECONDARY / FALLBACK: GROQ LLAMA ENGINE
+    if (!success && groqKey) {
+      try {
+        const url = `https://api.groq.com/openai/v1/chat/completions`;
+        const content = [{ type: 'text', text: promptText }];
+
+        if (imageToSend) {
+          content.push({
+            type: 'image_url',
+            image_url: { url: imageToSend }
+          });
+        }
+
+        const groqModels = imageToSend ? [
+          'llama-3.2-11b-vision-preview',
+          'llama-3.2-90b-vision-preview',
+          'qwen-2.5-vl-72b-instruct'
+        ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
+
+        for (const modelId of groqModels) {
+          try {
+            const requestBody = { model: modelId, messages: [{ role: 'user', content }] };
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+              body: JSON.stringify(requestBody)
+            });
+            const data = await response.json();
+            
+            if (response.ok && data.choices?.[0]?.message?.content) {
+               reply = data.choices[0].message.content;
+               success = true;
+               break;
+            } else {
+               lastErr = data.error?.message || 'Groq error';
+               if (response.status === 401) break;
+            }
+          } catch (fetchErr) {
+            lastErr = fetchErr.message;
+          }
+        }
+      } catch (groqErr) {
+        lastErr = groqErr.message;
+      }
+    }
+
+    if (success && reply) {
       setOutputText(reply);
       setInterviewCount(prev => prev + 1);
-      setInputText(''); // Clear input after successful ask
-      
-    } catch (err) {
-      console.error('AI error:', err);
-      setOutputText(`Error: ${err.message}`);
-    } finally {
-      setIsLoading(false);
+      setInputText('');
+    } else {
+      setOutputText(`Error: ${lastErr || 'Failed to connect to AI engine. Please check internet connection.'}`);
     }
+
+    setIsLoading(false);
   };
 
   const handleListen = () => {
