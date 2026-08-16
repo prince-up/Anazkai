@@ -134,8 +134,7 @@ function AppContent({ timeRemaining, onLogout }) {
     
     const activeKey = getEffectiveApiKey();
     if (!activeKey) {
-      setOutputText('Please configure your Groq API Key in Preferences (Settings icon at top right).');
-      setShowSettings(true);
+      setOutputText('AI Cloud Engine is not configured. Please ensure VITE_GROQ_API_KEY is configured on your server.');
       return;
     }
     
@@ -399,27 +398,11 @@ function AppContent({ timeRemaining, onLogout }) {
             <p className="text-xs text-gray-400 mb-5">Customize your stealth assistant settings</p>
             
             <div className="space-y-4 text-xs">
-              {/* Groq API Key (Optional) */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="font-bold text-gray-300">Custom Groq API Key (Optional)</label>
-                  <span className="text-[10px] text-emerald-400 font-semibold">Included in Subscription</span>
-                </div>
-                <input 
-                  type="password"
-                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-colors font-mono text-xs"
-                  placeholder="Leave blank to use included Cloud AI..."
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                />
-                <p className="text-[10px] text-gray-500 mt-1">Leave empty to use the built-in subscription AI automatically.</p>
-              </div>
-              
               {/* Resume / Context */}
               <div>
                 <label className="block font-bold text-gray-300 mb-1">Context / Resume (Optional)</label>
                 <textarea 
-                  className="w-full h-24 px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-gray-300 resize-none transition-colors text-xs leading-relaxed"
+                  className="w-full h-28 px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-gray-300 resize-none transition-colors text-xs leading-relaxed"
                   placeholder="Paste your key projects, stack, or resume summary to personalize behavioral and technical answers..."
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
