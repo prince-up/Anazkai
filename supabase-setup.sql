@@ -1,6 +1,6 @@
 -- ============================================================
--- Anazk AI - Supabase Database Setup
--- Run this once in your Supabase SQL Editor:
+-- Anazk AI - Supabase Database Setup (Safe / Idempotent)
+-- Run this in your Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/cnisrikrxwcnsjeuogwr/sql/new
 -- ============================================================
 
@@ -13,23 +13,26 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Enable Row Level Security
+-- 2. Enable Row Level Security on profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 3. Policy: users can read/write only their own profile
+-- 3. Safely create profile policies
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
--- 4. Auto-update the updated_at timestamp
+-- 4. Auto-update updated_at timestamp function & trigger
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -38,6 +41,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
 CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -58,16 +62,18 @@ CREATE TABLE IF NOT EXISTS public.licenses (
 -- 6. Enable RLS on licenses
 ALTER TABLE public.licenses ENABLE ROW LEVEL SECURITY;
 
--- Allow public verification and activation of license keys from the desktop app
+-- 7. Safely create policies for licenses
+DROP POLICY IF EXISTS "Allow public select on licenses" ON public.licenses;
 CREATE POLICY "Allow public select on licenses"
   ON public.licenses FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Allow public update on licenses for activation" ON public.licenses;
 CREATE POLICY "Allow public update on licenses for activation"
   ON public.licenses FOR UPDATE
   USING (true);
 
+DROP POLICY IF EXISTS "Allow service role full access" ON public.licenses;
 CREATE POLICY "Allow service role full access"
   ON public.licenses FOR ALL
   USING (true);
-
