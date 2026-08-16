@@ -41,3 +41,33 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- 5. Create the licenses table to store generated License Keys & activation duration
+CREATE TABLE IF NOT EXISTS public.licenses (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key               TEXT UNIQUE NOT NULL,
+  duration_minutes  INTEGER NOT NULL DEFAULT 60,
+  status            TEXT NOT NULL DEFAULT 'unused', -- 'unused', 'active', 'expired'
+  activated_at      TIMESTAMPTZ,
+  stripe_session_id TEXT,
+  email             TEXT,
+  created_at        TIMESTAMPTZ DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Enable RLS on licenses
+ALTER TABLE public.licenses ENABLE ROW LEVEL SECURITY;
+
+-- Allow public verification and activation of license keys from the desktop app
+CREATE POLICY "Allow public select on licenses"
+  ON public.licenses FOR SELECT
+  USING (true);
+
+CREATE POLICY "Allow public update on licenses for activation"
+  ON public.licenses FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Allow service role full access"
+  ON public.licenses FOR ALL
+  USING (true);
+
