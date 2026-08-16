@@ -38,8 +38,6 @@ function LandingPage() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
-  const [expandedReviewer, setExpandedReviewer] = useState(null);
-  const [showAllReviewers, setShowAllReviewers] = useState(false);
   const [checkoutState, setCheckoutState] = useState('idle');
   const [checkoutError, setCheckoutError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null);
@@ -276,23 +274,6 @@ function LandingPage() {
     }
   };
 
-  const reviewEmail = 'supportanazkai@gmail.com';
-  const reviewComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${reviewEmail}&su=${encodeURIComponent('Anazk AI reviewer feedback')}&body=${encodeURIComponent('Name:\nEmail:\nPlan purchased:\nInterview platform:\nUse case:\nRating out of 5:\nYour experience:\nPermission to publish this review: Yes / No')}`;
-
-  const reviewers = [
-    { name: 'Prince Yadav', image: '/reviewers/luffy.png', rating: 5, review: 'This is a literal cheat code for interviews. It runs smoothly without slowing down my PC, and the whole experience feels surprisingly seamless.' },
-    { name: 'Prem Sharma', image: '/reviewers/nilesh-kumar.png', rating: 4, review: 'The setup was super easy. I especially liked the screen-share protection because it stayed out of view during my Google Meet and Zoom calls.' },
-    { name: 'Luffy', image: '/reviewers/priyanshu-kumar.png', rating: 5, review: 'The transcription speed is crazy. Even with accents and complex topics like Redis, it captured the conversation clearly and helped me stay calm.' },
-    { name: 'Abhinav Asthana', image: '/reviewers/abhinav-asthana.png', rating: 5, review: 'Honestly, this app is a lifesaver. During a tough coding interview, it helped me organize my thoughts quickly instead of panicking.' },
-    { name: 'Nilesh Yadav', image: '/reviewers/prem-kumar.png', rating: 4, review: 'Behavioral rounds became much easier. The answers felt connected to my resume, so I could respond naturally instead of searching for examples.' },
-    { name: 'Priyanshu Kumar', image: '/reviewers/krishna.png', rating: 5, review: 'I was skeptical about the invisible overlay, but testing it with a friend on Microsoft Teams changed my mind. It worked exactly as expected.' },
-    { name: 'Subrat Yadav', image: '/reviewers/astitva-yadav.png', rating: 4, review: 'The system design suggestions were genuinely useful. It picked up the microservices discussion and gave me a clear structure to talk through.' },
-    { name: 'YashRaj Singh', image: '/reviewers/yash-raj.png', rating: 5, review: 'Maza aa gaya! I used to get nervous during live coding, but having a backup helped me communicate much more clearly.' },
-    { name: 'Krishna Sharma', image: '/reviewers/harsh-shadeo.png', rating: 4, review: 'Setup took about two minutes. The solution was practical, and I liked that it also explained the time complexity instead of only showing an answer.' },
-    { name: 'Harsh Shadeo', image: '/reviewers/subrat-yadav.png', rating: 5, review: 'Worth every penny for the low latency. It felt practical during a fast-paced interview because the suggestions arrived without interrupting my flow.' },
-    { name: 'Astitva Yadav', image: '/reviewers/prince-yadav.png', rating: 4, review: 'I used it for a frontend interview and liked how it handled React concepts. It felt like having a senior developer helping me think through the question.' },
-  ];
-  
   // Custom legal & support modals
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -378,12 +359,11 @@ function LandingPage() {
       query.includes('section') || query.includes('route') || query.includes('look')
     ) {
       return {
-        text: "🧭 **Website Roadmap & Quick Links:**\n\nHere is what you'll find on this page:\n• **Top:** Live video demo & interactive interview assistant preview\n• **Features:** Compatibility with Zoom, Meet, Teams, LeetCode\n• **Stealth Mode:** Undetectability & screen share invisibility\n• **Pricing:** Purchase credits & subscription packages\n• **Reviews:** 100+ verified customer ratings & testimonials\n• **FAQ:** Common interview preparation questions",
+        text: "🧭 **Website Roadmap & Quick Links:**\n\nHere is what you'll find on this page:\n• **Top:** Live video demo & interactive interview assistant preview\n• **Features:** Compatibility with Zoom, Meet, Teams, LeetCode\n• **Stealth Mode:** Undetectability & screen share invisibility\n• **Pricing:** Purchase credits & subscription packages\n• **FAQ:** Common interview preparation questions",
         actions: [
           { label: '⚡ Features', onClick: () => { scrollToSection('features'); setChatOpen(false); } },
           { label: '🛡️ Stealth Mode', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } },
           { label: '💳 Pricing', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } },
-          { label: '⭐ Reviews', onClick: () => { scrollToSection('reviews'); setChatOpen(false); } },
           { label: '❓ FAQ', onClick: () => { scrollToSection('faq'); setChatOpen(false); } }
         ]
       };
@@ -736,8 +716,7 @@ class Solution {
         {/* Desktop Links */}
         <div className={`hidden md:flex items-center gap-7 lg:gap-9 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
           <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
-          <a href="#reviews" className="hover:text-sky-500 transition-colors flex items-center gap-1">Early access</a>
-          <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Be a reviewer</a>
+          <a href="#sandbox" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Interactive Demo</a>
           <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
           <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
         </div>
@@ -805,7 +784,6 @@ class Solution {
         <div className="fixed top-18 left-1/2 -translate-x-1/2 w-[calc(100%-1.25rem)] max-w-md bg-white/95 backdrop-blur-2xl border border-emerald-500/20 rounded-3xl p-5 shadow-2xl z-40 md:hidden flex flex-col space-y-3.5 animate-in fade-in slide-in-from-top-5 duration-200">
           <a href="#features" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Features</a>
           <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Interactive Demo</a>
-          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-sky-500 py-2 border-b border-gray-100 text-sm">Early access</a>
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Pricing</a>
           <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="text-left font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Privacy</button>
           <div className="pt-2 flex flex-col space-y-2">
@@ -854,14 +832,14 @@ class Solution {
           </p>
 
 
-          {/* Transparent early-access note */}
+          {/* 100% Private & Undetectable note */}
           <div className="pt-4 sm:pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
-            <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
-              <Users size={16} />
+            <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <Shield size={16} />
             </div>
             <div className="text-xs font-medium text-left">
-              <span className={`block font-black text-xs sm:text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>Currently reviewed by 11 people</span>
-              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500 text-[11px] sm:text-xs">We are validating the experience with a small review group before a wider launch.</span>
+              <span className={`block font-black text-xs sm:text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>100% Private & Undetectable</span>
+              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500 text-[11px] sm:text-xs">Invisible during screen sharing on Zoom, Meet, and Microsoft Teams.</span>
             </div>
           </div>
         </div>
@@ -1291,91 +1269,6 @@ class Solution {
                 )}
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Early access reviewer section (Light Green Background & Natural Cards) */}
-      <section id="reviews" className="px-6 sm:px-10 lg:px-16 py-20 sm:py-24 bg-gradient-to-b from-emerald-50/90 via-[#f0fdf4] to-emerald-50/60 border-y border-emerald-100">
-        <div className="mx-auto w-full max-w-[1480px]">
-          <div className="mb-12 flex flex-col gap-3 text-center">
-            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/80 px-4 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-emerald-900 shadow-xs">
-              <Users size={14} className="text-emerald-700" /> Early access reviewers
-            </span>
-            <h2 className="font-display text-3xl font-black tracking-tight text-[#0d2e27] sm:text-5xl">
-              Reviewed by the people helping us make it better.
-            </h2>
-            <p className="mx-auto max-w-2xl text-base font-bold leading-relaxed text-gray-650 sm:text-lg">
-              These 11 reviewers are currently testing Anazk AI and sharing direct feedback before the wider launch.
-            </p>
-          </div>
-
-          {/* Testimonial Cards Grid (Natural, clean cards with light green styling) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(showAllReviewers ? reviewers : reviewers.slice(0, 6)).map((reviewer, index) => (
-              <div
-                key={index}
-                className="group rounded-3xl border-2 border-emerald-100/90 bg-white p-6 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-400 hover:shadow-lg shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  {/* Top: Avatar, Name & Stars */}
-                  <div className="flex items-center gap-4 mb-4">
-                    <img
-                      src={reviewer.image}
-                      alt={`${reviewer.name}, Anazk AI reviewer`}
-                      className="w-14 h-14 rounded-full border-2 border-emerald-200 object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0"
-                    />
-                    <div>
-                      <h4 className="text-base sm:text-lg font-black text-[#0d2e27] flex items-center gap-1.5">
-                        {reviewer.name}
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">Verified</span>
-                      </h4>
-                      <div className="flex items-center gap-0.5 text-amber-400 mt-1" aria-label={`${reviewer.rating} out of 5 stars`}>
-                        {Array.from({ length: 5 }, (_, star) => (
-                          <Star
-                            key={star}
-                            size={15}
-                            fill="currentColor"
-                            className={star < reviewer.rating ? 'opacity-100 text-amber-400' : 'opacity-25'}
-                            aria-hidden="true"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Feedback Text — Always visible */}
-                  <p className="text-gray-750 text-sm sm:text-[15px] leading-relaxed font-semibold italic pt-3 border-t border-emerald-50">
-                    &ldquo;{reviewer.review}&rdquo;
-                  </p>
-                </div>
-
-                <div className="mt-5 pt-3 border-t border-emerald-50 flex items-center justify-between text-xs text-gray-500 font-bold">
-                  <span className="text-emerald-700 font-extrabold">Anazk AI Early Tester</span>
-                  <span className="text-amber-600">⭐ {reviewer.rating}.0 Rating</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Show More / Show Less Toggle */}
-          <div className="mt-10 flex justify-center">
-            <button 
-              onClick={() => setShowAllReviewers(!showAllReviewers)}
-              className="px-8 py-3.5 rounded-full bg-white border-2 border-emerald-300 hover:border-emerald-500 text-emerald-900 hover:text-emerald-950 font-black text-sm hover:bg-emerald-50 transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-2"
-            >
-              {showAllReviewers ? 'Show less reviews ↑' : `Show all ${reviewers.length} reviews ↓`}
-            </button>
-          </div>
-
-          {/* Call to action card */}
-          <div className="mt-12 rounded-3xl border-2 border-emerald-200 bg-white/90 p-8 text-center sm:p-10 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">Want to be next?</p>
-            <h3 className="mt-3 font-display text-2xl font-black text-[#0d2e27] sm:text-3xl">Buy Premium, share your experience.</h3>
-            <p className="mx-auto mt-3 max-w-2xl text-base font-semibold leading-relaxed text-gray-650">Tell us what you used, how it helped, your rating, and whether we can publish your feedback. The button opens a pre-filled Gmail review form.</p>
-            <a href={reviewComposeUrl} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0d2e27] hover:bg-emerald-950 px-8 py-3.5 text-sm font-black text-white transition shadow-md hover:scale-[1.02] active:scale-98">
-              Be the next reviewer <ArrowRight size={16} />
-            </a>
           </div>
         </div>
       </section>
