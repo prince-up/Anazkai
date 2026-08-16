@@ -11,6 +11,10 @@ import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 
 const loadRazorpay = () => new Promise((resolve) => {
+  if (typeof window !== 'undefined' && window.Razorpay) {
+    resolve(true);
+    return;
+  }
   const script = document.createElement('script');
   script.src = 'https://checkout.razorpay.com/v1/checkout.js';
   script.onload = () => resolve(true);
@@ -93,29 +97,38 @@ function LandingPage() {
     setCheckoutError('');
     try {
       const res = await loadRazorpay();
-      if (!res) {
-        throw new Error('Razorpay SDK failed to load. Are you online?');
+      if (!res || !window.Razorpay) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
       }
 
-      const response = await fetch('/api/create-razorpay-order', {
+      const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: plan.id }),
+        body: JSON.stringify({ 
+          planId: plan.id,
+          amount: plan.priceInr ? plan.priceInr * 100 : undefined,
+          currency: 'INR'
+        }),
       });
       const data = await response.json();
-      if (!response.ok || !data.orderId) throw new Error(data.error || 'Checkout could not be started.');
+      const orderId = data.order_id || data.orderId;
+      if (!response.ok || !orderId) {
+        throw new Error(data.error || 'Failed to initiate order. Please try again.');
+      }
       
+      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+
       const options = {
-        key: data.keyId,
+        key: keyId,
         amount: data.amount,
-        currency: data.currency,
+        currency: data.currency || 'INR',
         name: 'Anazk AI',
-        description: plan.name,
-        order_id: data.orderId,
+        description: `${plan.name} Subscription`,
+        order_id: orderId,
         handler: async function (response) {
           try {
             setCheckoutState('verifying');
-            const verifyRes = await fetch('/api/verify-razorpay-payment', {
+            const verifyRes = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -127,29 +140,35 @@ function LandingPage() {
               }),
             });
             const verifyData = await verifyRes.json();
-            if (verifyRes.ok) {
-              setGeneratedKey(verifyData.key);
+            if (verifyRes.ok && verifyData.success) {
+              setGeneratedKey(verifyData.key || verifyData.licenseKey || 'anazk_activated');
               setCheckoutState('idle');
             } else {
-              throw new Error(verifyData.error || 'Payment verification failed');
+              throw new Error(verifyData.error || 'Payment verification failed.');
             }
           } catch (err) {
             setCheckoutState('error');
-            setCheckoutError(err.message);
+            setCheckoutError(err.message || 'Payment verification failed.');
           }
         },
         prefill: {
-          email: user.email,
+          email: user.email || '',
+          name: user.user_metadata?.full_name || '',
         },
         theme: {
           color: '#10b981',
         },
+        modal: {
+          ondismiss: function () {
+            setCheckoutState('idle');
+          }
+        }
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.on('payment.failed', function (response) {
         setCheckoutState('error');
-        setCheckoutError(response.error.description);
+        setCheckoutError(response.error?.description || 'Payment transaction failed.');
       });
       paymentObject.open();
       setCheckoutState('idle');
