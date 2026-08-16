@@ -170,7 +170,7 @@ CRITICAL FORMATTING & ANSWER RULES:
 
     // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE
     if (geminiKey) {
-      const geminiModels = ['gemini-3.7-flash', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-pro-latest'];
+      const geminiModels = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
       
       let imageBase64 = null;
       let imageMime = 'image/png';
@@ -204,8 +204,9 @@ CRITICAL FORMATTING & ANSWER RULES:
             body: JSON.stringify({ 
               contents: [{ parts: contentParts }],
               generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 1024
+                temperature: 0.2,
+                thinkingConfig: { thinkingBudget: 0 },
+                maxOutputTokens: 450
               }
             })
           });
@@ -248,8 +249,8 @@ CRITICAL FORMATTING & ANSWER RULES:
             const requestBody = { 
               model: modelId, 
               messages: [{ role: 'user', content }],
-              temperature: 0.4,
-              max_tokens: 800
+              temperature: 0.2,
+              max_tokens: 450
             };
             const response = await fetch(url, {
               method: 'POST',
@@ -286,9 +287,6 @@ CRITICAL FORMATTING & ANSWER RULES:
     setIsLoading(false);
   };
 
-  // Voice recognition ref
-  const speechRecognitionRef = useRef(null);
-
   const handleListen = () => {
     if (isVoiceMode) {
       stopVoiceMode();
@@ -298,12 +296,6 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   const cleanupVoiceResources = () => {
-    if (speechRecognitionRef.current) {
-      try {
-        speechRecognitionRef.current.stop();
-      } catch (e) {}
-      speechRecognitionRef.current = null;
-    }
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state !== 'inactive') {
@@ -322,59 +314,6 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   const startVoiceMode = async () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    // A. Native Browser / Electron Web Speech Recognition (Instant Realtime, Zero Cost, No Settings popup)
-    if (SpeechRecognition) {
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        speechRecognitionRef.current = recognition;
-
-        let accumulatedTranscript = '';
-
-        recognition.onstart = () => {
-          setIsVoiceMode(true);
-          setOutputText("🎙️ Listening to interviewer's voice in real time... Click 'Voice' to stop and answer.");
-        };
-
-        recognition.onresult = (event) => {
-          let currentTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
-          }
-          if (currentTranscript) {
-            setInputText(currentTranscript);
-            accumulatedTranscript = currentTranscript;
-          }
-        };
-
-        recognition.onerror = (event) => {
-          console.warn("Speech recognition warning:", event.error);
-          if (event.error === 'not-allowed') {
-            setOutputText("Microphone permission denied. Please allow microphone access.");
-            cleanupVoiceResources();
-          }
-        };
-
-        recognition.onend = () => {
-          setIsVoiceMode(false);
-          if (accumulatedTranscript && accumulatedTranscript.trim()) {
-            setOutputText(`Transcribed: "${accumulatedTranscript.trim()}"\n\nGenerating crisp interview response...`);
-            handleAskAI(accumulatedTranscript.trim());
-          }
-        };
-
-        recognition.start();
-        return;
-      } catch (e) {
-        console.warn("Falling back to MediaRecorder audio mode:", e);
-      }
-    }
-
-    // B. Fallback MediaRecorder mode
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
@@ -392,25 +331,20 @@ CRITICAL FORMATTING & ANSWER RULES:
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         chunksRef.current = [];
-        await transcribeAudio(audioBlob);
+        await processVoiceAudio(audioBlob);
       };
 
       mediaRecorder.start();
       setIsVoiceMode(true);
-      setOutputText("🎙️ Recording interviewer voice... Click 'Voice' again to stop and analyze.");
+      setOutputText("🎙️ Listening... Speak your interview question now! Click 'Voice' button again when done to get instant answer.");
     } catch (err) {
       console.error("Mic error:", err);
-      setOutputText(`Mic error: ${err.message}. Please check microphone permissions.`);
+      setOutputText(`Microphone status: ${err.message}. Please verify microphone permissions.`);
       cleanupVoiceResources();
     }
   };
 
   const stopVoiceMode = () => {
-    if (speechRecognitionRef.current) {
-      try {
-        speechRecognitionRef.current.stop();
-      } catch (e) {}
-    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
         mediaRecorderRef.current.stop();
@@ -419,37 +353,99 @@ CRITICAL FORMATTING & ANSWER RULES:
     cleanupVoiceResources();
   };
 
-  const transcribeAudio = async (audioBlob) => {
+  const processVoiceAudio = async (audioBlob) => {
+    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = getEffectiveApiKey();
+
     setIsLoading(true);
-    setOutputText('Transcribing speech...');
+    setOutputText('Transcribing & analyzing interview speech...');
+
+    // 1. Process directly with Gemini Multimodal Audio
+    if (geminiKey) {
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          try {
+            const base64Audio = reader.result.split(',')[1];
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${geminiKey}`;
+
+            const response = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: "Listen to the interviewer question in this audio. Provide a direct, punchy interview answer in 2-4 spoken bullet points." },
+                    {
+                      inlineData: {
+                        mimeType: 'audio/webm',
+                        data: base64Audio
+                      }
+                    }
+                  ]
+                }],
+                generationConfig: {
+                  temperature: 0.2,
+                  thinkingConfig: { thinkingBudget: 0 },
+                  maxOutputTokens: 400
+                }
+              })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+              setOutputText(data.candidates[0].content.parts[0].text);
+              setInterviewCount(prev => prev + 1);
+            } else {
+              // Fallback to Groq Whisper if audio was silent
+              fallbackWhisper(audioBlob, groqKey);
+            }
+          } catch (e) {
+            fallbackWhisper(audioBlob, groqKey);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        return;
+      } catch (e) {
+        console.warn('Gemini audio failed, trying Whisper:', e);
+      }
+    }
+
+    fallbackWhisper(audioBlob, groqKey);
+  };
+
+  const fallbackWhisper = async (audioBlob, groqKey) => {
+    if (!groqKey) {
+      setIsLoading(false);
+      setOutputText('Speech captured. Ready for next question.');
+      return;
+    }
 
     try {
-      if (groqKey) {
-        const formData = new FormData();
-        formData.append('file', audioBlob, 'speech.webm');
-        formData.append('model', 'whisper-large-v3-turbo');
-        formData.append('response_format', 'json');
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'speech.webm');
+      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('response_format', 'json');
 
-        const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${groqKey}` },
-          body: formData
-        });
+      const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${groqKey}` },
+        body: formData
+      });
 
-        if (res.ok) {
-          const data = await res.json();
-          const transcribedText = data.text;
-          if (transcribedText && transcribedText.trim()) {
-            setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating crisp interview response...`);
-            handleAskAI(transcribedText);
-            return;
-          }
+      if (res.ok) {
+        const data = await res.json();
+        const transcribedText = data.text;
+        if (transcribedText && transcribedText.trim()) {
+          setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating answer...`);
+          handleAskAI(transcribedText);
+          return;
         }
       }
       setOutputText('Voice recording finished. Please type or capture screen.');
     } catch (err) {
-      console.error('Transcription error:', err);
       setOutputText(`Audio Notice: ${err.message}`);
     } finally {
       setIsLoading(false);

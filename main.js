@@ -60,18 +60,11 @@ app.whenReady().then(() => {
 
   // Grant media permission requests explicitly (microphone and loopback)
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    if (permission === 'media') {
-      callback(true);
-    } else {
-      callback(false);
-    }
+    callback(true); // Always allow microphone, media, and screen capture requests
   });
 
   session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
-    if (permission === 'media') {
-      return true;
-    }
-    return false;
+    return true; // Always return true for media and microphone permissions
   });
 
   // Register Global Hotkeys
