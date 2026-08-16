@@ -682,33 +682,93 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
         {/* TAB 5: TUTORIALS */}
         {activeTab === 'tutorials' && (
-          <div className="p-8 sm:p-12 max-w-4xl w-full mx-auto space-y-7">
+          <div className="p-8 sm:p-12 max-w-5xl w-full mx-auto space-y-7">
             <div>
               <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
                 Video Tutorials & Guides
               </h1>
               <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
-                Watch step-by-step walkthroughs of live coding and behavioral interviews.
+                Watch step-by-step walkthroughs of live coding, stealth setup, and interview demonstrations.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-3.5">
-                <div className="h-44 bg-gray-900 rounded-xl flex items-center justify-center text-white relative group cursor-pointer overflow-hidden">
-                  <Play size={36} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="absolute bottom-2.5 right-2.5 bg-black/70 text-xs px-2 py-0.5 rounded font-mono">03:45</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Video 1 */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-gray-200">
+                    <iframe
+                      src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
+                      title="Anazk AI Stealth Setup Tutorial"
+                      className="w-full h-full border-0"
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div>
+                    <h4 className="font-black text-lg text-gray-900 leading-snug">
+                      How to bypass screen capture on Google Meet & Zoom
+                    </h4>
+                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-semibold mt-1">
+                      Comprehensive step-by-step setup for browser permissions, stealth overlay mode, and hotkey configuration.
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-black text-base text-gray-900">How to bypass screen capture on Google Meet</h4>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">Comprehensive setup for browser permission and active overlay configuration.</p>
+
+                <div className="pt-2 flex items-center justify-between border-t border-gray-100 text-xs font-bold text-gray-500">
+                  <span className="flex items-center gap-1.5 text-emerald-600">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Interactive Guide
+                  </span>
+                  <a
+                    href="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/view?usp=sharing"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-emerald-700 hover:underline flex items-center gap-1"
+                  >
+                    <span>Open in Drive</span>
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-3.5">
-                <div className="h-44 bg-gray-900 rounded-xl flex items-center justify-center text-white relative group cursor-pointer overflow-hidden">
-                  <Play size={36} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="absolute bottom-2.5 right-2.5 bg-black/70 text-xs px-2 py-0.5 rounded font-mono">05:12</span>
+              {/* Video 2 */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-gray-200">
+                    <iframe
+                      src="https://drive.google.com/file/d/16Z6DhnTilu8fbIba2bQidzM20kWGvslb/preview"
+                      title="Anazk AI Live Problem Solving Demo"
+                      className="w-full h-full border-0"
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div>
+                    <h4 className="font-black text-lg text-gray-900 leading-snug">
+                      Live Coding & Problem Solving with Anazk AI Copilot
+                    </h4>
+                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-semibold mt-1">
+                      Watch Anazk AI analyze live problems with OCR capture and provide instantaneous speaking points and clean code.
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-black text-base text-gray-900">Live LeetCode problem solving with Groq vision</h4>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">Watch Anazk AI solve a hard Dynamic Programming problem in under 3 seconds.</p>
+
+                <div className="pt-2 flex items-center justify-between border-t border-gray-100 text-xs font-bold text-gray-500">
+                  <span className="flex items-center gap-1.5 text-emerald-600">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live Demonstration
+                  </span>
+                  <a
+                    href="https://drive.google.com/file/d/16Z6DhnTilu8fbIba2bQidzM20kWGvslb/view?usp=sharing"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-emerald-700 hover:underline flex items-center gap-1"
+                  >
+                    <span>Open in Drive</span>
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
