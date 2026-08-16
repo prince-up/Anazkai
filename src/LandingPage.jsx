@@ -3,10 +3,12 @@ import {
   ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, Star, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
   Shield, Eye, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
-  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail
+  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail, LayoutDashboard
 } from 'lucide-react';
 import { getSubscriptionPlan } from './plans';
 import { supabase } from './supabaseClient';
+import AuthPage from './components/AuthPage';
+import Dashboard from './components/Dashboard';
 
 const loadRazorpay = () => new Promise((resolve) => {
   const script = document.createElement('script');
@@ -17,6 +19,15 @@ const loadRazorpay = () => new Promise((resolve) => {
 });
 
 function LandingPage() {
+  const [currentView, setCurrentView] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('login') || path.includes('signin') || path.includes('signup')) return 'auth';
+      if (path.includes('dashboard')) return 'dashboard';
+    }
+    return 'landing';
+  });
+
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
@@ -45,15 +56,25 @@ function LandingPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const activeUser = session?.user ?? null;
+      setUser(activeUser);
+      if (activeUser && currentView === 'auth') {
+        setCurrentView('dashboard');
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const activeUser = session?.user ?? null;
+      setUser(activeUser);
+      if (activeUser && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+        setCurrentView('dashboard');
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentView('landing');
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [currentView]);
 
   useEffect(() => {
     const status = new URLSearchParams(window.location.search).get('payment');
@@ -589,6 +610,40 @@ class Solution {
     }
   ];
 
+  if (currentView === 'auth') {
+    return (
+      <AuthPage 
+        onBackToHome={() => setCurrentView('landing')} 
+        onSuccess={(usr) => {
+          setUser(usr);
+          setCurrentView('dashboard');
+        }} 
+      />
+    );
+  }
+
+  if (currentView === 'dashboard') {
+    return (
+      <Dashboard 
+        user={user} 
+        onSignOut={async () => {
+          await supabase.auth.signOut();
+          setUser(null);
+          setCurrentView('landing');
+        }}
+        onOpenPricing={() => {
+          setCurrentView('landing');
+          setTimeout(() => {
+            const el = document.getElementById('pricing');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 150);
+        }}
+        onOpenDownload={() => setShowDownloadModal(true)}
+        onBackToHome={() => setCurrentView('landing')}
+      />
+    );
+  }
+
   return (
   <div className={`font-sans min-h-screen relative overflow-x-hidden antialiased text-left transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#030712] text-gray-100 dark-theme-active' : 'bg-[#f0f8ff] text-[#1e293b]'}`}>
   {paymentStatus === 'success' && (
@@ -671,16 +726,25 @@ class Solution {
         {/* Buttons */}
         <div className="hidden md:flex items-center space-x-3">
           {user ? (
-            <button 
-              onClick={() => supabase.auth.signOut()}
-              className={`px-6 lg:px-7 py-2.5 sm:py-3 border-2 font-black text-sm sm:text-base rounded-full transition-all shadow-sm flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
-            >
-              <User size={16} />
-              Sign out
-            </button>
+            <>
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className="px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
+              >
+                <LayoutDashboard size={16} />
+                Dashboard
+              </button>
+              <button 
+                onClick={() => supabase.auth.signOut()}
+                className={`px-5 py-2.5 sm:py-3 border-2 font-black text-sm rounded-full transition-all shadow-xs flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+              >
+                <User size={16} />
+                Sign out
+              </button>
+            </>
           ) : (
             <button 
-              onClick={() => setShowSignInModal(true)}
+              onClick={() => setCurrentView('auth')}
               className="px-6 lg:px-7 py-2.5 sm:py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-sm sm:text-base rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               Sign in
@@ -691,9 +755,17 @@ class Solution {
 
         {/* Mobile Menu Icon */}
         <div className="flex items-center gap-2 md:hidden">
-          {!user && (
+          {user ? (
             <button 
-              onClick={() => setShowSignInModal(true)}
+              onClick={() => setCurrentView('dashboard')}
+              className="px-3.5 py-1.5 bg-emerald-600 text-white font-black text-xs rounded-full flex items-center gap-1"
+            >
+              <LayoutDashboard size={12} />
+              Dashboard
+            </button>
+          ) : (
+            <button 
+              onClick={() => setCurrentView('auth')}
               className="px-3.5 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-full"
             >
               Sign in
@@ -719,16 +791,25 @@ class Solution {
           <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="text-left font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Privacy</button>
           <div className="pt-2 flex flex-col space-y-2">
             {user ? (
-              <button 
-                onClick={() => { setMobileMenuOpen(false); supabase.auth.signOut(); }}
-                className="w-full py-3 border border-gray-200 bg-gray-50 text-gray-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <User size={16} />
-                Sign out
-              </button>
+              <>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); setCurrentView('dashboard'); }}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  <LayoutDashboard size={16} />
+                  Go to Dashboard
+                </button>
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); supabase.auth.signOut(); }}
+                  className="w-full py-2.5 border border-gray-200 bg-gray-50 text-gray-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  <User size={16} />
+                  Sign out
+                </button>
+              </>
             ) : (
               <button 
-                onClick={() => { setMobileMenuOpen(false); setShowSignInModal(true); }}
+                onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
                 className="w-full py-3 bg-[#0d2e27] hover:bg-[#061713] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
               >
                 Sign in
