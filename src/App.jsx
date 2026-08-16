@@ -497,9 +497,9 @@ function AppContent({ timeRemaining, onLogout }) {
         {/* Center: Integrated Timer Badge (No overlapping) */}
         {timeRemaining !== undefined && timeRemaining !== null && (
           <div className="flex items-center gap-1.5 bg-black/60 border border-white/10 px-2.5 py-1 rounded-full text-xs" style={{ WebkitAppRegion: 'no-drag' }}>
-            <Clock size={11} className={timeRemaining < 10 ? "text-red-400 animate-pulse" : "text-emerald-400"} />
-            <span className={`text-[10px] font-extrabold font-mono uppercase ${timeRemaining < 10 ? "text-red-400" : "text-emerald-300"}`}>
-              {timeRemaining}m left
+            <Clock size={11} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
+            <span className={`text-[10px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
+              {timeRemaining === 'UNLIMITED' ? '👑 OWNER VIP' : `${timeRemaining}m left`}
             </span>
             {onLogout && (
               <>

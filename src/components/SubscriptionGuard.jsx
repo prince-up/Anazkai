@@ -15,12 +15,15 @@ const getDeviceId = () => {
   }
 };
 
+// Master Secret Key for Owner / Admin testing (Can be overridden in .env with VITE_OWNER_MASTER_KEY)
+const OWNER_MASTER_KEY = (import.meta.env.VITE_OWNER_MASTER_KEY || 'ANAZK-OWNER-VIP-2026').trim();
+
 const SubscriptionGuard = ({ children }) => {
   const [licenseKey, setLicenseKey] = useState(() => localStorage.getItem('anazk_license_key') || '');
   const [isValidating, setIsValidating] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [error, setError] = useState('');
-  const [timeRemaining, setTimeRemaining] = useState(null); // in minutes
+  const [timeRemaining, setTimeRemaining] = useState(null); // in minutes or 'UNLIMITED'
   const [durationMinutes, setDurationMinutes] = useState(null);
   
   const timerRef = useRef(null);
@@ -34,9 +37,10 @@ const SubscriptionGuard = ({ children }) => {
 
   // Timer logic
   useEffect(() => {
-    if (isAuthorized && timeRemaining !== null) {
+    if (isAuthorized && typeof timeRemaining === 'number') {
       timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
+          if (typeof prev !== 'number') return prev;
           if (prev <= 1) {
             clearInterval(timerRef.current);
             setIsAuthorized(false);
@@ -65,8 +69,20 @@ const SubscriptionGuard = ({ children }) => {
       return;
     }
 
+    const trimmedKey = keyToValidate.trim();
     setIsValidating(true);
     setError('');
+
+    // 0. OWNER / MASTER VIP KEY BYPASS (Unlimited Lifetime Free Access)
+    if (trimmedKey === OWNER_MASTER_KEY) {
+      setTimeRemaining('UNLIMITED');
+      setDurationMinutes(999999);
+      setIsAuthorized(true);
+      localStorage.setItem('anazk_license_key', trimmedKey);
+      setLicenseKey(trimmedKey);
+      setIsValidating(false);
+      return;
+    }
 
     try {
       const currentDeviceId = getDeviceId();
@@ -75,7 +91,7 @@ const SubscriptionGuard = ({ children }) => {
       const { data: license, error: fetchError } = await supabase
         .from('licenses')
         .select('*')
-        .eq('key', keyToValidate.trim())
+        .eq('key', trimmedKey)
         .single();
 
       if (fetchError || !license) {

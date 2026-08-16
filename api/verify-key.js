@@ -5,9 +5,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { key, deviceId } = req.body
-  if (!key) {
-    return res.status(400).json({ error: 'API Key is required.' })
+  const trimmedKey = (key || '').trim()
+  const OWNER_MASTER_KEY = (process.env.VITE_OWNER_MASTER_KEY || 'ANAZK-OWNER-VIP-2026').trim()
+
+  // 0. Owner Master Key Bypass
+  if (trimmedKey === OWNER_MASTER_KEY) {
+    return res.status(200).json({
+      valid: true,
+      timeRemaining: 'UNLIMITED',
+      durationMinutes: 999999,
+      isOwner: true
+    })
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL
@@ -23,7 +31,7 @@ export default async function handler(req, res) {
     const { data: license, error } = await supabase
       .from('licenses')
       .select('*')
-      .eq('key', key.trim())
+      .eq('key', trimmedKey)
       .single()
 
     if (error || !license) {
