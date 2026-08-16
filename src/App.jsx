@@ -407,29 +407,28 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   const stopVoiceMode = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
-    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {}
+        if (typeof mediaRecorderRef.current.requestData === 'function') {
+          mediaRecorderRef.current.requestData();
+        }
+        setTimeout(() => {
+          try {
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+              mediaRecorderRef.current.stop();
+            }
+          } catch (e) {}
+        }, 150);
+      } catch (e) {
+        cleanupVoiceResources();
+      }
     } else {
       cleanupVoiceResources();
     }
   };
 
-  const processVoiceAudio = async (audioBlob, capturedLiveText) => {
+  const processVoiceAudio = async (audioBlob) => {
     cleanupVoiceResources();
-
-    // Priority 1: If real-time speech recognition captured the question, answer it directly!
-    if (capturedLiveText && capturedLiveText.trim().length > 2) {
-      setOutputText(`Question: "${capturedLiveText.trim()}"\n\nGenerating answer...`);
-      await handleAskAI(capturedLiveText.trim());
-      return;
-    }
 
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = getEffectiveApiKey();
@@ -437,21 +436,18 @@ CRITICAL FORMATTING & ANSWER RULES:
     setIsLoading(true);
     setOutputText('Analyzing spoken audio with AI...');
 
-    // Priority 2: Gemini Multimodal Audio Transcription & Answering
-    if (geminiKey && audioBlob && audioBlob.size > 1000) {
+    if (geminiKey && audioBlob) {
       try {
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
           try {
             const base64Audio = reader.result.split(',')[1];
-            const cleanMime = (audioBlob.type || 'audio/webm').split(';')[0];
+            const cleanMime = 'audio/webm';
             const geminiModels = [
               'gemini-3.7-flash',
               'gemini-3.5-flash',
-              'gemini-3.6-flash',
-              'gemini-flash-latest',
-              'gemini-pro-latest'
+              'gemini-flash-latest'
             ];
 
             let geminiSuccess = false;
@@ -468,19 +464,17 @@ CRITICAL FORMATTING & ANSWER RULES:
                     contents: [{
                       parts: [
                         { 
-                          text: `You are an expert interview assistant listening to the candidate's audio.
-CRITICAL INSTRUCTIONS:
-1. Listen carefully to the speech in this audio.
-2. If there is NO speech, or only background silence/noise, reply EXACTLY with:
-NO_SPEECH_DETECTED
-3. DO NOT invent or hallucinate any canned story or placeholder answer.
-4. If words were spoken, format your response as:
-**Question:** [Transcribed question from audio]
+                          text: `You are an expert interview assistant listening to the interview audio.
+1. Transcribe the interview question spoken in the audio.
+2. Provide a short, direct, and punchy spoken answer in 2 to 4 bullet points.
+
+Format:
+**Question:** [Transcribed question]
 
 **Answer:**
-• [Direct, punchy bullet point 1]
-• [Direct, punchy bullet point 2]
-• [Direct, punchy bullet point 3]` 
+• [Direct key point 1]
+• [Direct key point 2]
+• [Direct key point 3]` 
                         },
                         {
                           inlineData: {
@@ -492,6 +486,7 @@ NO_SPEECH_DETECTED
                     }],
                     generationConfig: {
                       temperature: 0.2,
+                      thinkingConfig: { thinkingBudget: 0 },
                       maxOutputTokens: 500
                     }
                   })
@@ -501,13 +496,9 @@ NO_SPEECH_DETECTED
                 const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (response.ok && reply) {
-                  if (reply.includes('NO_SPEECH_DETECTED')) {
-                    break;
-                  } else {
-                    geminiReply = reply;
-                    geminiSuccess = true;
-                    break;
-                  }
+                  geminiReply = reply;
+                  geminiSuccess = true;
+                  break;
                 }
               } catch (err) {
                 console.warn(`Gemini ${modelId} voice error:`, err);
@@ -518,20 +509,21 @@ NO_SPEECH_DETECTED
               setOutputText(geminiReply);
               setInterviewCount(prev => prev + 1);
               setIsLoading(false);
+              return;
             } else {
-              await fallbackWhisper(audioBlob, groqKey);
+              fallbackWhisper(audioBlob, groqKey);
             }
           } catch (e) {
-            await fallbackWhisper(audioBlob, groqKey);
+            fallbackWhisper(audioBlob, groqKey);
           }
         };
         return;
       } catch (e) {
-        console.warn('Gemini audio process error:', e);
+        console.warn('Gemini audio failed, trying Whisper:', e);
       }
     }
 
-    await fallbackWhisper(audioBlob, groqKey);
+    fallbackWhisper(audioBlob, groqKey);
   };
 
   const fallbackWhisper = async (audioBlob, groqKey) => {
