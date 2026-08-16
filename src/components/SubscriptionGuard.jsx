@@ -2,6 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Key, Lock, AlertCircle, Clock } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
+const getDeviceId = () => {
+  try {
+    let deviceId = localStorage.getItem('anazk_device_id');
+    if (!deviceId) {
+      deviceId = 'DEV-' + (window.crypto?.randomUUID ? window.crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36)));
+      localStorage.setItem('anazk_device_id', deviceId);
+    }
+    return deviceId;
+  } catch (e) {
+    return 'DEV-LOCAL';
+  }
+};
+
 const SubscriptionGuard = ({ children }) => {
   const [licenseKey, setLicenseKey] = useState(() => localStorage.getItem('anazk_license_key') || '');
   const [isValidating, setIsValidating] = useState(false);
@@ -56,12 +69,13 @@ const SubscriptionGuard = ({ children }) => {
     setError('');
 
     try {
+      const currentDeviceId = getDeviceId();
+
       // 1. Fetch license from Supabase directly
-      // Note: Make sure RLS allows SELECT and UPDATE for this table!
       const { data: license, error: fetchError } = await supabase
         .from('licenses')
         .select('*')
-        .eq('key', keyToValidate)
+        .eq('key', keyToValidate.trim())
         .single();
 
       if (fetchError || !license) {
@@ -76,16 +90,28 @@ const SubscriptionGuard = ({ children }) => {
         return;
       }
 
+      // 2. Anti-Piracy / Single Device Check:
+      // If the key is already locked to a different device, reject immediately!
+      if (license.device_id && license.device_id !== currentDeviceId) {
+        setError('This License Key is already registered on another device. Multi-device sharing is not allowed.');
+        setIsValidating(false);
+        return;
+      }
+
       const now = new Date();
       let activatedAt = license.activated_at;
 
-      // 2. If it's unused, activate it
-      if (!activatedAt) {
-        activatedAt = now.toISOString();
+      // 3. If it's unused or not yet bound to a device, activate and lock to current device
+      if (!activatedAt || !license.device_id) {
+        activatedAt = activatedAt || now.toISOString();
         const { error: updateError } = await supabase
           .from('licenses')
-          .update({ activated_at: activatedAt, status: 'active' })
-          .eq('key', keyToValidate);
+          .update({ 
+            activated_at: activatedAt, 
+            status: 'active',
+            device_id: currentDeviceId 
+          })
+          .eq('key', keyToValidate.trim());
 
         if (updateError) {
           setError('Failed to activate the key. Please try again.');

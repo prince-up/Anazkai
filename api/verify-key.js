@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { key } = req.body
+  const { key, deviceId } = req.body
   if (!key) {
     return res.status(400).json({ error: 'API Key is required.' })
   }
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const { data: license, error } = await supabase
       .from('licenses')
       .select('*')
-      .eq('key', key)
+      .eq('key', key.trim())
       .single()
 
     if (error || !license) {
@@ -34,16 +34,24 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'This API Key has expired.' })
     }
 
+    // 2. Anti-Piracy Check: If bound to another device, reject
+    if (deviceId && license.device_id && license.device_id !== deviceId) {
+      return res.status(403).json({ error: 'This License Key is already bound to another device.' })
+    }
+
     const now = new Date()
     let activatedAt = license.activated_at
 
-    // 2. If it's the first time using the key, activate it
-    if (!activatedAt) {
-      activatedAt = now.toISOString()
+    // 3. If it's the first time using the key, activate and lock to device
+    if (!activatedAt || (deviceId && !license.device_id)) {
+      activatedAt = activatedAt || now.toISOString()
+      const updateData = { activated_at: activatedAt, status: 'active' }
+      if (deviceId) updateData.device_id = deviceId
+
       const { error: updateError } = await supabase
         .from('licenses')
-        .update({ activated_at: activatedAt, status: 'active' })
-        .eq('key', key)
+        .update(updateData)
+        .eq('key', key.trim())
 
       if (updateError) {
         return res.status(500).json({ error: 'Failed to activate the key.' })

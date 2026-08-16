@@ -53,11 +53,15 @@ CREATE TABLE IF NOT EXISTS public.licenses (
   duration_minutes  INTEGER NOT NULL DEFAULT 60,
   status            TEXT NOT NULL DEFAULT 'unused', -- 'unused', 'active', 'expired'
   activated_at      TIMESTAMPTZ,
+  device_id         TEXT, -- Unique machine/device lock identifier
   stripe_session_id TEXT,
   email             TEXT,
   created_at        TIMESTAMPTZ DEFAULT NOW(),
   updated_at        TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure device_id column exists if table is already created
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS device_id TEXT;
 
 -- 6. Enable RLS on licenses
 ALTER TABLE public.licenses ENABLE ROW LEVEL SECURITY;
