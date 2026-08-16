@@ -1,74 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings, Copy, X, Minus, Sparkles, Mic, MicOff } from 'lucide-react';
+import { 
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
 
-function App() {
-  const [isDesktop, setIsDesktop] = useState(false);
+// Fallback / default built-in AI key for subscribed users
+const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      const isElectronAgent = userAgent.indexOf(' electron/') > -1;
-      const isElectronRequire = !!window.require;
-      const isSearchParamApp = window.location.search.includes('app=true');
-      setIsDesktop(isElectronAgent || isElectronRequire || isSearchParamApp);
-    }
-  }, []);
-
+function AppContent({ timeRemaining, onLogout }) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [screenshotData, setScreenshotData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   
-  // New State
+  // Settings & Preferences
   const [showSettings, setShowSettings] = useState(false);
   const [opacity, setOpacity] = useState(1.0);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
-
   const [resumeText, setResumeText] = useState(() => localStorage.getItem('resume_text') || '');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
   // Voice Mode State
   const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
 
-  // Refs for Voice Capture
+  // Refs
   const mediaRecorderRef = useRef(null);
   const audioStreamRef = useRef(null);
   const chunksRef = useRef([]);
-  const isVoiceModeRef = useRef(false);
-  const isLoadingRef = useRef(false);
-
-  // Sync ref with states
-  useEffect(() => {
-    isVoiceModeRef.current = isVoiceMode;
-  }, [isVoiceMode]);
-
-  useEffect(() => {
-    isLoadingRef.current = isLoading;
-  }, [isLoading]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try {
-          mediaRecorderRef.current.stop();
-        } catch (e) {}
-      }
-      if (audioStreamRef.current) {
-        try {
-          audioStreamRef.current.getTracks().forEach(track => track.stop());
-        } catch (e) {}
-      }
-    };
-  }, []);
+  const outputScrollRef = useRef(null);
 
   // Save settings
   useEffect(() => {
@@ -114,6 +80,17 @@ function App() {
     }
   }, [screenshotData, inputText, apiKey, isLoading, opacity, alwaysOnTop, autoAsk]);
 
+  // Auto scroll output
+  useEffect(() => {
+    if (outputScrollRef.current) {
+      outputScrollRef.current.scrollTop = outputScrollRef.current.scrollHeight;
+    }
+  }, [outputText]);
+
+  const getEffectiveApiKey = () => {
+    return (apiKey && apiKey.trim()) || SYSTEM_DEFAULT_GROQ_KEY;
+  };
+
   const handleCapture = async (type = 'full') => {
     if (window.require) {
       let opacityRestored = false;
@@ -121,7 +98,6 @@ function App() {
       try {
         const channel = type === 'region' ? 'start-region-capture' : 'capture-screen';
         
-        // Hide window temporarily for region capture
         if (type === 'region') ipcRenderer.send('set-opacity', 0);
         
         const dataUrl = await ipcRenderer.invoke(channel);
@@ -134,13 +110,13 @@ function App() {
         if (dataUrl) {
           setScreenshotData(dataUrl);
           if (autoAsk) {
-            setOutputText('Screen captured. Auto-asking AI...');
+            setOutputText('Screen captured. Auto-analyzing with AI...');
             handleAskAI(null, dataUrl);
           } else {
-            setOutputText('Screen captured. Press Ask AI (F3) to analyze.');
+            setOutputText('Screen captured. Press Ask AI (F3) or click Ask below.');
           }
         } else {
-          setOutputText('Failed to capture screen or cancelled.');
+          setOutputText('Screen capture cancelled or unavailable.');
         }
       } catch (err) {
         console.error('Capture error:', err);
@@ -155,8 +131,11 @@ function App() {
 
   const handleAskAI = async (overrideText = null, overrideImage = null) => {
     if (isLoading) return;
-    if (!apiKey) {
-      setOutputText('Please enter your Groq API Key in the settings.');
+    
+    const activeKey = getEffectiveApiKey();
+    if (!activeKey) {
+      setOutputText('Please configure your Groq API Key in Preferences (Settings icon at top right).');
+      setShowSettings(true);
       return;
     }
     
@@ -164,25 +143,24 @@ function App() {
     const imageToSend = overrideImage || screenshotData;
 
     if (!textToSend && !imageToSend) {
-      setOutputText('Please provide either an image (Capture) or type a question.');
+      setOutputText('Please capture a screen (F1/F4) or enter a question to analyze.');
       return;
     }
 
     setIsLoading(true);
-    setOutputText('Analyzing...');
+    setOutputText('Analyzing question and generating calm response...');
 
     try {
       const url = `https://api.groq.com/openai/v1/chat/completions`;
-      
       const content = [];
-      let promptText = "You are an expert interview assistant helping a candidate in real-time. Provide clear, professional, and well-structured answers suitable for speaking in an interview. Use bullet points for readability. Keep it concise and to the point, avoiding unnecessary fluff, but ensure the answer is comprehensive enough to impress an interviewer.";
+      let promptText = "You are an expert interview assistant helping a candidate in real-time. Provide clear, professional, and well-structured answers suitable for speaking in an interview. Use concise bullet points and bold key points for instant readability. If coding, provide the optimal code with brief time/space complexity.";
       
       if (resumeText) {
-        promptText += `\n\nContext: The user's resume is provided below. Answer any questions keeping this resume in mind. Do not mention the resume unless directly relevant to the answer.\n\nResume:\n${resumeText}`;
+        promptText += `\n\nCandidate Resume Context:\n${resumeText}\n(Incorporate resume experience if relevant)`;
       }
       
       if (textToSend) {
-        promptText += `\n\nQuestion/Context from user: ${textToSend}`;
+        promptText += `\n\nQuestion/Context: ${textToSend}`;
       }
 
       content.push({ type: 'text', text: promptText });
@@ -194,74 +172,23 @@ function App() {
         });
       }
 
-      // Initial list of models to try. We list the most stable active ones first.
       const modelsToTry = imageToSend ? [
         'llama-3.2-11b-vision-preview',
         'llama-3.2-90b-vision-preview',
         'qwen-2.5-vl-72b-instruct'
       ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
 
-      // Attempt to fetch live model list from Groq to find active vision models
-      if (imageToSend) {
-         try {
-           const modelsResponse = await fetch('https://api.groq.com/openai/v1/models', {
-             method: 'GET',
-             headers: { 'Authorization': `Bearer ${apiKey}` }
-           });
-           if (modelsResponse.ok) {
-             const modelsData = await modelsResponse.json();
-             if (modelsData && Array.isArray(modelsData.data)) {
-                const fetchedVision = modelsData.data
-                  .filter(m => m.id && (m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('-vl')))
-                  .map(m => m.id);
-                if (fetchedVision.length > 0) {
-                   const uniqueFetched = fetchedVision.filter(id => !modelsToTry.includes(id));
-                   modelsToTry.unshift(...uniqueFetched);
-                }
-             }
-           }
-         } catch(e) {
-           console.log('Standard fetch models error:', e);
-           // Fallback to electron node https module
-           if (window.require) {
-             try {
-               const https = window.require('https');
-               const modelsData = await new Promise((resolve, reject) => {
-                  const req = https.request({ hostname: 'api.groq.com', path: '/openai/v1/models', method: 'GET', headers: { 'Authorization': `Bearer ${apiKey}` } }, (res) => {
-                    let body = ''; res.on('data', chunk => body += chunk); res.on('end', () => resolve(JSON.parse(body)));
-                  });
-                  req.on('error', e => reject(e)); req.end();
-               });
-               if (modelsData && Array.isArray(modelsData.data)) {
-                  const fetchedVision = modelsData.data
-                    .filter(m => m.id && (m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('-vl')))
-                    .map(m => m.id);
-                  if (fetchedVision.length > 0) {
-                     const uniqueFetched = fetchedVision.filter(id => !modelsToTry.includes(id));
-                     modelsToTry.unshift(...uniqueFetched);
-                  }
-               }
-             } catch(nodeErr) {
-               console.log('Node fetch models error:', nodeErr);
-             }
-           }
-         }
-      }
-
       let response;
       let data;
       let success = false;
       let lastErr = null;
 
-      console.log('Target models queue:', modelsToTry);
-
       for (const modelId of modelsToTry) {
         try {
-          console.log(`Sending request using model: ${modelId}`);
           const requestBody = { model: modelId, messages: [{ role: 'user', content }] };
           response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeKey}` },
             body: JSON.stringify(requestBody)
           });
           data = await response.json();
@@ -271,70 +198,50 @@ function App() {
              break;
           } else {
              lastErr = data.error?.message || 'Unknown API error';
-             console.log(`Model ${modelId} returned error (status ${response.status}): ${lastErr}`);
-             if (response.status === 401) {
-                // Invalid Key - stop trying other models
-                break;
-             }
+             if (response.status === 401) break;
           }
         } catch (fetchErr) {
           lastErr = fetchErr.message;
-          console.log(`Network or request failure for model ${modelId}: ${fetchErr.message}`);
         }
       }
 
       if (!success) {
-        throw new Error(lastErr || 'Failed to fetch from Groq with all models');
+        throw new Error(lastErr || 'Failed to connect to AI server.');
       }
 
       const reply = data.choices?.[0]?.message?.content || 'No response generated.';
       setOutputText(reply);
       setInterviewCount(prev => prev + 1);
+      setInputText(''); // Clear input after successful ask
       
     } catch (err) {
-      console.error('Groq error:', err);
+      console.error('AI error:', err);
       setOutputText(`Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCopy = () => {
-    if (outputText) {
-      navigator.clipboard.writeText(outputText);
+  const handleListen = () => {
+    if (isVoiceMode) {
+      stopVoiceMode();
+    } else {
+      startVoiceMode();
     }
-  };
-
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setInputText((prev) => prev + (prev ? '\n' : '') + text);
-    } catch (err) {
-      console.error('Failed to read clipboard contents: ', err);
-    }
-  };
-
-  const handleClear = () => {
-    setInputText('');
-    setOutputText('');
-    setScreenshotData(null);
   };
 
   const cleanupVoiceResources = () => {
-    console.log("Stopping voice recording and cleaning up streams...");
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    if (mediaRecorderRef.current) {
       try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.error("Error stopping MediaRecorder:", e);
-      }
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (e) {}
     }
     if (audioStreamRef.current) {
       try {
         audioStreamRef.current.getTracks().forEach(track => track.stop());
-      } catch (e) {
-        console.error("Error stopping tracks:", e);
-      }
+      } catch (e) {}
       audioStreamRef.current = null;
     }
     mediaRecorderRef.current = null;
@@ -342,18 +249,17 @@ function App() {
   };
 
   const startVoiceMode = async () => {
-    console.log("Starting voice recording...");
-    if (!apiKey) {
-      setOutputText('Please enter your Groq API Key in settings.');
+    const activeKey = getEffectiveApiKey();
+    if (!activeKey) {
+      setOutputText('Please configure your API Key in Preferences.');
+      setShowSettings(true);
       return;
     }
 
     try {
-      console.log("Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
       
-      console.log("Microphone access granted. Creating MediaRecorder...");
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -365,28 +271,34 @@ function App() {
       };
 
       mediaRecorder.onstop = async () => {
-        console.log("Recording stopped. Transcribing...");
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         chunksRef.current = [];
-        
         await transcribeAudio(audioBlob);
       };
 
       mediaRecorder.start();
       setIsVoiceMode(true);
-      setOutputText("Listening... Click again to Stop.");
-      console.log("MediaRecorder started recording.");
+      setOutputText("🎙️ Listening to interview audio... Click 'Voice' again to stop and get answer.");
     } catch (err) {
-      console.error("Error starting microphone capture:", err);
-      setOutputText(`Mic error: ${err.message}. Ensure mic is connected and permission is granted.`);
+      console.error("Mic error:", err);
+      setOutputText(`Mic error: ${err.message}. Ensure microphone permission is allowed.`);
       cleanupVoiceResources();
     }
   };
 
+  const stopVoiceMode = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+    cleanupVoiceResources();
+  };
+
   const transcribeAudio = async (audioBlob) => {
+    const activeKey = getEffectiveApiKey();
     setIsLoading(true);
-    setOutputText('Transcribing your voice...');
-    console.log("Sending audio blob to Groq Whisper...");
+    setOutputText('Transcribing speech...');
 
     try {
       const formData = new FormData();
@@ -396,9 +308,7 @@ function App() {
 
       const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`
-        },
+        headers: { 'Authorization': `Bearer ${activeKey}` },
         body: formData
       });
 
@@ -408,35 +318,46 @@ function App() {
       }
 
       const data = await res.json();
-      const transcriptText = data.text?.trim();
-      console.log("Whisper transcription result:", transcriptText);
+      const transcribedText = data.text;
 
-      if (transcriptText) {
-        setInputText(transcriptText);
-        if (autoAsk) {
-          setOutputText(`You: "${transcriptText}"\n\nAI is thinking...`);
-          await handleAskAI(transcriptText);
-        } else {
-          setOutputText(`Voice Captured: "${transcriptText}"\n\nPress Ask (F3) to submit.`);
-        }
+      if (transcribedText && transcribedText.trim()) {
+        setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating answer...`);
+        handleAskAI(transcribedText);
       } else {
-        setOutputText('No speech detected.');
+        setOutputText('No clear speech detected. Try speaking closer to the mic.');
       }
     } catch (err) {
       console.error('Transcription error:', err);
-      setOutputText(`Voice transcription failed: ${err.message}`);
+      setOutputText(`Audio Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleListen = () => {
-    console.log("Voice button clicked");
-    if (isVoiceMode) {
-      cleanupVoiceResources();
-    } else {
-      startVoiceMode();
+  const handleCopy = () => {
+    if (outputText) {
+      navigator.clipboard.writeText(outputText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setInputText(text);
+      if (autoAsk && text) {
+        handleAskAI(text);
+      }
+    } catch (err) {
+      console.error('Paste error:', err);
+    }
+  };
+
+  const handleClear = () => {
+    setInputText('');
+    setOutputText('');
+    setScreenshotData(null);
   };
 
   const handleMinimize = () => {
@@ -453,57 +374,61 @@ function App() {
     }
   };
 
-  if (!isDesktop) {
-    return <LandingPage />;
-  }
-
   return (
-    <SubscriptionGuard>
-    <div className="flex flex-col h-screen bg-[#070b19]/80 backdrop-blur-3xl text-gray-100 p-4 font-sans select-none relative overflow-hidden rounded-2xl border border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+    <div className="flex flex-col h-screen bg-[#070b14]/95 backdrop-blur-2xl text-gray-100 p-3.5 font-sans select-none relative overflow-hidden rounded-2xl">
       
-      {/* Background Decorative Glows */}
-      <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-      <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+      {/* Subtle Background Glow */}
+      <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+      <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-[90px] pointer-events-none"></div>
 
-      {/* Settings Modal */}
+      {/* Preferences / Settings Modal */}
       {showSettings && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md" style={{ WebkitAppRegion: 'no-drag' }}>
-          <div className="bg-[#0f1424]/95 p-6 rounded-2xl border border-emerald-500/20 w-96 max-h-[90vh] overflow-y-auto shadow-[0_0_40px_rgba(0,0,0,0.5)] relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4" style={{ WebkitAppRegion: 'no-drag' }}>
+          <div className="bg-[#0e1322] p-6 rounded-2xl border border-white/10 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left">
             <button 
               onClick={() => setShowSettings(false)} 
-              className="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all border border-white/5"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
             >
               <X size={16} />
             </button>
-            <h2 className="text-xl font-bold mb-6 text-white bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent flex items-center gap-2">
-              <Settings className="animate-spin-slow text-emerald-400" size={20} />
+            
+            <h2 className="text-lg font-black text-white flex items-center gap-2 mb-1">
+              <Settings size={18} className="text-emerald-400" />
               Preferences
             </h2>
+            <p className="text-xs text-gray-400 mb-5">Customize your stealth assistant settings</p>
             
-            <div className="space-y-5">
+            <div className="space-y-4 text-xs">
+              {/* Groq API Key (Optional) */}
               <div>
-                <label className="block text-xs font-semibold text-emerald-400 mb-1.5 uppercase tracking-wider">Groq API Key</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="font-bold text-gray-300">Custom Groq API Key (Optional)</label>
+                  <span className="text-[10px] text-emerald-400 font-semibold">Included in Subscription</span>
+                </div>
                 <input 
                   type="password"
-                  className="w-full px-4 py-2.5 bg-black/40 text-sm border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-colors shadow-inner"
-                  placeholder="gsk_..."
+                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-colors font-mono text-xs"
+                  placeholder="Leave blank to use included Cloud AI..."
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                 />
+                <p className="text-[10px] text-gray-500 mt-1">Leave empty to use the built-in subscription AI automatically.</p>
               </div>
               
+              {/* Resume / Context */}
               <div>
-                <label className="block text-xs font-semibold text-emerald-400 mb-1.5 uppercase tracking-wider">Context / Resume</label>
+                <label className="block font-bold text-gray-300 mb-1">Context / Resume (Optional)</label>
                 <textarea 
-                  className="w-full h-28 px-4 py-2.5 bg-black/40 text-sm border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-gray-300 resize-none transition-colors shadow-inner"
-                  placeholder="Paste context or resume to tailor answers..."
+                  className="w-full h-24 px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-gray-300 resize-none transition-colors text-xs leading-relaxed"
+                  placeholder="Paste your key projects, stack, or resume summary to personalize behavioral and technical answers..."
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                 />
               </div>
               
-              <div className="flex items-center justify-between bg-black/35 p-3 rounded-xl border border-white/5">
-                <span className="text-sm text-gray-300 font-medium">Always On Top</span>
+              {/* Toggles */}
+              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
+                <span className="font-semibold text-gray-300">Always On Top</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
@@ -515,8 +440,8 @@ function App() {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between bg-black/35 p-3 rounded-xl border border-white/5">
-                <span className="text-sm text-gray-300 font-medium">Auto Ask AI</span>
+              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
+                <span className="font-semibold text-gray-300">Auto Ask AI on Capture</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
@@ -528,14 +453,15 @@ function App() {
                 </label>
               </div>
 
-              <div className="bg-black/35 p-4 rounded-xl border border-white/5">
-                <div className="flex justify-between text-sm text-gray-300 mb-2 font-medium">
-                  <span>Window Opacity</span>
-                  <span className="text-emerald-400 font-bold">{Math.round(opacity * 100)}%</span>
+              {/* Opacity Slider */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+                <div className="flex justify-between text-gray-300 mb-1.5 font-semibold">
+                  <span>Overlay Transparency</span>
+                  <span className="text-emerald-400 font-mono font-bold">{Math.round(opacity * 100)}%</span>
                 </div>
                 <input 
                   type="range" 
-                  min="0.6" max="1.0" step="0.05"
+                  min="0.5" max="1.0" step="0.05"
                   className="w-full accent-emerald-500 cursor-pointer bg-gray-700 h-1.5 rounded-lg appearance-none"
                   value={opacity}
                   onChange={(e) => setOpacity(parseFloat(e.target.value))}
@@ -545,7 +471,7 @@ function App() {
             
             <button 
               onClick={() => setShowSettings(false)}
-              className="mt-6 w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-sm font-semibold transition-all shadow-[0_4px_15px_rgba(16,185,129,0.3)]"
+              className="mt-5 w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
             >
               Save Preferences
             </button>
@@ -553,189 +479,254 @@ function App() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="flex justify-between items-center mb-3 pb-3 border-b border-white/5 cursor-default" style={{ WebkitAppRegion: 'drag' }}>
+      {/* Top Header Bar */}
+      <header className="flex justify-between items-center pb-2.5 mb-2 border-b border-white/5 cursor-default select-none" style={{ WebkitAppRegion: 'drag' }}>
+        {/* Brand */}
         <div className="flex items-center space-x-2">
-          <div className="p-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-            <Sparkles size={16} className="text-emerald-400 animate-pulse" />
+          <div className="p-1 rounded-lg bg-emerald-500/10">
+            <Sparkles size={15} className="text-emerald-400 animate-pulse" />
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black bg-gradient-to-r from-lime-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.2)] tracking-tight">
-              Anazk AI
-            </h1>
-          </div>
-          <span className="text-[8px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest ml-1 animate-pulse">
-            Live
+          <span className="font-extrabold text-sm text-white tracking-tight">
+            Anazk<span className="text-emerald-400 font-black">AI</span>
+          </span>
+          <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">
+            LIVE
           </span>
         </div>
-        <div className="flex space-x-1.5 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
-          <span className="text-[9px] text-gray-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/5 shadow-inner font-medium">
-            Sessions: {interviewCount}
-          </span>
+
+        {/* Center: Integrated Timer Badge (No overlapping) */}
+        {timeRemaining !== undefined && timeRemaining !== null && (
+          <div className="flex items-center gap-1.5 bg-black/60 border border-white/10 px-2.5 py-1 rounded-full text-xs" style={{ WebkitAppRegion: 'no-drag' }}>
+            <Clock size={11} className={timeRemaining < 10 ? "text-red-400 animate-pulse" : "text-emerald-400"} />
+            <span className={`text-[10px] font-extrabold font-mono uppercase ${timeRemaining < 10 ? "text-red-400" : "text-emerald-300"}`}>
+              {timeRemaining}m left
+            </span>
+            {onLogout && (
+              <>
+                <span className="text-white/20 text-[10px]">|</span>
+                <button 
+                  onClick={onLogout} 
+                  className="text-[9px] text-gray-400 hover:text-red-400 uppercase font-extrabold transition-colors cursor-pointer"
+                  title="Quit Session"
+                >
+                  Quit
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Window Controls */}
+        <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
             onClick={() => setShowSettings(true)}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all p-1.5 rounded-lg"
-            title="Settings"
+            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
+            title="Preferences"
           >
-            <Settings size={14} />
+            <Settings size={13} />
           </button>
           <button 
             onClick={handleMinimize}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all p-1.5 rounded-lg"
+            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Minimize"
           >
-            <Minus size={14} />
+            <Minus size={13} />
           </button>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-red-500/20 hover:text-red-400 border border-white/5 hover:border-red-500/30 transition-all p-1.5 rounded-lg"
+            className="text-gray-400 hover:text-white bg-white/5 hover:bg-red-500/20 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Close"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col space-y-3 overflow-hidden" style={{ WebkitAppRegion: 'no-drag' }}>
+      {/* Main Unified Response Viewport (No split double boxes) */}
+      <main className="flex-1 flex flex-col min-h-0 relative bg-black/40 rounded-xl overflow-hidden shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
         
-        {/* Input Area */}
-        <div className="flex flex-col h-1/4 bg-white/5 hover:bg-white/[0.07] rounded-xl p-2 border border-white/10 focus-within:border-emerald-500/30 transition-all relative group/input">
-          {screenshotData && (
-            <div className="absolute top-2 right-2 border border-emerald-500/25 rounded-lg overflow-hidden h-16 w-auto shadow-lg z-10 group/thumb transition-all duration-300 hover:scale-105 bg-black">
-              <img src={screenshotData} alt="Captured" className="h-full object-contain" />
-              <button 
-                onClick={() => setScreenshotData(null)}
-                className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white text-[10px] p-1 rounded-bl transition-all opacity-0 group-hover/thumb:opacity-100"
-              >
-                <X size={10} />
-              </button>
-            </div>
-          )}
-
-          <textarea
-            className="flex-1 w-full p-2 bg-transparent resize-none outline-none text-xs text-gray-200 placeholder-gray-500 no-scrollbar font-medium leading-relaxed"
-            placeholder="Type your question or paste screen context..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
-        </div>
-
-        {/* Output Area */}
-        <div className="flex flex-col h-3/4 bg-white/5 rounded-xl border border-white/10 overflow-hidden relative shadow-inner">
-          {/* Top Bar of Output */}
-          <div className="bg-black/45 border-b border-white/5 p-2 flex justify-between items-center backdrop-blur-md">
-            <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-bold pl-2 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Assistant Response
-            </span>
-            {outputText && (
-              <button 
-                onClick={handleCopy}
-                className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all p-1.5 rounded-lg flex items-center gap-1 text-[10px] font-medium"
-                title="Copy Response"
-              >
-                <Copy size={12} />
-                Copy
-              </button>
-            )}
+        {/* Viewport Top Bar */}
+        <div className="px-3.5 py-2 border-b border-white/5 flex justify-between items-center bg-black/20 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="text-[10px] uppercase font-black text-gray-400 tracking-wider">Assistant Response</span>
           </div>
 
-          {isLoading && (
-            <div className="w-full h-[2px] bg-white/5 overflow-hidden relative">
-              <div className="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 animate-loading-bar rounded-full"></div>
+          {outputText && (
+            <button 
+              onClick={handleCopy}
+              className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-md flex items-center gap-1 text-[10px] font-bold transition-all cursor-pointer"
+              title="Copy answer"
+            >
+              {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+              <span>{copied ? 'Copied!' : 'Copy'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Loading Bar */}
+        {isLoading && (
+          <div className="w-full h-[2px] bg-white/5 overflow-hidden relative shrink-0">
+            <div className="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 animate-loading-bar rounded-full"></div>
+          </div>
+        )}
+
+        {/* Active Screenshot Thumbnail Chip */}
+        {screenshotData && (
+          <div className="absolute top-10 right-3 border border-white/10 rounded-lg overflow-hidden h-14 w-auto shadow-xl z-20 group/thumb bg-black flex items-center">
+            <img src={screenshotData} alt="Screen capture" className="h-full object-contain" />
+            <button 
+              onClick={() => setScreenshotData(null)}
+              className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white text-[9px] p-0.5 rounded-bl transition-opacity cursor-pointer"
+              title="Remove capture"
+            >
+              <X size={10} />
+            </button>
+          </div>
+        )}
+
+        {/* Response Markdown Feed */}
+        <div ref={outputScrollRef} className="flex-1 p-4 overflow-y-auto no-scrollbar text-left text-xs leading-relaxed font-medium select-text">
+          {outputText && !outputText.startsWith('Screen captured') && !outputText.startsWith('Analyzing') && !outputText.startsWith('Please') ? (
+            <div className="text-gray-200 prose prose-invert max-w-none">
+              <ReactMarkdown
+                components={{
+                  code({node, inline, className, children, ...props}) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        {...props}
+                        children={String(children).replace(/\n$/, '')}
+                        style={atomDark}
+                        language={match[1]}
+                        PreTag="div"
+                        className="rounded-lg my-2.5 text-[11px] border border-white/5 font-mono shadow-md"
+                      />
+                    ) : (
+                      <code {...props} className="text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold">
+                        {children}
+                      </code>
+                    );
+                  }
+                }}
+              >
+                {outputText}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 text-xs px-4">
+              <Sparkles size={24} className="text-gray-600 mb-2 opacity-50" />
+              <p className="font-semibold text-gray-400">{outputText || 'Ready to assist'}</p>
+              <p className="text-[11px] text-gray-600 mt-1">
+                Press <span className="text-gray-400 font-mono">F1</span> for full screen • <span className="text-gray-400 font-mono">F4</span> for region snip • <span className="text-gray-400 font-mono">F3</span> to ask
+              </p>
             </div>
           )}
-          
-          <div className="flex-1 p-4 overflow-y-auto no-scrollbar">
-            {outputText && !outputText.startsWith('Screen captured') && !outputText.startsWith('Analyzing...') && !outputText.startsWith('Error') && !outputText.startsWith('Please') ? (
-              <div className="text-xs text-gray-300 select-text prose prose-invert max-w-none font-medium leading-relaxed">
-                <ReactMarkdown
-                  components={{
-                    code({node, inline, className, children, ...props}) {
-                      const match = /language-(\w+)/.exec(className || '')
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          {...props}
-                          children={String(children).replace(/\n$/, '')}
-                          style={atomDark}
-                          language={match[1]}
-                          PreTag="div"
-                          className="rounded-lg my-3 text-[11px] border border-white/5 font-mono shadow-md"
-                        />
-                      ) : (
-                        <code {...props} className="text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded-md font-mono text-[10px] border border-emerald-500/20 font-semibold">
-                          {children}
-                        </code>
-                      )
-                    }
-                  }}
-                >
-                  {outputText}
-                </ReactMarkdown>
-              </div>
-            ) : (
-              <div className="flex h-full items-center justify-center text-gray-500 text-xs font-semibold tracking-wide italic">
-                {outputText || 'Awaiting input...'}
-              </div>
-            )}
-          </div>
         </div>
+      </main>
+
+      {/* Inline Question Input Bar */}
+      <div className="mt-2.5 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' }}>
+        <input 
+          type="text"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleAskAI();
+            }
+          }}
+          placeholder="Ask a question or enter context (Press Enter to ask)..."
+          className="flex-1 px-3.5 py-2 bg-black/40 hover:bg-black/60 focus:bg-black/70 border border-white/10 focus:border-emerald-500/40 rounded-xl outline-none text-xs text-gray-200 placeholder-gray-500 transition-all font-medium"
+        />
+        {inputText.trim() && (
+          <button 
+            onClick={() => handleAskAI()}
+            disabled={isLoading}
+            className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-sm active:scale-95 flex items-center gap-1"
+          >
+            <Send size={12} />
+          </button>
+        )}
       </div>
 
-      {/* Bottom Bar */}
-      <div className="mt-3.5 flex flex-wrap gap-2" style={{ WebkitAppRegion: 'no-drag' }}>
+      {/* Action Buttons Toolbar */}
+      <footer className="mt-2 flex flex-wrap gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
         <button 
           onClick={() => handleCapture('full')}
-          className="flex-1 min-w-[70px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
         >
           Screen (F1)
         </button>
+        
         <button 
           onClick={() => handleCapture('region')}
-          className="flex-1 min-w-[70px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
         >
           Region (F4)
         </button>
+        
         <button 
           onClick={handleListen}
-          className={`flex-1 min-w-[90px] flex items-center justify-center space-x-1.5 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
+          className={`flex-1 min-w-[75px] flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border active:scale-95 cursor-pointer ${
             isVoiceMode 
-              ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.25)]' 
+              ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse shadow-md shadow-red-500/20' 
               : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/5'
           }`}
         >
-          {isVoiceMode ? <MicOff size={12} className="animate-bounce" /> : <Mic size={12} />}
+          {isVoiceMode ? <MicOff size={11} className="animate-bounce" /> : <Mic size={11} />}
           <span>{isVoiceMode ? 'Listening...' : 'Voice'}</span>
         </button>
+        
         <button 
           onClick={() => handleAskAI()}
           disabled={isLoading}
-          className={`flex-1 min-w-[70px] bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white py-2 px-2.5 rounded-xl text-[10px] font-extrabold transition-all shadow-[0_4px_15px_rgba(16,185,129,0.25)] border border-emerald-500/30 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.03] active:scale-[0.97]'}`}
+          className={`flex-1 min-w-[70px] bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-2.5 rounded-xl text-[10px] font-black transition-all shadow-md shadow-emerald-500/20 border border-emerald-400/30 active:scale-95 cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           Ask (F3)
         </button>
+        
         <button 
           onClick={handlePaste}
-          className="flex-1 min-w-[70px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          className="bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          title="Paste from clipboard"
         >
           Paste
         </button>
+        
         <button 
           onClick={handleClear}
-          className="flex-1 min-w-[70px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+          className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          title="Clear response"
         >
           Clear
         </button>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-3 text-center w-full">
-        <p className="text-[8px] text-gray-600/80 tracking-widest uppercase font-semibold">
-          developed by prince yadav
-        </p>
-      </div>
+      </footer>
     </div>
+  );
+}
+
+function App() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const isElectronAgent = userAgent.indexOf(' electron/') > -1;
+      const isElectronRequire = !!window.require;
+      const isSearchParamApp = window.location.search.includes('app=true');
+      setIsDesktop(isElectronAgent || isElectronRequire || isSearchParamApp);
+    }
+  }, []);
+
+  if (!isDesktop) {
+    return <LandingPage />;
+  }
+
+  return (
+    <SubscriptionGuard>
+      <AppContent />
     </SubscriptionGuard>
   );
 }

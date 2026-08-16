@@ -140,24 +140,13 @@ const SubscriptionGuard = ({ children }) => {
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  // If authorized, render the app (children) + a timer overlay
+  // If authorized, render the app (children) with timer props
   if (isAuthorized) {
     return (
       <div className="relative w-full h-full">
-        {/* Pass down the timer or just show it floating */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50 pointer-events-auto">
-          <div className="bg-black/80 backdrop-blur-md border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-2 shadow-lg shadow-emerald-500/10" style={{ WebkitAppRegion: 'no-drag' }}>
-            <Clock size={12} className={timeRemaining < 10 ? "text-red-400 animate-pulse" : "text-emerald-400"} />
-            <span className={`text-[10px] font-bold tracking-widest uppercase ${timeRemaining < 10 ? "text-red-400" : "text-emerald-400"}`}>
-              {timeRemaining}m Left
-            </span>
-            <div className="w-px h-3 bg-white/20 mx-1"></div>
-            <button onClick={handleLogout} className="text-[9px] text-gray-400 hover:text-white uppercase font-bold tracking-wider">
-              Quit
-            </button>
-          </div>
-        </div>
-        {children}
+        {React.isValidElement(children) 
+          ? React.cloneElement(children, { timeRemaining, onLogout: handleLogout })
+          : children}
       </div>
     );
   }
