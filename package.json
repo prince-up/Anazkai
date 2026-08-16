@@ -34,12 +34,16 @@
   },
   "build": {
     "appId": "com.anazk.app",
-    "productName": "Anazk",
+    "productName": "AnazkAI",
     "directories": {
-      "output": "release"
+      "output": "dist-electron"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": "dmg"

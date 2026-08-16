@@ -22,10 +22,9 @@ function AppContent({ timeRemaining, onLogout }) {
   
   // Settings & Preferences
   const [showSettings, setShowSettings] = useState(false);
-  const [opacity, setOpacity] = useState(1.0);
+  const [opacity, setOpacity] = useState(() => parseFloat(localStorage.getItem('overlay_opacity')) || 0.85);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
-  const [resumeText, setResumeText] = useState(() => localStorage.getItem('resume_text') || '');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
   // Voice Mode State
@@ -37,13 +36,18 @@ function AppContent({ timeRemaining, onLogout }) {
   const chunksRef = useRef([]);
   const outputScrollRef = useRef(null);
 
+  // Auto cleanup legacy stored resume to prevent irrelevant answers
+  useEffect(() => {
+    localStorage.removeItem('resume_text');
+  }, []);
+
   // Save settings
   useEffect(() => {
     localStorage.setItem('groq_api_key', apiKey);
     localStorage.setItem('auto_ask', autoAsk);
-    localStorage.setItem('resume_text', resumeText);
+    localStorage.setItem('overlay_opacity', opacity);
     localStorage.setItem('interview_count', interviewCount);
-  }, [apiKey, autoAsk, resumeText, interviewCount]);
+  }, [apiKey, autoAsk, opacity, interviewCount]);
 
   useEffect(() => {
     if (window.require) {
@@ -133,7 +137,7 @@ function AppContent({ timeRemaining, onLogout }) {
     const groqKey = getEffectiveApiKey();
 
     if (!geminiKey && !groqKey) {
-      setOutputText('AI Cloud Engine is not configured. Please ensure VITE_GEMINI_API_KEY is configured on your server.');
+      setOutputText('AI Engine is not configured.');
       return;
     }
     
@@ -141,24 +145,19 @@ function AppContent({ timeRemaining, onLogout }) {
     const imageToSend = overrideImage || screenshotData;
 
     if (!textToSend && !imageToSend) {
-      setOutputText('Please capture a screen (F1/F4) or enter a question to analyze.');
+      setOutputText('Please capture a screen (F1/F4) or enter a question.');
       return;
     }
 
     setIsLoading(true);
-    setOutputText('Analyzing question and generating calm response...');
+    setOutputText('Analyzing...');
 
     let promptText = `You are a real-time live interview copilot.
 CRITICAL FORMATTING & ANSWER RULES:
 1. Provide SHORT, DIRECT, and PUNCHY answers designed to be spoken naturally in an interview.
 2. Structure: 2 to 4 concise bullet points maximum. Bold key technical terms.
-3. NO generic filler (e.g. "Sure!", "As a candidate...", "Here is an answer..."). Get straight to the answer.
-4. If a coding problem is detected, provide ONLY the clean optimal code with 1-line Time and Space complexity.
-5. ONLY reference the candidate resume context if the question explicitly asks about personal background, projects, or past work experience. Otherwise, answer the concept directly.`;
-
-    if (resumeText && resumeText.trim()) {
-      promptText += `\n\n[Optional Background Reference - Only use if asked about personal experience]:\n${resumeText.trim()}`;
-    }
+3. NO generic intro or outro filler (e.g. "Sure!", "Here is an answer..."). Get straight to the point.
+4. If a coding problem is detected, provide ONLY the clean optimal code block with 1-line Time and Space complexity.`;
 
     if (textToSend) {
       promptText += `\n\n[Interview Question / Prompt]:\n${textToSend}`;
@@ -315,10 +314,22 @@ CRITICAL FORMATTING & ANSWER RULES:
 
   const startVoiceMode = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       audioStreamRef.current = stream;
       
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const options = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? { mimeType: 'audio/webm;codecs=opus' }
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? { mimeType: 'audio/webm' }
+        : {};
+
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -329,17 +340,17 @@ CRITICAL FORMATTING & ANSWER RULES:
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
         chunksRef.current = [];
         await processVoiceAudio(audioBlob);
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(100); // 100ms timeslices for uninterrupted audio capture
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now! Click 'Voice' button again when done to get instant answer.");
+      setOutputText("🎙️ Listening... Speak your interview question now! Click 'Voice' again when finished.");
     } catch (err) {
       console.error("Mic error:", err);
-      setOutputText(`Microphone status: ${err.message}. Please verify microphone permissions.`);
+      setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
       cleanupVoiceResources();
     }
   };
@@ -358,7 +369,7 @@ CRITICAL FORMATTING & ANSWER RULES:
     const groqKey = getEffectiveApiKey();
 
     setIsLoading(true);
-    setOutputText('Transcribing & analyzing interview speech...');
+    setOutputText('Analyzing spoken question...');
 
     // 1. Process directly with Gemini Multimodal Audio
     if (geminiKey) {
@@ -376,10 +387,10 @@ CRITICAL FORMATTING & ANSWER RULES:
               body: JSON.stringify({
                 contents: [{
                   parts: [
-                    { text: "Listen to the interviewer question in this audio. Provide a direct, punchy interview answer in 2-4 spoken bullet points." },
+                    { text: "You are a live interview copilot. Listen to this interview audio. Provide a direct, punchy answer in 2-4 spoken bullet points." },
                     {
                       inlineData: {
-                        mimeType: 'audio/webm',
+                        mimeType: audioBlob.type || 'audio/webm',
                         data: base64Audio
                       }
                     }
@@ -398,7 +409,6 @@ CRITICAL FORMATTING & ANSWER RULES:
               setOutputText(data.candidates[0].content.parts[0].text);
               setInterviewCount(prev => prev + 1);
             } else {
-              // Fallback to Groq Whisper if audio was silent
               fallbackWhisper(audioBlob, groqKey);
             }
           } catch (e) {
@@ -409,7 +419,7 @@ CRITICAL FORMATTING & ANSWER RULES:
         };
         return;
       } catch (e) {
-        console.warn('Gemini audio failed, trying Whisper:', e);
+        console.warn('Gemini audio failed, fallback:', e);
       }
     }
 
@@ -419,7 +429,7 @@ CRITICAL FORMATTING & ANSWER RULES:
   const fallbackWhisper = async (audioBlob, groqKey) => {
     if (!groqKey) {
       setIsLoading(false);
-      setOutputText('Speech captured. Ready for next question.');
+      setOutputText('Voice recorded. Ready for next question.');
       return;
     }
 
@@ -493,41 +503,26 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#070b14]/95 backdrop-blur-2xl text-gray-100 p-3.5 font-sans select-none relative overflow-hidden rounded-2xl">
+    <div className="flex flex-col h-screen bg-black/60 backdrop-blur-xl text-gray-100 p-3 font-sans select-none relative overflow-hidden rounded-2xl border border-white/5 shadow-2xl">
       
-      {/* Subtle Background Glow */}
-      <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[90px] pointer-events-none"></div>
-      <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-[90px] pointer-events-none"></div>
-
       {/* Preferences / Settings Modal */}
       {showSettings && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4" style={{ WebkitAppRegion: 'no-drag' }}>
-          <div className="bg-[#0e1322] p-6 rounded-2xl border border-white/10 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" style={{ WebkitAppRegion: 'no-drag' }}>
+          <div className="bg-[#0b0f19] p-5 rounded-2xl border border-white/10 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl relative text-left">
             <button 
               onClick={() => setShowSettings(false)} 
               className="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
             >
-              <X size={16} />
+              <X size={15} />
             </button>
             
-            <h2 className="text-lg font-black text-white flex items-center gap-2 mb-1">
-              <Settings size={18} className="text-emerald-400" />
-              Preferences
+            <h2 className="text-base font-bold text-white flex items-center gap-2 mb-1">
+              <Settings size={16} className="text-emerald-400" />
+              Settings
             </h2>
-            <p className="text-xs text-gray-400 mb-5">Customize your stealth assistant settings</p>
+            <p className="text-[11px] text-gray-400 mb-4">Customize your stealth HUD overlay</p>
             
-            <div className="space-y-4 text-xs">
-              {/* Resume / Context */}
-              <div>
-                <label className="block font-bold text-gray-300 mb-1">Context / Resume (Optional)</label>
-                <textarea 
-                  className="w-full h-28 px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-gray-300 resize-none transition-colors text-xs leading-relaxed"
-                  placeholder="Paste your key projects, stack, or resume summary to personalize behavioral and technical answers..."
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                />
-              </div>
-              
+            <div className="space-y-3.5 text-xs">
               {/* Toggles */}
               <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
                 <span className="font-semibold text-gray-300">Always On Top</span>
@@ -558,12 +553,12 @@ CRITICAL FORMATTING & ANSWER RULES:
               {/* Opacity Slider */}
               <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
                 <div className="flex justify-between text-gray-300 mb-1.5 font-semibold">
-                  <span>Overlay Transparency</span>
+                  <span>Stealth Transparency</span>
                   <span className="text-emerald-400 font-mono font-bold">{Math.round(opacity * 100)}%</span>
                 </div>
                 <input 
                   type="range" 
-                  min="0.5" max="1.0" step="0.05"
+                  min="0.2" max="1.0" step="0.05"
                   className="w-full accent-emerald-500 cursor-pointer bg-gray-700 h-1.5 rounded-lg appearance-none"
                   value={opacity}
                   onChange={(e) => setOpacity(parseFloat(e.target.value))}
@@ -573,42 +568,34 @@ CRITICAL FORMATTING & ANSWER RULES:
             
             <button 
               onClick={() => setShowSettings(false)}
-              className="mt-5 w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
+              className="mt-5 w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
             >
-              Save Preferences
+              Done
             </button>
           </div>
         </div>
       )}
 
-      {/* Top Header Bar */}
-      <header className="flex justify-between items-center pb-2.5 mb-2 border-b border-white/5 cursor-default select-none" style={{ WebkitAppRegion: 'drag' }}>
-        {/* Brand */}
-        <div className="flex items-center space-x-2">
-          <div className="p-1 rounded-lg bg-emerald-500/10">
-            <Sparkles size={15} className="text-emerald-400 animate-pulse" />
-          </div>
-          <span className="font-extrabold text-sm text-white tracking-tight">
-            Anazk<span className="text-emerald-400 font-black">AI</span>
-          </span>
-          <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">
-            LIVE
-          </span>
+      {/* Top Stealth Header (Clean minimalist HUD, no logos/branding) */}
+      <header className="flex justify-between items-center pb-2 mb-1.5 border-b border-white/5 cursor-move select-none" style={{ WebkitAppRegion: 'drag' }}>
+        {/* Stealth Drag Handle */}
+        <div className="flex items-center gap-1.5 px-1">
+          <div className="w-8 h-1 rounded-full bg-white/20 hover:bg-white/30 transition-all"></div>
         </div>
 
-        {/* Center: Integrated Timer Badge (No overlapping) */}
+        {/* Center: Discreet Timer / Status Badge */}
         {timeRemaining !== undefined && timeRemaining !== null && (
-          <div className="flex items-center gap-1.5 bg-black/60 border border-white/10 px-2.5 py-1 rounded-full text-xs" style={{ WebkitAppRegion: 'no-drag' }}>
-            <Clock size={11} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
-            <span className={`text-[10px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
-              {timeRemaining === 'UNLIMITED' ? '👑 OWNER VIP' : `${timeRemaining}m left`}
+          <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-2 py-0.5 rounded-full text-xs" style={{ WebkitAppRegion: 'no-drag' }}>
+            <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
+            <span className={`text-[9px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
+              {timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`}
             </span>
             {onLogout && (
               <>
-                <span className="text-white/20 text-[10px]">|</span>
+                <span className="text-white/20 text-[9px]">|</span>
                 <button 
                   onClick={onLogout} 
-                  className="text-[9px] text-gray-400 hover:text-red-400 uppercase font-extrabold transition-colors cursor-pointer"
+                  className="text-[8px] text-gray-400 hover:text-red-400 uppercase font-bold transition-colors cursor-pointer"
                   title="Quit Session"
                 >
                   Quit
@@ -618,31 +605,33 @@ CRITICAL FORMATTING & ANSWER RULES:
           </div>
         )}
 
-        {/* Window Controls */}
+        {/* Minimal Window Controls */}
         <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
             onClick={() => setShowSettings(true)}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Preferences"
+            title="Settings"
           >
-            <Settings size={13} />
+            <Settings size={12} />
           </button>
           <button 
             onClick={handleMinimize}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Minimize"
           >
-            <Minus size={13} />
+            <Minus size={12} />
           </button>
           <button 
             onClick={handleClose}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-red-500/20 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Close"
           >
-            <X size={13} />
+            <X size={12} />
           </button>
         </div>
       </header>
+
+
 
       {/* Main Unified Response Viewport (No split double boxes) */}
       <main className="flex-1 flex flex-col min-h-0 relative bg-black/40 rounded-xl overflow-hidden shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
