@@ -1,7 +1,7 @@
 -- ============================================================
 -- Anazk AI - Supabase Database Setup
 -- Run this once in your Supabase SQL Editor:
--- https://supabase.com/dashboard/project/cnisrikrxwcnnsjeuogwr/sql/new
+-- https://supabase.com/dashboard/project/cnisrikrxwcnsjeuogwr/sql/new
 -- ============================================================
 
 -- 1. Create the profiles table to store user data on signup
