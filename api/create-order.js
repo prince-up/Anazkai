@@ -1,9 +1,9 @@
 import Razorpay from 'razorpay'
 
 const PLANS = {
-  '1-hour': { name: 'Anazk 1 Hour', amount: 30000, durationMinutes: 60 },
-  '2-hour': { name: 'Anazk 2 Hours', amount: 60000, durationMinutes: 120 },
-  '10-sessions': { name: 'Anazk 10 Sessions', amount: 290000, durationMinutes: 1200 },
+  '1-hour': { name: 'Anazk 1 Hour', amount: 25900, durationMinutes: 60 },
+  '2-hour': { name: 'Anazk 2 Hours', amount: 50000, durationMinutes: 120 },
+  '10-sessions': { name: 'Anazk 10 Sessions', amount: 250000, durationMinutes: 1200 },
   weekly: { name: 'Anazk AI Weekly', amount: 150000, durationMinutes: 10080 },
   monthly: { name: 'Anazk AI Monthly', amount: 300000, durationMinutes: 43200 },
   yearly: { name: 'Anazk AI Yearly', amount: 600000, durationMinutes: 525600 },

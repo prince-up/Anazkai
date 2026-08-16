@@ -1608,13 +1608,13 @@ class Solution {
               </>
             ) : (
               <>
-                {/* Card 1: 1 Hour for ₹300 */}
+                {/* Card 1: 1 Hour for ₹259 */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-3 sm:space-y-4">
                     <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Hour Session</span>
                     <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹300</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($3.90) one-time</span>
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹259</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($3.10) one-time</span>
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
@@ -1639,13 +1639,18 @@ class Solution {
                   </button>
                 </div>
 
-                {/* Card 2: 2 Hours for ₹600 */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+                {/* Card 2: 2 Hours for ₹500 (Best Deal) */}
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
+                  {/* Best Deal Tag */}
+                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                    Best deal
+                  </div>
+
                   <div className="space-y-3 sm:space-y-4">
                     <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">2 Hours Session</span>
                     <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹600</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($7.90) one-time</span>
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹500</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($5.99) one-time</span>
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
@@ -1664,23 +1669,19 @@ class Solution {
                   </div>
                   <button 
                     onClick={() => startCheckout('2-hour')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
                 </div>
 
-                {/* Card 3: 10 Interview Sessions for ₹2,900 */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
-                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
-                    Best value
-                  </div>
-
+                {/* Card 3: 10 Interview Sessions for ₹2,500 */}
+                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-3 sm:space-y-4">
                     <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Interview Sessions</span>
                     <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,900</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($35.00) one-time</span>
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,500</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($29.90) one-time</span>
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
@@ -1699,7 +1700,7 @@ class Solution {
                   </div>
                   <button 
                     onClick={() => startCheckout('10-sessions')}
-                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
+                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>

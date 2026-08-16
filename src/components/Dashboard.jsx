@@ -259,7 +259,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
       } else if (q.includes('hotkey') || q.includes('f1') || q.includes('f3') || q.includes('f4') || q.includes('stealth')) {
         botReply = "🛡️ Stealth Hotkeys:\n• F1: Instant Full-screen OCR capture\n• F4: Snip region of coding question\n• F3: Stream AI answer directly to your invisible HUD overlay.";
       } else if (q.includes('credit') || q.includes('plan') || q.includes('price') || q.includes('buy') || q.includes('cost')) {
-        botReply = "💳 Credit Plans Available:\n• ₹300 for 1 Hour Session (60 mins)\n• ₹600 for 2 Hours Session (120 mins)\n• ₹2,900 for 10 Interview Sessions (1200 mins - Best Value).";
+        botReply = "💳 Credit Plans Available:\n• ₹259 for 1 Hour Session (60 mins)\n• ₹500 for 2 Hours Session (120 mins - Best Deal)\n• ₹2,500 for 10 Interview Sessions (1200 mins).";
         actions = [{ label: '⚡ View Upgrade Plans', query: 'upgrade' }];
       } else {
         botReply = "I'm your 24/7 AI interview copilot guide. Feel free to create a session, upload your PDF resume, or launch the desktop app for stealth mode.";
