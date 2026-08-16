@@ -9,7 +9,7 @@ import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
 
 // Fallback / default built-in AI keys for subscribed users
-const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA';
 const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
 function AppContent({ timeRemaining, onLogout }) {
@@ -167,9 +167,13 @@ CRITICAL FORMATTING & ANSWER RULES:
     let reply = '';
     let lastErr = null;
 
-    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE
+    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE (UNLIMITED)
     if (geminiKey) {
-      const geminiModels = ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+      const geminiModels = [
+        'gemini-3.7-flash',
+        'gemini-3.5-flash',
+        'gemini-flash-latest'
+      ];
       
       let imageBase64 = null;
       let imageMime = 'image/png';
@@ -204,8 +208,7 @@ CRITICAL FORMATTING & ANSWER RULES:
               contents: [{ parts: contentParts }],
               generationConfig: {
                 temperature: 0.2,
-                thinkingConfig: { thinkingBudget: 0 },
-                maxOutputTokens: 450
+                maxOutputTokens: 500
               }
             })
           });
@@ -294,7 +297,16 @@ CRITICAL FORMATTING & ANSWER RULES:
     }
   };
 
+  const recognitionRef = useRef(null);
+  const liveTranscriptRef = useRef('');
+
   const cleanupVoiceResources = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state !== 'inactive') {
@@ -313,6 +325,42 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   const startVoiceMode = async () => {
+    liveTranscriptRef.current = '';
+    
+    // 1. Initialize native Web Speech API if supported in browser/electron
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+          let fullTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            fullTranscript += event.results[i][0].transcript + ' ';
+          }
+          const cleaned = fullTranscript.trim();
+          if (cleaned) {
+            liveTranscriptRef.current = cleaned;
+            setOutputText(`🎙️ Listening...\n\n"${cleaned}"`);
+            setInputText(cleaned);
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('SpeechRecognition notice:', e.error);
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+      } catch (speechErr) {
+        console.warn('Web Speech API could not start, using audio stream:', speechErr);
+      }
+    }
+
+    // 2. Initialize MediaRecorder audio stream capture
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -342,12 +390,15 @@ CRITICAL FORMATTING & ANSWER RULES:
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
         chunksRef.current = [];
-        await processVoiceAudio(audioBlob);
+        const capturedLiveText = liveTranscriptRef.current;
+        await processVoiceAudio(audioBlob, capturedLiveText);
       };
 
-      mediaRecorder.start(100); // 100ms timeslices for uninterrupted audio capture
+      mediaRecorder.start(100);
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now! Click 'Voice' again when finished.");
+      if (!liveTranscriptRef.current) {
+        setOutputText("🎙️ Listening... Speak your interview question now!\nClick 'Voice' again when finished.");
+      }
     } catch (err) {
       console.error("Mic error:", err);
       setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
@@ -356,80 +407,137 @@ CRITICAL FORMATTING & ANSWER RULES:
   };
 
   const stopVoiceMode = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
         mediaRecorderRef.current.stop();
       } catch (e) {}
+    } else {
+      cleanupVoiceResources();
     }
-    cleanupVoiceResources();
   };
 
-  const processVoiceAudio = async (audioBlob) => {
+  const processVoiceAudio = async (audioBlob, capturedLiveText) => {
+    cleanupVoiceResources();
+
+    // Priority 1: If real-time speech recognition captured the question, answer it directly!
+    if (capturedLiveText && capturedLiveText.trim().length > 2) {
+      setOutputText(`Question: "${capturedLiveText.trim()}"\n\nGenerating answer...`);
+      await handleAskAI(capturedLiveText.trim());
+      return;
+    }
+
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = getEffectiveApiKey();
 
     setIsLoading(true);
-    setOutputText('Analyzing spoken question...');
+    setOutputText('Analyzing spoken audio with AI...');
 
-    // 1. Process directly with Gemini Multimodal Audio
-    if (geminiKey) {
+    // Priority 2: Gemini Multimodal Audio Transcription & Answering
+    if (geminiKey && audioBlob && audioBlob.size > 1000) {
       try {
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
           try {
             const base64Audio = reader.result.split(',')[1];
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${geminiKey}`;
+            const cleanMime = (audioBlob.type || 'audio/webm').split(';')[0];
+            const geminiModels = [
+              'gemini-3.7-flash',
+              'gemini-3.5-flash',
+              'gemini-3.6-flash',
+              'gemini-flash-latest',
+              'gemini-pro-latest'
+            ];
 
-            const response = await fetch(geminiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: "You are a live interview copilot. Listen to this interview audio. Provide a direct, punchy answer in 2-4 spoken bullet points." },
-                    {
-                      inlineData: {
-                        mimeType: audioBlob.type || 'audio/webm',
-                        data: base64Audio
-                      }
+            let geminiSuccess = false;
+            let geminiReply = '';
+
+            for (const modelId of geminiModels) {
+              try {
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
+
+                const response = await fetch(geminiUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    contents: [{
+                      parts: [
+                        { 
+                          text: `You are an expert interview assistant listening to the candidate's audio.
+CRITICAL INSTRUCTIONS:
+1. Listen carefully to the speech in this audio.
+2. If there is NO speech, or only background silence/noise, reply EXACTLY with:
+NO_SPEECH_DETECTED
+3. DO NOT invent or hallucinate any canned story or placeholder answer.
+4. If words were spoken, format your response as:
+**Question:** [Transcribed question from audio]
+
+**Answer:**
+• [Direct, punchy bullet point 1]
+• [Direct, punchy bullet point 2]
+• [Direct, punchy bullet point 3]` 
+                        },
+                        {
+                          inlineData: {
+                            mimeType: cleanMime,
+                            data: base64Audio
+                          }
+                        }
+                      ]
+                    }],
+                    generationConfig: {
+                      temperature: 0.2,
+                      maxOutputTokens: 500
                     }
-                  ]
-                }],
-                generationConfig: {
-                  temperature: 0.2,
-                  thinkingConfig: { thinkingBudget: 0 },
-                  maxOutputTokens: 400
-                }
-              })
-            });
+                  })
+                });
 
-            const data = await response.json();
-            if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-              setOutputText(data.candidates[0].content.parts[0].text);
+                const data = await response.json();
+                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (response.ok && reply) {
+                  if (reply.includes('NO_SPEECH_DETECTED')) {
+                    break;
+                  } else {
+                    geminiReply = reply;
+                    geminiSuccess = true;
+                    break;
+                  }
+                }
+              } catch (err) {
+                console.warn(`Gemini ${modelId} voice error:`, err);
+              }
+            }
+
+            if (geminiSuccess && geminiReply) {
+              setOutputText(geminiReply);
               setInterviewCount(prev => prev + 1);
+              setIsLoading(false);
             } else {
-              fallbackWhisper(audioBlob, groqKey);
+              await fallbackWhisper(audioBlob, groqKey);
             }
           } catch (e) {
-            fallbackWhisper(audioBlob, groqKey);
-          } finally {
-            setIsLoading(false);
+            await fallbackWhisper(audioBlob, groqKey);
           }
         };
         return;
       } catch (e) {
-        console.warn('Gemini audio failed, fallback:', e);
+        console.warn('Gemini audio process error:', e);
       }
     }
 
-    fallbackWhisper(audioBlob, groqKey);
+    await fallbackWhisper(audioBlob, groqKey);
   };
 
   const fallbackWhisper = async (audioBlob, groqKey) => {
-    if (!groqKey) {
+    if (!groqKey || !audioBlob || audioBlob.size < 1000) {
       setIsLoading(false);
-      setOutputText('Voice recorded. Ready for next question.');
+      setOutputText('⚠️ No speech detected. Please speak clearly into your microphone and try again, or type your question below.');
       return;
     }
 
@@ -448,15 +556,15 @@ CRITICAL FORMATTING & ANSWER RULES:
       if (res.ok) {
         const data = await res.json();
         const transcribedText = data.text;
-        if (transcribedText && transcribedText.trim()) {
-          setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating answer...`);
-          handleAskAI(transcribedText);
+        if (transcribedText && transcribedText.trim().length > 2) {
+          setOutputText(`Question: "${transcribedText.trim()}"\n\nGenerating answer...`);
+          await handleAskAI(transcribedText.trim());
           return;
         }
       }
-      setOutputText('Voice recording finished. Please type or capture screen.');
+      setOutputText('⚠️ No speech detected. Please speak clearly into your microphone and try again.');
     } catch (err) {
-      setOutputText(`Audio Notice: ${err.message}`);
+      setOutputText('⚠️ No clear speech detected. Please check microphone permissions and try again.');
     } finally {
       setIsLoading(false);
     }
