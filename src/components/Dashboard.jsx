@@ -76,9 +76,9 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   const [resumes, setResumes] = useState(() => {
     try {
       const saved = localStorage.getItem(`anazk_resumes_${user?.id || 'guest'}`);
-      return saved ? JSON.parse(saved) : [
-        { id: '1', name: 'Software_Engineer_Resume_2026.pdf', role: 'Full Stack & Backend Developer', uploadedAt: 'March 14, 2026', size: '1.2 MB', type: 'application/pdf' }
-      ];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.filter(r => r.name !== 'Software_Engineer_Resume_2026.pdf') : [];
     } catch (e) {
       return [];
     }
@@ -88,10 +88,9 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   const [documents, setDocuments] = useState(() => {
     try {
       const saved = localStorage.getItem(`anazk_docs_${user?.id || 'guest'}`);
-      return saved ? JSON.parse(saved) : [
-        { id: '1', title: 'System Design Cheat Sheet (Distributed Caching & Sharding)', category: 'Technical Architecture', lastEdited: 'Yesterday' },
-        { id: '2', title: 'STAR Method Answers for Behavioral Questions', category: 'Behavioral & Leadership', lastEdited: '3 days ago' }
-      ];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.filter(d => !d.title?.includes('Cheat Sheet') && !d.title?.includes('STAR Method')) : [];
     } catch (e) {
       return [];
     }
@@ -726,40 +725,61 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {resumes.map((resume) => (
-                <div key={resume.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-center font-bold text-xl shrink-0">
-                        📄
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{resume.name}</h4>
-                        <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{resume.role}</span>
-                        {resume.size && (
-                          <span className="text-[10px] text-gray-400 font-medium">{resume.size}</span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setResumes(resumes.filter(r => r.id !== resume.id))}
-                      className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                      title="Delete Resume"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
-                    <span>Uploaded: {resume.uploadedAt}</span>
-                    <span className="font-black text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-md flex items-center gap-1">
-                      <Check size={12} />
-                      Active Context
-                    </span>
-                  </div>
+            {resumes.length === 0 ? (
+              <div className="py-16 sm:py-28 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="space-y-1.5">
+                  <h3 className="font-display font-black text-lg sm:text-2xl text-gray-900">
+                    No CVs or resumes uploaded
+                  </h3>
+                  <p className="text-xs sm:text-base text-gray-500 font-medium">
+                    Upload your PDF resume to give Anazk AI instant background context.
+                  </p>
                 </div>
-              ))}
-            </div>
+
+                <button
+                  onClick={() => setShowResumeModal(true)}
+                  className="px-6 sm:px-7 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer mt-3"
+                >
+                  <Plus size={18} />
+                  <span>Upload PDF Resume</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {resumes.map((resume) => (
+                  <div key={resume.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-center font-bold text-xl shrink-0">
+                          📄
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{resume.name}</h4>
+                          <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{resume.role}</span>
+                          {resume.size && (
+                            <span className="text-[10px] text-gray-400 font-medium">{resume.size}</span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setResumes(resumes.filter(r => r.id !== resume.id))}
+                        className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete Resume"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
+                      <span>Uploaded: {resume.uploadedAt}</span>
+                      <span className="font-black text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-md flex items-center gap-1">
+                        <Check size={12} />
+                        Active Context
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -785,33 +805,54 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {documents.map((doc) => (
-                <div key={doc.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xl shrink-0">
-                        📑
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{doc.title}</h4>
-                        <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{doc.category}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}
-                      className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
-                    <span>Edited {doc.lastEdited}</span>
-                    <span className="text-emerald-700 font-bold cursor-pointer hover:underline">View Notes →</span>
-                  </div>
+            {documents.length === 0 ? (
+              <div className="py-16 sm:py-28 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="space-y-1.5">
+                  <h3 className="font-display font-black text-lg sm:text-2xl text-gray-900">
+                    No documents or notes saved
+                  </h3>
+                  <p className="text-xs sm:text-base text-gray-500 font-medium">
+                    Save job descriptions, cheat sheets, or interview preparation notes.
+                  </p>
                 </div>
-              ))}
-            </div>
+
+                <button
+                  onClick={() => setShowDocModal(true)}
+                  className="px-6 sm:px-7 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer mt-3"
+                >
+                  <Plus size={18} />
+                  <span>New Document</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xl shrink-0">
+                          📑
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{doc.title}</h4>
+                          <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{doc.category}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}
+                        className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
+                      <span>Edited {doc.lastEdited}</span>
+                      <span className="text-emerald-700 font-bold cursor-pointer hover:underline">View Notes →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
