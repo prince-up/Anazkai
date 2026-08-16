@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { 
   Radio, 
@@ -27,7 +27,14 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
-  BookOpen
+  BookOpen,
+  Menu,
+  UploadCloud,
+  FileCheck,
+  Send,
+  Bot,
+  User as UserIcon,
+  CornerDownLeft
 } from 'lucide-react';
 
 export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownload, onBackToHome }) {
@@ -35,7 +42,26 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   const [sessionFilter, setSessionFilter] = useState('all'); // 'all' | 'active' | 'ended'
   const [searchQuery, setSearchQuery] = useState('');
   const [viewLayout, setViewLayout] = useState('list'); // 'list' | 'grid'
-  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Support Chatbot State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      sender: 'bot',
+      text: "👋 Hi! I'm the Anazk AI Support Assistant. How can I help you with your interview preparation or desktop setup today?",
+      actions: [
+        { label: '📄 How to use resume context?', query: 'how to upload and use resume in interview' },
+        { label: '🛡️ Stealth hotkeys guide', query: 'what are hotkeys F1 F3 F4' },
+        { label: '💳 How to buy credits?', query: 'how to buy credits' }
+      ]
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const chatMessagesEndRef = useRef(null);
+
   // Stored Sessions in localStorage
   const [sessions, setSessions] = useState(() => {
     try {
@@ -46,12 +72,12 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
     }
   });
 
-  // Stored Resumes in localStorage
+  // Stored Resumes in localStorage (with PDF support)
   const [resumes, setResumes] = useState(() => {
     try {
       const saved = localStorage.getItem(`anazk_resumes_${user?.id || 'guest'}`);
       return saved ? JSON.parse(saved) : [
-        { id: '1', name: 'Software_Engineer_Resume_2026.pdf', role: 'Full Stack & Backend Developer', uploadedAt: 'March 14, 2026', size: '1.2 MB' }
+        { id: '1', name: 'Software_Engineer_Resume_2026.pdf', role: 'Full Stack & Backend Developer', uploadedAt: 'March 14, 2026', size: '1.2 MB', type: 'application/pdf' }
       ];
     } catch (e) {
       return [];
@@ -75,7 +101,6 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [showDocModal, setShowDocModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // New Session Form State
   const [newSessionTitle, setNewSessionTitle] = useState('');
@@ -83,35 +108,43 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   const [newSessionPlatform, setNewSessionPlatform] = useState('Google Meet');
   const [newSessionCompany, setNewSessionCompany] = useState('');
 
-  // New Doc / Resume State
+  // New Doc State
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocCategory, setNewDocCategory] = useState('General');
   const [newDocContent, setNewDocContent] = useState('');
 
-  const [newResumeName, setNewResumeName] = useState('');
+  // New PDF / Resume Upload State
+  const [selectedFile, setSelectedFile] = useState(null);
   const [newResumeRole, setNewResumeRole] = useState('');
-  const [newResumeText, setNewResumeText] = useState('');
+  const [fileUploadError, setFileUploadError] = useState('');
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [extractedResumeText, setExtractedResumeText] = useState('');
+  const fileInputRef = useRef(null);
 
-  // Save sessions to storage
+  // Save state
   useEffect(() => {
     try {
       localStorage.setItem(`anazk_sessions_${user?.id || 'guest'}`, JSON.stringify(sessions));
     } catch (e) {}
   }, [sessions, user]);
 
-  // Save resumes
   useEffect(() => {
     try {
       localStorage.setItem(`anazk_resumes_${user?.id || 'guest'}`, JSON.stringify(resumes));
     } catch (e) {}
   }, [resumes, user]);
 
-  // Save documents
   useEffect(() => {
     try {
       localStorage.setItem(`anazk_docs_${user?.id || 'guest'}`, JSON.stringify(documents));
     } catch (e) {}
   }, [documents, user]);
+
+  useEffect(() => {
+    if (chatOpen && chatMessagesEndRef.current) {
+      chatMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, chatOpen]);
 
   // User details
   const userEmail = user?.email || 'user@example.com';
@@ -122,6 +155,64 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
     .join('')
     .toUpperCase()
     .slice(0, 2) || 'AZ';
+
+  // Handle PDF File Selection
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileUploadError('');
+    if (file.size > 15 * 1024 * 1024) {
+      setFileUploadError('File size exceeds 15MB limit. Please upload a smaller PDF.');
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Read text from file if possible (for .txt / basic content)
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result;
+      if (typeof text === 'string') {
+        setExtractedResumeText(text.slice(0, 5000));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Handle Save Resume (PDF / Doc)
+  const handleSaveResume = (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setFileUploadError('Please select a PDF or Document file to upload.');
+      return;
+    }
+
+    setIsUploadingFile(true);
+
+    setTimeout(() => {
+      const fileSizeFormatted = selectedFile.size > 1024 * 1024 
+        ? `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(selectedFile.size / 1024)} KB`;
+
+      const newResumeObj = {
+        id: Date.now().toString(),
+        name: selectedFile.name,
+        role: newResumeRole.trim() || 'Software Engineer',
+        uploadedAt: 'Just now',
+        size: fileSizeFormatted,
+        type: selectedFile.type || 'application/pdf',
+        contentSnippet: extractedResumeText
+      };
+
+      setResumes([newResumeObj, ...resumes]);
+      setSelectedFile(null);
+      setNewResumeRole('');
+      setExtractedResumeText('');
+      setIsUploadingFile(false);
+      setShowResumeModal(false);
+    }, 600);
+  };
 
   // Handle Create Session
   const handleCreateSession = (e) => {
@@ -145,6 +236,43 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
     setShowCreateModal(false);
   };
 
+  // Chatbot response generator
+  const handleSendChatMessage = (rawQuery) => {
+    const queryText = (typeof rawQuery === 'string' ? rawQuery : chatInput).trim();
+    if (!queryText) return;
+
+    const userMsgId = Date.now();
+    setChatMessages((prev) => [
+      ...prev,
+      { id: userMsgId, sender: 'user', text: queryText }
+    ]);
+    setChatInput('');
+    setIsBotTyping(true);
+
+    setTimeout(() => {
+      const q = queryText.toLowerCase();
+      let botReply = "I can help with that! Anazk AI provides active content-protection overlay for Google Meet, Zoom, and MS Teams.";
+      let actions = [];
+
+      if (q.includes('resume') || q.includes('cv') || q.includes('pdf')) {
+        botReply = "📄 You can upload your resume in PDF format under the 'CVs & Resumes' tab. Anazk AI will automatically reference your past projects, stack, and metrics when formulating answers during live interview rounds.";
+      } else if (q.includes('hotkey') || q.includes('f1') || q.includes('f3') || q.includes('f4') || q.includes('stealth')) {
+        botReply = "🛡️ Stealth Hotkeys:\n• F1: Instant Full-screen OCR capture\n• F4: Snip region of coding question\n• F3: Stream AI answer directly to your invisible HUD overlay.";
+      } else if (q.includes('credit') || q.includes('plan') || q.includes('price') || q.includes('buy') || q.includes('cost')) {
+        botReply = "💳 Credit Plans Available:\n• ₹300 for 1 Hour Session (60 mins)\n• ₹600 for 2 Hours Session (120 mins)\n• ₹2,900 for 10 Interview Sessions (1200 mins - Best Value).";
+        actions = [{ label: '⚡ View Upgrade Plans', query: 'upgrade' }];
+      } else {
+        botReply = "I'm your 24/7 AI interview copilot guide. Feel free to create a session, upload your PDF resume, or launch the desktop app for stealth mode.";
+      }
+
+      setChatMessages((prev) => [
+        ...prev,
+        { id: Date.now(), sender: 'bot', text: botReply, actions }
+      ]);
+      setIsBotTyping(false);
+    }, 700);
+  };
+
   // Filtered Sessions
   const filteredSessions = sessions.filter((s) => {
     const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -157,17 +285,64 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
   });
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] flex font-sans text-gray-900 selection:bg-emerald-100 selection:text-emerald-900 antialiased">
+    <div className="min-h-screen bg-[#fafbfc] flex flex-col md:flex-row font-sans text-gray-900 selection:bg-emerald-100 selection:text-emerald-900 antialiased relative">
       
-      {/* ─── LEFT SIDEBAR (GENEROUS TYPOGRAPHY & SCALING) ─── */}
-      <aside className={`w-72 bg-white border-r border-gray-200/80 flex flex-col justify-between shrink-0 transition-all duration-200 ${sidebarOpen ? 'block' : 'hidden md:flex'}`}>
+      {/* ─── MOBILE TOPBAR (SMARTPHONE VIEWPORT HEADER) ─── */}
+      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+        <div 
+          onClick={onBackToHome}
+          className="flex items-center gap-2.5 cursor-pointer"
+        >
+          <img 
+            src="/penguin.jpg" 
+            alt="Anazk Logo" 
+            className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500/30 shadow-xs" 
+          />
+          <span className="font-display font-black text-xl text-gray-900 tracking-tight flex items-center">
+            Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setChatOpen(true)}
+            className="p-2 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer"
+            title="Open AI Support Chat"
+          >
+            <MessageSquare size={18} />
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+            aria-label="Toggle Menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── MOBILE DRAWER BACKDROP ─── */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-in fade-in duration-200"
+        />
+      )}
+
+      {/* ─── LEFT SIDEBAR (DESKTOP + MOBILE DRAWER) ─── */}
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50 md:z-auto
+        w-72 bg-white border-r border-gray-200/80 flex flex-col justify-between shrink-0
+        transform transition-transform duration-300 ease-in-out
+        ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'}
+      `}>
         
         {/* Top Section: Brand & Nav Links */}
-        <div className="p-5 space-y-7">
-          {/* Brand Logo */}
+        <div className="p-5 space-y-6 overflow-y-auto max-h-[calc(100vh-220px)] no-scrollbar">
+          {/* Brand Logo & Close for Mobile */}
           <div className="flex items-center justify-between px-2 pt-1">
             <div 
-              onClick={onBackToHome}
+              onClick={() => { setMobileMenuOpen(false); onBackToHome(); }}
               className="flex items-center gap-3 cursor-pointer group"
             >
               <img 
@@ -180,13 +355,21 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </span>
             </div>
             
-            <button 
-              onClick={onBackToHome}
-              className="text-gray-400 hover:text-gray-700 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
-              title="Home Page"
-            >
-              <ExternalLink size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={onBackToHome}
+                className="hidden md:flex text-gray-400 hover:text-gray-700 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+                title="Home Page"
+              >
+                <ExternalLink size={18} />
+              </button>
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="md:hidden text-gray-400 hover:text-gray-700 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Section 1: WORKSPACE */}
@@ -196,7 +379,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
             </span>
             <nav className="space-y-1.5">
               <button
-                onClick={() => setActiveTab('callSessions')}
+                onClick={() => { setActiveTab('callSessions'); setMobileMenuOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all text-left cursor-pointer ${
                   activeTab === 'callSessions' 
                     ? 'bg-gray-100 text-gray-900 shadow-xs font-extrabold' 
@@ -208,7 +391,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </button>
 
               <button
-                onClick={() => setActiveTab('cvs')}
+                onClick={() => { setActiveTab('cvs'); setMobileMenuOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all text-left cursor-pointer ${
                   activeTab === 'cvs' 
                     ? 'bg-gray-100 text-gray-900 shadow-xs font-extrabold' 
@@ -220,7 +403,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </button>
 
               <button
-                onClick={() => setActiveTab('documents')}
+                onClick={() => { setActiveTab('documents'); setMobileMenuOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all text-left cursor-pointer ${
                   activeTab === 'documents' 
                     ? 'bg-gray-100 text-gray-900 shadow-xs font-extrabold' 
@@ -240,7 +423,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
             </span>
             <nav className="space-y-1.5">
               <button
-                onClick={() => setActiveTab('gettingStarted')}
+                onClick={() => { setActiveTab('gettingStarted'); setMobileMenuOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all text-left cursor-pointer ${
                   activeTab === 'gettingStarted' 
                     ? 'bg-gray-100 text-gray-900 shadow-xs font-extrabold' 
@@ -252,7 +435,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </button>
 
               <button
-                onClick={() => setActiveTab('tutorials')}
+                onClick={() => { setActiveTab('tutorials'); setMobileMenuOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all text-left cursor-pointer ${
                   activeTab === 'tutorials' 
                     ? 'bg-gray-100 text-gray-900 shadow-xs font-extrabold' 
@@ -263,39 +446,42 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 <span>Tutorials</span>
               </button>
 
+              {/* Support Chat Button -> Opens Interactive AI Chatbot */}
               <button
                 onClick={() => {
-                  window.open('mailto:supportanazkai@gmail.com?subject=Anazk AI Support Request', '_blank');
+                  setMobileMenuOpen(false);
+                  setChatOpen(true);
                 }}
-                className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all text-left cursor-pointer"
+                className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-emerald-50 hover:text-emerald-800 transition-all text-left cursor-pointer group"
               >
-                <MessageSquare size={18} className="text-gray-400" />
+                <MessageSquare size={18} className="text-gray-400 group-hover:text-emerald-600" />
                 <span>Support Chat</span>
+                <span className="ml-auto text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">AI Live</span>
               </button>
             </nav>
           </div>
         </div>
 
         {/* Bottom Section: Plan Card, Actions & User Profile */}
-        <div className="p-4 space-y-4 border-t border-gray-100 bg-gray-50/60">
+        <div className="p-4 space-y-3.5 border-t border-gray-100 bg-gray-50/60 shrink-0">
           
           {/* Free Plan Upgrade Card */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs space-y-3">
+          <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-lg">🎁</span>
-                <span className="text-sm font-black text-gray-900">Free Plan</span>
+                <span className="text-base">🎁</span>
+                <span className="text-xs sm:text-sm font-black text-gray-900">Free Plan</span>
               </div>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
             </div>
-            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+            <p className="text-[11px] text-gray-500 font-semibold leading-relaxed">
               Start a 10 min free session or buy credits for full-length calls.
             </p>
             <button
-              onClick={onOpenPricing}
-              className="w-full py-2.5 bg-[#18181b] hover:bg-black active:scale-[0.98] text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2"
+              onClick={() => { setMobileMenuOpen(false); onOpenPricing(); }}
+              className="w-full py-2 bg-[#18181b] hover:bg-black active:scale-[0.98] text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
             >
-              <Zap size={14} className="text-amber-400 fill-amber-400" />
+              <Zap size={13} className="text-amber-400 fill-amber-400" />
               <span>Upgrade</span>
             </button>
           </div>
@@ -303,32 +489,32 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
           {/* Quick Action Links */}
           <div className="space-y-1">
             <button
-              onClick={onOpenDownload}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-white hover:text-gray-900 transition-colors text-left cursor-pointer"
+              onClick={() => { setMobileMenuOpen(false); onOpenDownload(); }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold text-gray-700 hover:bg-white hover:text-gray-900 transition-colors text-left cursor-pointer"
             >
-              <Laptop size={17} className="text-gray-500" />
+              <Laptop size={16} className="text-gray-500" />
               <span>Open Desktop App</span>
             </button>
 
             <button
-              onClick={onSignOut}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+              onClick={() => { setMobileMenuOpen(false); onSignOut(); }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
             >
-              <LogOut size={17} className="text-red-500" />
+              <LogOut size={16} className="text-red-500" />
               <span>Log Out</span>
             </button>
           </div>
 
           {/* User Profile Footer Pill */}
           <div className="flex items-center gap-3 px-2 pt-2 border-t border-gray-200/60">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-sm shrink-0 shadow-xs border border-emerald-200">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-xs shrink-0 shadow-xs border border-emerald-200">
               {userInitials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <span className="block text-sm font-black text-gray-900 truncate leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-gray-900 truncate leading-tight">
                 {fullName}
               </span>
-              <span className="block text-xs text-gray-500 font-medium truncate leading-tight mt-0.5">
+              <span className="block text-[10px] sm:text-xs text-gray-500 font-medium truncate leading-tight mt-0.5">
                 {userEmail}
               </span>
             </div>
@@ -337,27 +523,27 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
         </div>
       </aside>
 
-      {/* ─── MAIN CONTENT AREA (CLEAR, HIGH VISIBILITY SIZING) ─── */}
+      {/* ─── MAIN CONTENT AREA ─── */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#fafbfc] overflow-y-auto">
         
         {/* TAB 1: CALL SESSIONS */}
         {activeTab === 'callSessions' && (
-          <div className="p-8 sm:p-12 max-w-6xl w-full mx-auto space-y-7">
+          <div className="p-4 sm:p-8 md:p-12 max-w-6xl w-full mx-auto space-y-6 sm:space-y-7">
             
             {/* Top Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
+                <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 tracking-tight">
                   Call Sessions
                 </h1>
-                <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
+                <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-500 mt-1">
                   Prepare for calls and review past sessions.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-sm sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm md:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 <Plus size={18} />
                 <span>Create Session</span>
@@ -366,7 +552,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
             {/* Sub-Navigation & Session Count */}
             <div className="flex items-center justify-between border-b border-gray-200/80 pb-3">
-              <div className="flex items-center gap-8 text-sm sm:text-base font-extrabold">
+              <div className="flex items-center gap-6 sm:gap-8 text-xs sm:text-sm md:text-base font-extrabold">
                 <button
                   onClick={() => setSessionFilter('all')}
                   className={`pb-3 transition-colors cursor-pointer relative ${
@@ -399,95 +585,93 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 </button>
               </div>
 
-              <span className="text-sm font-bold text-gray-400">
+              <span className="text-xs sm:text-sm font-bold text-gray-400">
                 {filteredSessions.length} Sessions
               </span>
             </div>
 
             {/* Search & Layout Toolbar */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="relative flex-1 max-w-lg">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="relative flex-1 max-w-full sm:max-w-lg">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text" 
                   placeholder="Search by title or description"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200/80 rounded-xl text-sm font-semibold placeholder-gray-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all shadow-xs text-gray-900"
+                  className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-white border border-gray-200/80 rounded-xl text-xs sm:text-sm font-semibold placeholder-gray-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all shadow-xs text-gray-900"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-2">
                 <button 
                   onClick={() => setSessions([...sessions].reverse())}
-                  className="p-3 bg-white hover:bg-gray-50 border border-gray-200/80 text-gray-500 rounded-xl transition-all shadow-xs cursor-pointer"
+                  className="p-2.5 sm:p-3 bg-white hover:bg-gray-50 border border-gray-200/80 text-gray-500 rounded-xl transition-all shadow-xs cursor-pointer"
                   title="Sort Sessions"
                 >
-                  <ArrowUpDown size={17} />
+                  <ArrowUpDown size={16} />
                 </button>
                 <button 
                   onClick={() => setViewLayout('grid')}
-                  className={`p-3 border rounded-xl transition-all shadow-xs cursor-pointer ${
+                  className={`p-2.5 sm:p-3 border rounded-xl transition-all shadow-xs cursor-pointer ${
                     viewLayout === 'grid' 
                       ? 'bg-gray-100 border-gray-300 text-gray-900' 
                       : 'bg-white border-gray-200/80 text-gray-400 hover:text-gray-700'
                   }`}
                   title="Grid View"
                 >
-                  <Grid size={17} />
+                  <Grid size={16} />
                 </button>
                 <button 
                   onClick={() => setViewLayout('list')}
-                  className={`p-3 border rounded-xl transition-all shadow-xs cursor-pointer ${
+                  className={`p-2.5 sm:p-3 border rounded-xl transition-all shadow-xs cursor-pointer ${
                     viewLayout === 'list' 
                       ? 'bg-gray-100 border-gray-300 text-gray-900' 
                       : 'bg-white border-gray-200/80 text-gray-400 hover:text-gray-700'
                   }`}
                   title="List View"
                 >
-                  <List size={17} />
+                  <List size={16} />
                 </button>
               </div>
             </div>
 
             {/* Sessions List or Empty State */}
             {filteredSessions.length === 0 ? (
-              /* EMPTY STATE */
-              <div className="py-24 sm:py-36 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="py-16 sm:py-28 flex flex-col items-center justify-center text-center space-y-4">
                 <div className="space-y-1.5">
-                  <h3 className="font-display font-black text-xl sm:text-2xl text-gray-900">
+                  <h3 className="font-display font-black text-lg sm:text-2xl text-gray-900">
                     You have no upcoming sessions
                   </h3>
-                  <p className="text-sm sm:text-base text-gray-500 font-medium">
+                  <p className="text-xs sm:text-base text-gray-500 font-medium">
                     Your upcoming sessions will appear here once created.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-sm sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer mt-3"
+                  className="px-6 sm:px-7 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer mt-3"
                 >
                   <Plus size={18} />
                   <span>Create Session</span>
                 </button>
               </div>
             ) : (
-              /* Active Sessions Display */
               <div className={viewLayout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3.5'}>
                 {filteredSessions.map((session) => (
                   <div 
                     key={session.id}
-                    className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <h4 className="font-black text-base sm:text-lg text-gray-900">{session.title}</h4>
-                        <span className="text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-1 rounded-md">
+                        <h4 className="font-black text-sm sm:text-lg text-gray-900">{session.title}</h4>
+                        <span className="text-[10px] sm:text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md">
                           {session.platform}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-500 font-semibold">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 font-semibold">
                         <span>{session.company}</span>
                         <span>•</span>
                         <span>{session.type}</span>
@@ -496,20 +680,20 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2 sm:gap-2.5">
                       <button
                         onClick={onOpenDownload}
-                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                        className="flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Play size={15} fill="currentColor" />
+                        <Play size={14} fill="currentColor" />
                         <span>Launch Stealth Copilot</span>
                       </button>
                       <button
                         onClick={() => setSessions(sessions.filter(s => s.id !== session.id))}
-                        className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                        className="p-2 sm:p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                         title="Delete Session"
                       >
-                        <Trash2 size={17} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -520,51 +704,58 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
           </div>
         )}
 
-        {/* TAB 2: CVS & RESUMES */}
+        {/* TAB 2: CVS & RESUMES (WITH PDF DRAG & DROP UPLOAD) */}
         {activeTab === 'cvs' && (
-          <div className="p-8 sm:p-12 max-w-6xl w-full mx-auto space-y-7">
-            <div className="flex items-center justify-between">
+          <div className="p-4 sm:p-8 md:p-12 max-w-6xl w-full mx-auto space-y-6 sm:space-y-7">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
+                <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 tracking-tight">
                   CVs & Resumes
                 </h1>
-                <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
-                  Upload and manage resumes so Anazk AI tailors technical answers to your experience.
+                <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-500 mt-1">
+                  Upload your PDF / DOC resumes so Anazk AI tailors interview solutions directly to your background.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowResumeModal(true)}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-sm sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm md:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 <Plus size={18} />
-                <span>Add Resume</span>
+                <span>Upload PDF Resume</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {resumes.map((resume) => (
-                <div key={resume.id} className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+                <div key={resume.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-2xl">
+                      <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-center font-bold text-xl shrink-0">
                         📄
                       </div>
-                      <div>
-                        <h4 className="font-black text-base text-gray-900">{resume.name}</h4>
-                        <span className="text-xs sm:text-sm text-gray-500 font-semibold">{resume.role}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{resume.name}</h4>
+                        <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{resume.role}</span>
+                        {resume.size && (
+                          <span className="text-[10px] text-gray-400 font-medium">{resume.size}</span>
+                        )}
                       </div>
                     </div>
                     <button
                       onClick={() => setResumes(resumes.filter(r => r.id !== resume.id))}
-                      className="text-gray-400 hover:text-red-600 p-1 cursor-pointer"
+                      className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Delete Resume"
                     >
-                      <Trash2 size={17} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
                     <span>Uploaded: {resume.uploadedAt}</span>
-                    <span className="font-black text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-md">Active Context</span>
+                    <span className="font-black text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-md flex items-center gap-1">
+                      <Check size={12} />
+                      Active Context
+                    </span>
                   </div>
                 </div>
               ))}
@@ -574,20 +765,20 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
         {/* TAB 3: DOCUMENTS */}
         {activeTab === 'documents' && (
-          <div className="p-8 sm:p-12 max-w-6xl w-full mx-auto space-y-7">
-            <div className="flex items-center justify-between">
+          <div className="p-4 sm:p-8 md:p-12 max-w-6xl w-full mx-auto space-y-6 sm:space-y-7">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
+                <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 tracking-tight">
                   Documents & Notes
                 </h1>
-                <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
+                <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-500 mt-1">
                   Save job descriptions, interview cheat sheets, and system design notes.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowDocModal(true)}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-sm sm:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm md:text-base font-black shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 <Plus size={18} />
                 <span>New Document</span>
@@ -596,22 +787,22 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {documents.map((doc) => (
-                <div key={doc.id} className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+                <div key={doc.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-2xl">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xl shrink-0">
                         📑
                       </div>
-                      <div>
-                        <h4 className="font-black text-base text-gray-900">{doc.title}</h4>
-                        <span className="text-xs sm:text-sm text-gray-500 font-semibold">{doc.category}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-black text-sm sm:text-base text-gray-900 truncate">{doc.title}</h4>
+                        <span className="text-xs sm:text-sm text-gray-500 font-semibold block truncate">{doc.category}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}
-                      className="text-gray-400 hover:text-red-600 p-1 cursor-pointer"
+                      className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                     >
-                      <Trash2 size={17} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-semibold">
@@ -626,39 +817,39 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
         {/* TAB 4: GETTING STARTED */}
         {activeTab === 'gettingStarted' && (
-          <div className="p-8 sm:p-12 max-w-4xl w-full mx-auto space-y-7">
+          <div className="p-4 sm:p-8 md:p-12 max-w-4xl w-full mx-auto space-y-6 sm:space-y-7">
             <div>
-              <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
+              <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 tracking-tight">
                 Getting Started with Anazk AI
               </h1>
-              <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
+              <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-500 mt-1">
                 Everything you need to master your stealth AI interview copilot.
               </p>
             </div>
 
             <div className="space-y-5">
-              <div className="bg-white p-7 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+              <div className="bg-white p-5 sm:p-7 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-base">1</div>
-                  <h3 className="font-black text-lg text-gray-900">Install the Desktop Client</h3>
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-base shrink-0">1</div>
+                  <h3 className="font-black text-base sm:text-lg text-gray-900">Install the Desktop Client</h3>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed pl-12 font-medium">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed sm:pl-12 font-medium">
                   Download the native Windows client (.exe). It automatically engages hardware-level window protection so screen-sharing tools like Zoom, Microsoft Teams, and Google Meet cannot detect it.
                 </p>
-                <div className="pl-12 pt-1">
-                  <button onClick={onOpenDownload} className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20">
+                <div className="sm:pl-12 pt-1">
+                  <button onClick={onOpenDownload} className="w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20">
                     <Download size={16} />
                     <span>Download Windows Client (.exe)</span>
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white p-7 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+              <div className="bg-white p-5 sm:p-7 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-base">2</div>
-                  <h3 className="font-black text-lg text-gray-900">Stealth Hotkeys Reference</h3>
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-base shrink-0">2</div>
+                  <h3 className="font-black text-base sm:text-lg text-gray-900">Stealth Hotkeys Reference</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pl-12">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:pl-12">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-200/60">
                     <span className="block font-mono text-emerald-600 font-black text-base">F1 Key</span>
                     <span className="text-sm font-bold text-gray-800">Full Screen OCR</span>
@@ -680,21 +871,21 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
           </div>
         )}
 
-        {/* TAB 5: TUTORIALS */}
+        {/* TAB 5: TUTORIALS (GOOGLE DRIVE EMBEDDED VIDEOS) */}
         {activeTab === 'tutorials' && (
-          <div className="p-8 sm:p-12 max-w-5xl w-full mx-auto space-y-7">
+          <div className="p-4 sm:p-8 md:p-12 max-w-5xl w-full mx-auto space-y-6 sm:space-y-7">
             <div>
-              <h1 className="font-display font-black text-3xl sm:text-4xl text-gray-900 tracking-tight">
+              <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 tracking-tight">
                 Video Tutorials & Guides
               </h1>
-              <p className="text-sm sm:text-base font-semibold text-gray-500 mt-1.5">
+              <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-500 mt-1">
                 Watch step-by-step walkthroughs of live coding, stealth setup, and interview demonstrations.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Video 1 */}
-              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-gray-200">
                     <iframe
@@ -706,7 +897,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                     ></iframe>
                   </div>
                   <div>
-                    <h4 className="font-black text-lg text-gray-900 leading-snug">
+                    <h4 className="font-black text-base sm:text-lg text-gray-900 leading-snug">
                       How to bypass screen capture on Google Meet & Zoom
                     </h4>
                     <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-semibold mt-1">
@@ -733,7 +924,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               </div>
 
               {/* Video 2 */}
-              <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-gray-200">
                     <iframe
@@ -745,7 +936,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                     ></iframe>
                   </div>
                   <div>
-                    <h4 className="font-black text-lg text-gray-900 leading-snug">
+                    <h4 className="font-black text-base sm:text-lg text-gray-900 leading-snug">
                       Live Coding & Problem Solving with Anazk AI Copilot
                     </h4>
                     <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-semibold mt-1">
@@ -776,10 +967,155 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
       </main>
 
+      {/* ─── CORNER FLOATING AI SUPPORT CHATBOT WIDGET ─── */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
+        {chatOpen && (
+          <div className="mb-3 w-[calc(100vw-2rem)] sm:w-[410px] h-[500px] max-h-[80vh] bg-white rounded-3xl border border-gray-200 shadow-[0_20px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200 text-left">
+            {/* Chat Header */}
+            <div className="px-4 sm:px-5 py-3.5 sm:py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="relative">
+                  <img 
+                    src="/penguin.jpg" 
+                    alt="Anazk AI Logo" 
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
+                  />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
+                    Anazk AI Support
+                    <Sparkles size={13} className="text-emerald-300 animate-pulse" />
+                  </h4>
+                  <span className="text-[10px] text-emerald-200 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    Online • AI Copilot Assistant
+                  </span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setChatOpen(false)}
+                className="text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
+                title="Close chat"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Chat Messages Body */}
+            <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3.5 bg-gray-50/70 text-xs no-scrollbar">
+              {chatMessages.map((msg) => (
+                <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className="flex items-end gap-2 max-w-[85%]">
+                    {msg.sender === 'bot' && (
+                      <img 
+                        src="/penguin.jpg" 
+                        alt="Anazk AI" 
+                        className="w-6 h-6 rounded-full border border-emerald-500 object-cover shrink-0 mb-1" 
+                      />
+                    )}
+                    <div 
+                      className={`p-3 rounded-2xl leading-relaxed whitespace-pre-line font-medium shadow-xs ${
+                        msg.sender === 'user' 
+                          ? 'bg-emerald-600 text-white rounded-br-none' 
+                          : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+
+                  {/* Action Chips */}
+                  {msg.actions && msg.actions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2 ml-8">
+                      {msg.actions.map((act, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (act.query === 'upgrade') {
+                              onOpenPricing();
+                            } else {
+                              handleSendChatMessage(act.query);
+                            }
+                          }}
+                          className="text-[11px] bg-white hover:bg-emerald-50 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200/80 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                        >
+                          {act.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {isBotTyping && (
+                <div className="flex items-center gap-2 text-gray-400 text-xs font-semibold ml-8">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  <span>Anazk AI is typing...</span>
+                </div>
+              )}
+              <div ref={chatMessagesEndRef} />
+            </div>
+
+            {/* Chat Input */}
+            <form 
+              onSubmit={(e) => { e.preventDefault(); handleSendChatMessage(); }}
+              className="p-2.5 sm:p-3 bg-white border-t border-gray-200 flex items-center gap-2 shrink-0"
+            >
+              <input 
+                type="text" 
+                placeholder="Ask anything about Anazk AI..." 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                className="flex-1 px-3.5 py-2 bg-gray-100/80 focus:bg-white border border-transparent focus:border-emerald-500 rounded-xl text-xs font-semibold outline-none transition-all text-gray-800"
+              />
+              <button 
+                type="submit" 
+                disabled={!chatInput.trim()}
+                className="p-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl transition-all shadow-xs cursor-pointer"
+                title="Send message"
+              >
+                <Send size={14} />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Floating Chat Trigger Button */}
+        {!chatOpen && (
+          <button
+            onClick={() => setChatOpen(true)}
+            className="group relative flex items-center gap-3 bg-gradient-to-r from-[#0d2e27] to-[#134e42] hover:from-emerald-950 hover:to-[#0d2e27] text-white p-2 sm:p-2.5 sm:pr-5 rounded-full shadow-[0_10px_35px_rgba(16,185,129,0.35)] border border-emerald-400/30 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            title="Open AI Guide & Support"
+          >
+            <div className="relative">
+              <img 
+                src="/penguin.jpg" 
+                alt="Chatbot Penguin" 
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_12px_rgba(16,185,129,0.5)] group-hover:rotate-6 transition-transform" 
+              />
+              <span className="absolute top-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full animate-ping"></span>
+              <span className="absolute top-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
+            </div>
+            
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="text-xs font-black text-white flex items-center gap-1">
+                Support Chat
+                <Sparkles size={11} className="text-emerald-300" />
+              </span>
+              <span className="text-[10px] text-emerald-200 font-semibold">Need help? Ask AI</span>
+            </div>
+          </button>
+        )}
+      </div>
+
       {/* ─── CREATE SESSION MODAL ─── */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-7 sm:p-9 border border-gray-200 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-9 border border-gray-200 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowCreateModal(false)}
               className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition-all cursor-pointer"
@@ -787,7 +1123,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               <X size={18} />
             </button>
 
-            <h3 className="font-display font-black text-2xl text-gray-900 mb-1.5">Create Interview Session</h3>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-gray-900 mb-1">Create Interview Session</h3>
             <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-6">Set up your next call for real-time AI assistance.</p>
 
             <form onSubmit={handleCreateSession} className="space-y-4">
@@ -818,7 +1154,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
                     Interview Type
@@ -867,60 +1203,104 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
         </div>
       )}
 
-      {/* ─── ADD RESUME MODAL ─── */}
+      {/* ─── ADD PDF / RESUME MODAL (FILE UPLOADER) ─── */}
       {showResumeModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-7 sm:p-9 border border-gray-200 shadow-2xl relative text-left">
-            <button onClick={() => setShowResumeModal(false)} className="absolute top-6 right-6 text-gray-400 p-1.5">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-9 border border-gray-200 shadow-2xl relative text-left max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <button onClick={() => setShowResumeModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 p-1.5">
               <X size={18} />
             </button>
-            <h3 className="font-display font-black text-2xl text-gray-900 mb-1.5">Add Resume Profile</h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-5">Paste your resume content to tailor AI answers.</p>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-gray-900 mb-1">Upload Resume (PDF / Doc)</h3>
+            <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-5">Upload your resume file so Anazk AI personalizes answers.</p>
 
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (!newResumeName.trim()) return;
-              setResumes([
-                {
-                  id: Date.now().toString(),
-                  name: newResumeName.trim(),
-                  role: newResumeRole.trim() || 'Software Engineer',
-                  uploadedAt: 'Today',
-                  size: 'Text Profile'
-                },
-                ...resumes
-              ]);
-              setNewResumeName('');
-              setNewResumeRole('');
-              setNewResumeText('');
-              setShowResumeModal(false);
-            }} className="space-y-4">
+            <form onSubmit={handleSaveResume} className="space-y-4">
+              
+              {/* File Drag & Drop Box */}
               <div>
-                <label className="block text-xs font-black text-gray-700 uppercase mb-1.5">Resume Name</label>
+                <label className="block text-xs font-black text-gray-700 uppercase mb-1.5">Resume File (PDF / DOC / TXT) *</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2.5 ${
+                    selectedFile 
+                      ? 'border-emerald-500 bg-emerald-50/50' 
+                      : 'border-gray-300 hover:border-emerald-500 bg-gray-50/70 hover:bg-emerald-50/30'
+                  }`}
+                >
+                  <input 
+                    ref={fileInputRef}
+                    type="file" 
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  
+                  {selectedFile ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-2xl shrink-0">
+                        📄
+                      </div>
+                      <div className="text-left min-w-0">
+                        <span className="block text-sm font-black text-gray-900 truncate max-w-[220px]">
+                          {selectedFile.name}
+                        </span>
+                        <span className="block text-xs text-emerald-700 font-bold">
+                          {selectedFile.size > 1024 * 1024 
+                            ? `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB` 
+                            : `${Math.round(selectedFile.size / 1024)} KB`} • Click to change
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <UploadCloud size={24} />
+                      </div>
+                      <div>
+                        <span className="block text-sm font-bold text-gray-800">
+                          Click to browse or drag & drop PDF
+                        </span>
+                        <span className="block text-xs text-gray-400 font-medium mt-0.5">
+                          Supports PDF, DOCX, DOC, or TXT (Max 15MB)
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-700 uppercase mb-1.5">Target Role / Designation</label>
                 <input 
-                  type="text" required placeholder="e.g. Senior_SDE_Resume.pdf"
-                  value={newResumeName} onChange={(e) => setNewResumeName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900"
+                  type="text" 
+                  placeholder="e.g. Senior Full Stack Engineer / SDE 2"
+                  value={newResumeRole} 
+                  onChange={(e) => setNewResumeRole(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-black text-gray-700 uppercase mb-1.5">Target Role</label>
-                <input 
-                  type="text" placeholder="e.g. Backend Lead"
-                  value={newResumeRole} onChange={(e) => setNewResumeRole(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-black text-gray-700 uppercase mb-1.5">Resume Text / Summary</label>
-                <textarea 
-                  rows={4} placeholder="Paste your key projects, stack, and metrics..."
-                  value={newResumeText} onChange={(e) => setNewResumeText(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold resize-none text-gray-900"
-                />
-              </div>
-              <button type="submit" className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm shadow-md cursor-pointer">
-                Save Resume Context
+
+              {fileUploadError && (
+                <p className="text-xs text-red-600 font-bold bg-red-50 p-2.5 rounded-xl border border-red-200">
+                  {fileUploadError}
+                </p>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={isUploadingFile || !selectedFile}
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-xl text-sm shadow-md cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isUploadingFile ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span>Processing Resume...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileCheck size={18} />
+                    <span>Save & Activate Resume Context</span>
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -930,11 +1310,11 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
       {/* ─── ADD DOCUMENT MODAL ─── */}
       {showDocModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-7 sm:p-9 border border-gray-200 shadow-2xl relative text-left">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-9 border border-gray-200 shadow-2xl relative text-left max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
             <button onClick={() => setShowDocModal(false)} className="absolute top-6 right-6 text-gray-400 p-1.5">
               <X size={18} />
             </button>
-            <h3 className="font-display font-black text-2xl text-gray-900 mb-1.5">New Document Note</h3>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-gray-900 mb-1">New Document Note</h3>
             <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-5">Create technical notes or cheat sheets.</p>
 
             <form onSubmit={(e) => {
@@ -959,7 +1339,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 <input 
                   type="text" required placeholder="e.g. Distributed Consensus Notes (Raft/Paxos)"
                   value={newDocTitle} onChange={(e) => setNewDocTitle(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
               <div>
@@ -967,7 +1347,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 <input 
                   type="text" placeholder="e.g. System Design / Algorithms"
                   value={newDocCategory} onChange={(e) => setNewDocCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
               <div>
@@ -975,7 +1355,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 <textarea 
                   rows={4} placeholder="Write key points, formulas, or reminders..."
                   value={newDocContent} onChange={(e) => setNewDocContent(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold resize-none text-gray-900"
+                  className="w-full px-4 py-3 bg-gray-50 border rounded-xl text-sm font-semibold resize-none text-gray-900 outline-none focus:border-emerald-500 focus:bg-white"
                 />
               </div>
               <button type="submit" className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm shadow-md cursor-pointer">
