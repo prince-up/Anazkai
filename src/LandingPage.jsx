@@ -142,24 +142,41 @@ function LandingPage() {
     e.preventDefault();
     setAuthError('');
     setAuthSuccess('');
+
+    const cleanEmail = (authEmail || '').trim().toLowerCase();
+    const cleanPassword = authPassword || '';
+    const cleanName = (authName || '').trim();
+
+    // Client-side validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setAuthError('Please enter a valid email address (e.g. name@example.com)');
+      return;
+    }
+
+    if (cleanPassword.length < 6) {
+      setAuthError('Password must be at least 6 characters.');
+      return;
+    }
+
     setAuthLoading(true);
     
     try {
       if (isLoginMode) {
         // --- LOGIN ---
         const { error } = await supabase.auth.signInWithPassword({
-          email: authEmail,
-          password: authPassword,
+          email: cleanEmail,
+          password: cleanPassword,
         });
         if (error) throw error;
         setShowSignInModal(false);
       } else {
         // --- SIGN UP ---
         const { data, error } = await supabase.auth.signUp({
-          email: authEmail,
-          password: authPassword,
+          email: cleanEmail,
+          password: cleanPassword,
           options: {
-            data: { full_name: authName }
+            data: { full_name: cleanName || cleanEmail.split('@')[0] }
           }
         });
         if (error) throw error;
@@ -172,8 +189,8 @@ function LandingPage() {
               .upsert([
                 {
                   id: data.user.id,
-                  email: authEmail,
-                  full_name: authName,
+                  email: cleanEmail,
+                  full_name: cleanName || cleanEmail.split('@')[0],
                   created_at: new Date().toISOString(),
                 }
               ]);
@@ -201,18 +218,18 @@ function LandingPage() {
     } catch (err) {
       const msg = err?.message || '';
       const lmsg = msg.toLowerCase();
-      if (msg === 'AUTH_NETWORK_ERROR' || lmsg.includes('auth_network') || lmsg.includes('fetch') || lmsg.includes('network') || lmsg.includes('resolve') || lmsg.includes('failed')) {
-        setAuthError('⚠️ Cannot reach Supabase — your project may be paused. Go to supabase.com/dashboard to resume it, then try again.');
-      } else if (lmsg.includes('invalid login') || lmsg.includes('invalid credentials')) {
-        setAuthError('Incorrect email or password. Please try again.');
-      } else if (lmsg.includes('already registered') || lmsg.includes('already exists')) {
-        setAuthError('An account with this email already exists. Try signing in instead.');
-      } else if (lmsg.includes('password')) {
-        setAuthError('Password must be at least 6 characters.');
-      } else if (lmsg.includes('email')) {
-        setAuthError('Please enter a valid email address.');
+      if (msg === 'AUTH_NETWORK_ERROR' || lmsg.includes('auth_network') || lmsg.includes('fetch') || lmsg.includes('network') || lmsg.includes('resolve') || lmsg.includes('failed to fetch')) {
+        setAuthError('⚠️ Cannot connect to server — please check your internet connection and try again.');
+      } else if (lmsg.includes('invalid login') || lmsg.includes('invalid credentials') || lmsg.includes('invalid_credentials')) {
+        setAuthError('Incorrect email or password. If you are new, click "Create Account" above.');
+      } else if (lmsg.includes('already registered') || lmsg.includes('already exists') || lmsg.includes('user_already_exists')) {
+        setAuthError('An account with this email already exists. Please switch to Sign In.');
+      } else if (lmsg.includes('email not confirmed') || lmsg.includes('email_not_confirmed')) {
+        setAuthError('Email not confirmed yet. Please check your inbox or spam folder for the confirmation email.');
+      } else if (lmsg.includes('rate limit') || lmsg.includes('too many requests')) {
+        setAuthError('Too many attempts. Please wait a minute before trying again.');
       } else {
-        setAuthError(msg || 'Something went wrong. Please try again.');
+        setAuthError(msg || 'Authentication failed. Please try again.');
       }
     } finally {
       setAuthLoading(false);
