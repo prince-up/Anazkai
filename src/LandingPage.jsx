@@ -178,16 +178,24 @@ function LandingPage() {
                 }
               ]);
           } catch (profileErr) {
-            // Table may not exist yet — non-blocking
-            console.warn('[Anazk] Profile table not ready:', profileErr?.message);
+            console.warn('[Anazk] Profile table note:', profileErr?.message);
           }
         }
         
-        setAuthSuccess('Account created! Check your email to confirm your address, then sign in.');
+        if (data?.session) {
+          // If Supabase has email confirmation disabled, user is immediately logged in!
+          setShowSignInModal(false);
+          setAuthName('');
+          setAuthEmail('');
+          setAuthPassword('');
+          return;
+        }
+
+        setAuthSuccess('Account created! Please check your email inbox to confirm your email, then sign in.');
         setAuthName('');
         setAuthEmail('');
         setAuthPassword('');
-        setTimeout(() => setIsLoginMode(true), 4000);
+        setTimeout(() => setIsLoginMode(true), 3500);
         return;
       }
     } catch (err) {
