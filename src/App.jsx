@@ -148,14 +148,20 @@ function AppContent({ timeRemaining, onLogout }) {
     setIsLoading(true);
     setOutputText('Analyzing question and generating calm response...');
 
-    let promptText = "You are an expert interview assistant helping a candidate in real-time. Provide clear, professional, and well-structured answers suitable for speaking in an interview. Use concise bullet points and bold key points for instant readability. If coding, provide the optimal code with brief time/space complexity.";
-    
-    if (resumeText) {
-      promptText += `\n\nCandidate Resume Context:\n${resumeText}\n(Incorporate resume experience if relevant)`;
+    let promptText = `You are a real-time live interview copilot.
+CRITICAL FORMATTING & ANSWER RULES:
+1. Provide SHORT, DIRECT, and PUNCHY answers designed to be spoken naturally in an interview.
+2. Structure: 2 to 4 concise bullet points maximum. Bold key technical terms.
+3. NO generic filler (e.g. "Sure!", "As a candidate...", "Here is an answer..."). Get straight to the answer.
+4. If a coding problem is detected, provide ONLY the clean optimal code with 1-line Time and Space complexity.
+5. ONLY reference the candidate resume context if the question explicitly asks about personal background, projects, or past work experience. Otherwise, answer the concept directly.`;
+
+    if (resumeText && resumeText.trim()) {
+      promptText += `\n\n[Optional Background Reference - Only use if asked about personal experience]:\n${resumeText.trim()}`;
     }
-    
+
     if (textToSend) {
-      promptText += `\n\nQuestion/Context: ${textToSend}`;
+      promptText += `\n\n[Interview Question / Prompt]:\n${textToSend}`;
     }
 
     let success = false;
@@ -195,7 +201,13 @@ function AppContent({ timeRemaining, onLogout }) {
           const response = await fetch(geminiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: contentParts }] })
+            body: JSON.stringify({ 
+              contents: [{ parts: contentParts }],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 1024
+              }
+            })
           });
           const data = await response.json();
 
@@ -233,7 +245,12 @@ function AppContent({ timeRemaining, onLogout }) {
 
         for (const modelId of groqModels) {
           try {
-            const requestBody = { model: modelId, messages: [{ role: 'user', content }] };
+            const requestBody = { 
+              model: modelId, 
+              messages: [{ role: 'user', content }],
+              temperature: 0.4,
+              max_tokens: 800
+            };
             const response = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
@@ -269,6 +286,9 @@ function AppContent({ timeRemaining, onLogout }) {
     setIsLoading(false);
   };
 
+  // Voice recognition ref
+  const speechRecognitionRef = useRef(null);
+
   const handleListen = () => {
     if (isVoiceMode) {
       stopVoiceMode();
@@ -278,12 +298,19 @@ function AppContent({ timeRemaining, onLogout }) {
   };
 
   const cleanupVoiceResources = () => {
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (e) {}
+      speechRecognitionRef.current = null;
+    }
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state !== 'inactive') {
           mediaRecorderRef.current.stop();
         }
       } catch (e) {}
+      mediaRecorderRef.current = null;
     }
     if (audioStreamRef.current) {
       try {
@@ -291,18 +318,63 @@ function AppContent({ timeRemaining, onLogout }) {
       } catch (e) {}
       audioStreamRef.current = null;
     }
-    mediaRecorderRef.current = null;
     setIsVoiceMode(false);
   };
 
   const startVoiceMode = async () => {
-    const activeKey = getEffectiveApiKey();
-    if (!activeKey) {
-      setOutputText('Please configure your API Key in Preferences.');
-      setShowSettings(true);
-      return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    // A. Native Browser / Electron Web Speech Recognition (Instant Realtime, Zero Cost, No Settings popup)
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        speechRecognitionRef.current = recognition;
+
+        let accumulatedTranscript = '';
+
+        recognition.onstart = () => {
+          setIsVoiceMode(true);
+          setOutputText("🎙️ Listening to interviewer's voice in real time... Click 'Voice' to stop and answer.");
+        };
+
+        recognition.onresult = (event) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          if (currentTranscript) {
+            setInputText(currentTranscript);
+            accumulatedTranscript = currentTranscript;
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.warn("Speech recognition warning:", event.error);
+          if (event.error === 'not-allowed') {
+            setOutputText("Microphone permission denied. Please allow microphone access.");
+            cleanupVoiceResources();
+          }
+        };
+
+        recognition.onend = () => {
+          setIsVoiceMode(false);
+          if (accumulatedTranscript && accumulatedTranscript.trim()) {
+            setOutputText(`Transcribed: "${accumulatedTranscript.trim()}"\n\nGenerating crisp interview response...`);
+            handleAskAI(accumulatedTranscript.trim());
+          }
+        };
+
+        recognition.start();
+        return;
+      } catch (e) {
+        console.warn("Falling back to MediaRecorder audio mode:", e);
+      }
     }
 
+    // B. Fallback MediaRecorder mode
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
@@ -325,15 +397,20 @@ function AppContent({ timeRemaining, onLogout }) {
 
       mediaRecorder.start();
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening to interview audio... Click 'Voice' again to stop and get answer.");
+      setOutputText("🎙️ Recording interviewer voice... Click 'Voice' again to stop and analyze.");
     } catch (err) {
       console.error("Mic error:", err);
-      setOutputText(`Mic error: ${err.message}. Ensure microphone permission is allowed.`);
+      setOutputText(`Mic error: ${err.message}. Please check microphone permissions.`);
       cleanupVoiceResources();
     }
   };
 
   const stopVoiceMode = () => {
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (e) {}
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
         mediaRecorderRef.current.stop();
@@ -343,39 +420,37 @@ function AppContent({ timeRemaining, onLogout }) {
   };
 
   const transcribeAudio = async (audioBlob) => {
-    const activeKey = getEffectiveApiKey();
+    const groqKey = getEffectiveApiKey();
     setIsLoading(true);
     setOutputText('Transcribing speech...');
 
     try {
-      const formData = new FormData();
-      formData.append('file', audioBlob, 'speech.webm');
-      formData.append('model', 'whisper-large-v3-turbo');
-      formData.append('response_format', 'json');
+      if (groqKey) {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'speech.webm');
+        formData.append('model', 'whisper-large-v3-turbo');
+        formData.append('response_format', 'json');
 
-      const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${activeKey}` },
-        body: formData
-      });
+        const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${groqKey}` },
+          body: formData
+        });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error?.message || 'Failed to transcribe audio');
+        if (res.ok) {
+          const data = await res.json();
+          const transcribedText = data.text;
+          if (transcribedText && transcribedText.trim()) {
+            setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating crisp interview response...`);
+            handleAskAI(transcribedText);
+            return;
+          }
+        }
       }
-
-      const data = await res.json();
-      const transcribedText = data.text;
-
-      if (transcribedText && transcribedText.trim()) {
-        setOutputText(`Transcribed: "${transcribedText}"\n\nGenerating answer...`);
-        handleAskAI(transcribedText);
-      } else {
-        setOutputText('No clear speech detected. Try speaking closer to the mic.');
-      }
+      setOutputText('Voice recording finished. Please type or capture screen.');
     } catch (err) {
       console.error('Transcription error:', err);
-      setOutputText(`Audio Error: ${err.message}`);
+      setOutputText(`Audio Notice: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
