@@ -1590,10 +1590,10 @@ class Solution {
               </>
             ) : (
               <>
-                {/* Card 1: 45 min for ₹300 */}
+                {/* Card 1: 1 Hour for ₹300 */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">45 Minutes Session</span>
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Hour Session</span>
                     <div className="pt-1 sm:pt-2">
                       <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹300</span>
                       <span className="block text-gray-400 text-xs font-semibold mt-1">($3.90) one-time</span>
@@ -1601,74 +1601,86 @@ class Solution {
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>45 min AI response session</span>
+                        <span>1 Hour AI response session</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>Stealth Mode active</span>
                       </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500 shrink-0" />
+                        <span>Real-time speech & screen analysis</span>
+                      </li>
                     </ul>
                   </div>
                   <button 
-                    onClick={() => setShowSignInModal(true)}
+                    onClick={() => startCheckout('1-hour')}
                     className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
                 </div>
 
-                {/* Card 2: 1 Session Credit */}
+                {/* Card 2: 2 Hours for ₹600 */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
                   <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Session Credit</span>
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">2 Hours Session</span>
                     <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹990</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($10.00) one-time</span>
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹600</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($7.90) one-time</span>
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>1 Interview Session (Up to 2h)</span>
+                        <span>2 Hours AI response session</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
                         <span>Stealth Mode active</span>
                       </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500 shrink-0" />
+                        <span>Full coding & system design support</span>
+                      </li>
                     </ul>
                   </div>
                   <button 
-                    onClick={() => setShowSignInModal(true)}
+                    onClick={() => startCheckout('2-hour')}
                     className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
                   >
                     Buy Credits
                   </button>
                 </div>
 
-                {/* Card 3: Developer Value Pack */}
+                {/* Card 3: 10 Interview Sessions for ₹2,900 */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
                   <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
                     Best value
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Session Credits</span>
+                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Interview Sessions</span>
                     <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹7,900</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($89.00) one-time</span>
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,900</span>
+                      <span className="block text-gray-400 text-xs font-semibold mt-1">($35.00) one-time</span>
                     </div>
                     <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>10 Interview Sessions</span>
+                        <span>10 Full Interview Sessions (up to 2h each)</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Save over 20% on credits</span>
+                        <span>Stealth Mode active</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} className="text-emerald-500 shrink-0" />
+                        <span>Save over 50% on session credits</span>
                       </li>
                     </ul>
                   </div>
                   <button 
-                    onClick={() => setShowSignInModal(true)}
+                    onClick={() => startCheckout('10-sessions')}
                     className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
                   >
                     Buy Credits
@@ -1778,26 +1790,26 @@ class Solution {
       {/* Modals */}
       {/* 1. Sign In / Sign Up Modal */}
       {showSignInModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white rounded-[28px] max-w-[440px] w-full border border-emerald-500/15 shadow-[0_25px_70px_rgba(0,0,0,0.3)] relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 overflow-hidden my-auto">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-[420px] w-full border border-emerald-500/15 shadow-[0_25px_70px_rgba(0,0,0,0.3)] relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 overflow-hidden my-auto max-h-[90vh] flex flex-col">
             
             {/* Modal Header */}
-            <div className="relative bg-gradient-to-br from-[#0d2e27] via-[#123e35] to-[#071d18] p-6 text-white overflow-hidden">
+            <div className="relative bg-gradient-to-br from-[#0d2e27] via-[#123e35] to-[#071d18] p-4 sm:p-6 text-white overflow-hidden shrink-0">
               {/* Background ambient lighting */}
               <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-cyan-400/10 rounded-full blur-xl pointer-events-none" />
 
               <div className="relative z-10">
                 {/* Top Row with Branding and Close Button */}
-                <div className="flex items-center justify-between pb-3">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-between pb-2 sm:pb-3">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
                     <img 
                       src="/penguin.jpg" 
                       alt="Anazk AI Logo" 
-                      className="w-9 h-9 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_12px_rgba(16,185,129,0.5)]" 
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_12px_rgba(16,185,129,0.5)]" 
                     />
                     <div>
-                      <span className="font-display font-black text-lg tracking-tight text-white flex items-center">
+                      <span className="font-display font-black text-base sm:text-lg tracking-tight text-white flex items-center">
                         Anazk<span className="text-emerald-400 ml-0.5">AI</span>
                       </span>
                       <span className="text-[10px] text-emerald-300 font-semibold block leading-none">Authentication</span>
@@ -1806,7 +1818,7 @@ class Solution {
 
                   <button 
                     onClick={() => { setShowSignInModal(false); setAuthError(''); setAuthSuccess(''); }}
-                    className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all cursor-pointer"
+                    className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 sm:p-2 rounded-full transition-all cursor-pointer"
                     title="Close"
                   >
                     <X size={16} />
@@ -1814,11 +1826,11 @@ class Solution {
                 </div>
 
                 {/* Switcher Pill Tabs */}
-                <div className="mt-3 grid grid-cols-2 p-1 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 text-xs font-bold">
+                <div className="mt-2.5 sm:mt-3 grid grid-cols-2 p-1 bg-black/30 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/10 text-xs font-bold">
                   <button
                     type="button"
                     onClick={() => { setIsLoginMode(true); setAuthError(''); setAuthSuccess(''); }}
-                    className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                    className={`py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all duration-200 cursor-pointer text-center ${
                       isLoginMode 
                         ? 'bg-white text-[#0d2e27] shadow-md font-black' 
                         : 'text-gray-300 hover:text-white font-semibold'
@@ -1829,7 +1841,7 @@ class Solution {
                   <button
                     type="button"
                     onClick={() => { setIsLoginMode(false); setAuthError(''); setAuthSuccess(''); }}
-                    className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                    className={`py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all duration-200 cursor-pointer text-center ${
                       !isLoginMode 
                         ? 'bg-white text-[#0d2e27] shadow-md font-black' 
                         : 'text-gray-300 hover:text-white font-semibold'
@@ -1842,26 +1854,26 @@ class Solution {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 sm:p-7">
+            <div className="p-4 sm:p-6 overflow-y-auto">
               {authSuccess ? (
-                <div className="py-6 flex flex-col items-center gap-3 text-center animate-in fade-in zoom-in duration-200">
-                  <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center shadow-inner">
-                    <CheckCircle2 size={32} className="text-emerald-600" />
+                <div className="py-4 sm:py-6 flex flex-col items-center gap-3 text-center animate-in fade-in zoom-in duration-200">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 rounded-2xl flex items-center justify-center shadow-inner">
+                    <CheckCircle2 size={28} className="text-emerald-600 sm:w-8 sm:h-8" />
                   </div>
-                  <h4 className="font-extrabold text-lg text-[#0d2e27]">Verification link sent!</h4>
+                  <h4 className="font-extrabold text-base sm:text-lg text-[#0d2e27]">Verification link sent!</h4>
                   <p className="text-gray-600 text-xs font-medium leading-relaxed max-w-xs">{authSuccess}</p>
                   <button
                     onClick={() => { setAuthSuccess(''); setIsLoginMode(true); }}
-                    className="mt-3 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
+                    className="mt-2 sm:mt-3 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
                   >
                     Proceed to Sign In →
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                <form onSubmit={handleAuthSubmit} className="space-y-3.5 sm:space-y-4">
                   {!isLoginMode && (
                     <div>
-                      <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                      <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1">
                         Full Name
                       </label>
                       <div className="relative flex items-center">
@@ -1872,14 +1884,14 @@ class Solution {
                           placeholder="Jane Doe" 
                           value={authName}
                           onChange={(e) => setAuthName(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                          className="w-full pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider mb-1">
                       Email Address
                     </label>
                     <div className="relative flex items-center">
@@ -1890,13 +1902,13 @@ class Solution {
                         placeholder="you@example.com" 
                         value={authEmail}
                         onChange={(e) => setAuthEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                        className="w-full pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-1">
                       <label className="block text-[11px] font-black text-gray-600 uppercase tracking-wider">
                         Password
                       </label>
@@ -1926,12 +1938,12 @@ class Solution {
                         placeholder="••••••••" 
                         value={authPassword}
                         onChange={(e) => setAuthPassword(e.target.value)}
-                        className="w-full pl-10 pr-11 py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
+                        className="w-full pl-10 pr-10 py-2.5 sm:py-3 bg-gray-50/80 border border-gray-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 rounded-xl outline-none text-xs sm:text-sm font-semibold placeholder-gray-400 transition-all text-gray-800"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer"
+                        className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer"
                         title={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -1940,7 +1952,7 @@ class Solution {
                   </div>
                   
                   {authError && (
-                    <div className="flex items-center gap-2.5 bg-red-50 border border-red-200/80 text-red-600 text-xs font-semibold p-3 rounded-xl animate-in fade-in">
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-200/80 text-red-600 text-xs font-semibold p-2.5 sm:p-3 rounded-xl animate-in fade-in">
                       <X size={14} className="shrink-0 text-red-500" />
                       <span className="leading-snug">{authError}</span>
                     </div>
@@ -1949,7 +1961,7 @@ class Solution {
                   <button 
                     type="submit"
                     disabled={authLoading}
-                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 text-white rounded-xl text-sm font-black shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
                   >
                     {authLoading ? (
                       <span className="flex items-center gap-2">
@@ -1967,8 +1979,8 @@ class Solution {
               )}
               
               {!authSuccess && (
-                <div className="mt-5 pt-4 border-t border-gray-100 flex flex-col items-center gap-3">
-                  <div className="text-xs text-gray-500 font-semibold">
+                <div className="mt-4 sm:mt-5 pt-3.5 sm:pt-4 border-t border-gray-100 flex flex-col items-center gap-2.5">
+                  <div className="text-xs text-gray-500 font-semibold text-center">
                     {isLoginMode ? "Don't have an account yet? " : 'Already registered? '}
                     <button 
                       type="button"
@@ -1979,8 +1991,8 @@ class Solution {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400">
-                    <Shield size={12} className="text-emerald-600" />
+                  <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold text-gray-400">
+                    <Shield size={12} className="text-emerald-600 shrink-0" />
                     <span>Protected by 256-bit encryption</span>
                   </div>
                 </div>
@@ -1992,35 +2004,35 @@ class Solution {
 
       {/* 2. Download App Modal */}
       {showDownloadModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 my-auto">
             <button 
               onClick={() => setShowDownloadModal(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2">Get Anazk AI for Windows</h3>
-            <p className="text-gray-500 text-xs font-semibold mb-6">Install our secure desktop client built natively for Windows. Bypasses screen captures automatically.</p>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-2 pr-8">Get Anazk AI for Windows</h3>
+            <p className="text-gray-500 text-xs font-semibold mb-5 sm:mb-6">Install our secure desktop client built natively for Windows. Bypasses screen captures automatically.</p>
             
-            <div className="space-y-4">
+            <div className="space-y-3.5 sm:space-y-4">
               <a 
                 href="/release/Anazk Setup 1.0.0.exe" 
                 download 
                 onClick={() => setShowDownloadModal(false)}
-                className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-between px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-500/25"
+                className="w-full py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-500/25"
               >
                 <div className="flex items-center gap-3 text-left">
                   <span className="text-2xl">🪟</span>
                   <div>
-                    <span className="block text-sm font-extrabold text-white">Download for Windows</span>
+                    <span className="block text-xs sm:text-sm font-extrabold text-white">Download for Windows</span>
                     <span className="block text-[10px] text-emerald-100">x64 Installer (.exe)</span>
                   </div>
                 </div>
                 <Download size={18} />
               </a>
 
-              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-2xl border border-gray-100">
                 <span className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">System Compatibility:</span>
                 <span className="text-xs text-gray-600 font-semibold block">• Supported on Windows 10 & Windows 11 (64-bit)</span>
                 <span className="text-xs text-gray-600 font-semibold block">• Active Content-Protection Overlay Integration</span>
@@ -2037,18 +2049,18 @@ class Solution {
 
       {/* 3. Legal Terms Modal */}
       {showTermsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh] my-auto">
             <button 
               onClick={() => setShowTermsModal(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2 pr-8">Agreement to our legal terms</h3>
-            <p className="text-gray-400 text-xs font-semibold mb-4">Last Update: March 15, 2026</p>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-1.5 sm:mb-2 pr-8">Agreement to our legal terms</h3>
+            <p className="text-gray-400 text-xs font-semibold mb-3 sm:mb-4">Last Update: March 15, 2026</p>
             
-            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
+            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 no-scrollbar">
               <p>We operate the website (the “Site”), as well as any other related products and services that refer or link to these legal terms (the “Legal Terms”) (collectively, the “Services”).</p>
               <p>These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”), and Anazk AI d.o.o., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</p>
               <p className="font-bold text-red-650 bg-red-50 p-3 rounded-xl border border-red-100">YOU ARE RESPONSIBLE FOR USING THE SERVICES ONLY FOR LEGAL AND ETHICAL PURPOSES. You are solely responsible for ensuring that your use of the Services complies with all applicable laws, regulations, and third-party rules that apply to you, including without limitation laws governing recording, wiretapping, consent, privacy, data protection, intellectual property, confidentiality, employment, education, professional licensing, examinations, and unfair or deceptive practices.</p>
@@ -2116,18 +2128,18 @@ class Solution {
 
       {/* 4. Privacy Policy Modal */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh] my-auto">
             <button 
               onClick={() => setShowPrivacyModal(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-2 pr-8">Privacy Policy</h3>
-            <p className="text-gray-400 text-xs font-semibold mb-4">Last Update: August 30, 2024</p>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-1.5 sm:mb-2 pr-8">Privacy Policy</h3>
+            <p className="text-gray-400 text-xs font-semibold mb-3 sm:mb-4">Last Update: August 30, 2024</p>
             
-            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-4 no-scrollbar">
+            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 no-scrollbar">
               <p>This Privacy Notice for Anazk AI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at Anazk AI-ai.com, or any website of ours that links to this Privacy Notice.</p>
               
               <div className="font-bold text-gray-800 pt-2 text-sm border-t border-gray-100">SUMMARY OF KEY POINTS</div>
@@ -2151,17 +2163,17 @@ class Solution {
 
       {/* 5. Refund Policy Modal */}
       {showRefundModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 my-auto">
             <button 
               onClick={() => setShowRefundModal(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-655 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-655 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer"
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27] mb-4">Refund Policy</h3>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-3 sm:mb-4 pr-8">Refund Policy</h3>
             
-            <div className="text-xs text-gray-600 font-medium leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+            <div className="text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
               <p>Yes, we offer a 7-day refund window for accidental purchases or unused purchases. If you haven't used the service (for example, by activating a call session), you can request a full refund within 7 days of purchase via the money refund form in your dashboard.</p>
               <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because Anazk AI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
               <p>If any credit has been used, the purchase is no longer eligible for a refund. We do not issue partial refunds for unused credits.</p>

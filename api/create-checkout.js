@@ -1,8 +1,9 @@
 import Stripe from 'stripe'
 
 const PLANS = {
-  '45-min': { name: 'Anazk 45 Mins', amount: 15000, interval: 'day', durationMinutes: 45 },
-  '2-hour': { name: 'Anazk 2 Hours', amount: 30000, interval: 'day', durationMinutes: 120 },
+  '1-hour': { name: 'Anazk 1 Hour', amount: 30000, interval: 'day', durationMinutes: 60 },
+  '2-hour': { name: 'Anazk 2 Hours', amount: 60000, interval: 'day', durationMinutes: 120 },
+  '10-sessions': { name: 'Anazk 10 Sessions', amount: 290000, interval: 'day', durationMinutes: 1200 },
   weekly: { name: 'Anazk AI Weekly', amount: 150000, interval: 'week', durationMinutes: 10080 },
   monthly: { name: 'Anazk AI Monthly', amount: 300000, interval: 'month', durationMinutes: 43200 },
   yearly: { name: 'Anazk AI Yearly', amount: 600000, interval: 'year', durationMinutes: 525600 },
