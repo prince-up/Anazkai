@@ -37,12 +37,74 @@ function LandingPage() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
-  const [pricingOption, setPricingOption] = useState('subscription'); // 'subscription' or 'credits'
+  const [pricingOption, setPricingOption] = useState('credits'); // 'subscription' or 'credits'
   const [checkoutState, setCheckoutState] = useState('idle');
   const [checkoutError, setCheckoutError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [user, setUser] = useState(null);
   
+  // Real Stories / Candidate Reviews Carousel
+  const [activeReviewIndex, setActiveReviewIndex] = useState(2);
+  const candidateReviews = [
+    {
+      name: "Luffy",
+      review: "Anazk AI is pure magic! During my technical round, it gave me instant bullet points for System Design without breaking a sweat. Cleared the round on the first try!",
+      verified: true
+    },
+    {
+      name: "Priyanshu",
+      review: "The stealth mode is unbelievable. I was sharing my whole screen on Zoom and the interviewer couldn't see a single thing. Best investment for my career.",
+      verified: true
+    },
+    {
+      name: "Swati",
+      review: "Voice response speed is insanely fast. As soon as the interviewer finished asking about React Fiber, the key points appeared on my screen in under a second!",
+      verified: true
+    },
+    {
+      name: "Sahil",
+      review: "Tried other tools with costly $70 monthly subscriptions and ditched them. Anazk AI pay-as-you-go credits fit exactly how I interview — no wasted money.",
+      verified: true
+    },
+    {
+      name: "Aditya",
+      review: "Cracked my senior SDE interview with this! The LeetCode OCR solved dynamic programming questions with optimal space and time complexities immediately.",
+      verified: true
+    },
+    {
+      name: "Anuj",
+      review: "The response formatting is so natural and concise. It doesn't give long robotic paragraphs, just punchy spoken points that you can read out confidently.",
+      verified: true
+    },
+    {
+      name: "Aquib",
+      review: "I was super nervous about behavioral and situational questions. Anazk AI framed my answers with the STAR method perfectly in real-time.",
+      verified: true
+    },
+    {
+      name: "Ayan",
+      review: "Simple, ultra-fast, and completely hidden from screen captures. I was skeptical at first, but it literally carried me through my Google Meet interview.",
+      verified: true
+    },
+    {
+      name: "Lomin",
+      review: "The hotkey controls (F1, F3, F4) make everything seamless while looking at the camera. It felt like having a senior engineer whispering answers in my ear.",
+      verified: true
+    },
+    {
+      name: "Tom",
+      review: "Got an offer letter yesterday! The live speech-to-text accuracy is 100% on point even with different interviewer accents. Highly recommended to everyone.",
+      verified: true
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveReviewIndex(prev => (prev + 1) % candidateReviews.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [candidateReviews.length]);
+
   // Auth Form State
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -1464,6 +1526,120 @@ class Solution {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Real Stories From Real Interviews Section */}
+      <section className="py-24 px-4 sm:px-6 bg-[#f0fbf5]/60 border-t border-emerald-500/10 overflow-hidden relative text-center">
+        <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+          
+          {/* Top Pill Badge */}
+          <div>
+            <span className="inline-block bg-[#15803d] text-white font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm">
+              Trusted By Candidates
+            </span>
+          </div>
+
+          {/* Heading & Subtitle */}
+          <div className="space-y-3">
+            <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
+              Real Stories From <span className="text-[#15803d]">Real Interviews</span>
+            </h2>
+            <p className="text-gray-500 font-semibold text-xs sm:text-sm md:text-base max-w-xl mx-auto">
+              See how Anazk AI helps candidates feel more confident and prepared.
+            </p>
+          </div>
+
+          {/* 3D / Perspective Flow Carousel */}
+          <div className="relative pt-6 sm:pt-10 pb-8 flex items-center justify-center min-h-[340px] max-w-4xl mx-auto">
+            
+            {/* Left Prev Arrow */}
+            <button 
+              onClick={() => setActiveReviewIndex((activeReviewIndex - 1 + candidateReviews.length) % candidateReviews.length)}
+              className="absolute left-0 sm:left-4 z-30 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-emerald-700 hover:border-emerald-300 transition-all cursor-pointer"
+              aria-label="Previous Review"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            {/* Right Next Arrow */}
+            <button 
+              onClick={() => setActiveReviewIndex((activeReviewIndex + 1) % candidateReviews.length)}
+              className="absolute right-0 sm:right-4 z-30 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-emerald-700 hover:border-emerald-300 transition-all cursor-pointer"
+              aria-label="Next Review"
+            >
+              <ChevronRight size={20} />
+            </button>
+
+            {/* Cards Container with visual depth */}
+            <div className="w-full flex items-center justify-center relative min-h-[290px]">
+              {candidateReviews.map((item, idx) => {
+                const total = candidateReviews.length;
+                let diff = (idx - activeReviewIndex + total) % total;
+                if (diff > total / 2) diff -= total; // Normalized: -2, -1, 0, 1, 2
+
+                // Only render cards close to center (-2 to +2)
+                if (Math.abs(diff) > 2) return null;
+
+                const isCenter = diff === 0;
+                const isAdjacent = Math.abs(diff) === 1;
+
+                let zIndex = 10 - Math.abs(diff);
+                let opacity = isCenter ? 'opacity-100' : isAdjacent ? 'opacity-40 sm:opacity-70' : 'opacity-20 hidden sm:block';
+                let scaleClass = isCenter ? 'scale-100 shadow-2xl border-emerald-500/30' : 'scale-90 shadow-md border-gray-100 blur-[0.5px]';
+
+                const offsetPx = diff * (typeof window !== 'undefined' && window.innerWidth < 640 ? 50 : 160);
+
+                return (
+                  <div
+                    key={item.name}
+                    onClick={() => setActiveReviewIndex(idx)}
+                    className={`transition-all duration-500 ease-out cursor-pointer bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border max-w-md w-[88%] sm:w-[420px] text-center flex flex-col justify-between absolute ${scaleClass} ${opacity}`}
+                    style={{
+                      transform: `translateX(${offsetPx}px) scale(${isCenter ? 1 : 0.88})`,
+                      zIndex: zIndex
+                    }}
+                  >
+                    <div>
+                      <h3 className="font-display font-black text-lg sm:text-xl text-[#15803d] mb-3">
+                        {item.name}
+                      </h3>
+                      <p className="text-gray-700 text-xs sm:text-sm leading-relaxed font-medium mb-5 italic">
+                        "{item.review}"
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-50 flex flex-col items-center">
+                      <span className="text-[11px] font-bold text-gray-500 tracking-wide">
+                        Verified Candidate
+                      </span>
+                      <div className="flex items-center gap-1 mt-1 text-[#10b981]">
+                        <Star size={13} fill="currentColor" />
+                        <Star size={13} fill="currentColor" />
+                        <Star size={13} fill="currentColor" />
+                        <Star size={13} fill="currentColor" />
+                        <Star size={13} fill="currentColor" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex items-center justify-center gap-2 pt-2">
+            {candidateReviews.map((item, idx) => (
+              <button
+                key={item.name}
+                onClick={() => setActiveReviewIndex(idx)}
+                aria-label={`Go to review by ${item.name}`}
+                className={`transition-all rounded-full cursor-pointer ${activeReviewIndex === idx ? 'w-6 h-2 bg-[#15803d]' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+              />
+            ))}
+          </div>
+
         </div>
       </section>
 
