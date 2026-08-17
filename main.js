@@ -29,10 +29,12 @@ function createWindow() {
   
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
   }
+
+  // Open detached DevTools automatically on launch so user can see full live console
+  mainWindow.webContents.openDevTools({ mode: 'detach' });
 
   // Prevent window from being captured in screen shares, screenshots, or recordings
   mainWindow.setContentProtection(true);
@@ -41,6 +43,13 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+// IPC handler to open DevTools from button in UI
+ipcMain.on('open-devtools', () => {
+  if (mainWindow) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
+});
 
 app.whenReady().then(() => {
   createWindow();

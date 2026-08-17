@@ -75,6 +75,17 @@ function AppContent({ timeRemaining, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   
+  // Debug Logs State
+  const [debugLogs, setDebugLogs] = useState([]);
+  const [showLogs, setShowLogs] = useState(false);
+
+  const addLog = (msg) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const formatted = `[${timestamp}] ${msg}`;
+    console.log(formatted);
+    setDebugLogs(prev => [formatted, ...prev.slice(0, 49)]);
+  };
+  
   // Settings & Preferences
   const [showSettings, setShowSettings] = useState(false);
   const [opacity, setOpacity] = useState(() => parseFloat(localStorage.getItem('overlay_opacity')) || 0.85);
@@ -384,7 +395,7 @@ CRITICAL FORMATTING & ANSWER RULES:
     try {
       cleanupVoiceResources();
       maxVolumeRef.current = 0;
-      console.log('[Voice] Requesting microphone stream...');
+      addLog('🎙️ Requesting microphone stream...');
 
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -394,18 +405,17 @@ CRITICAL FORMATTING & ANSWER RULES:
         } 
       });
       audioStreamRef.current = stream;
-      console.log('[Voice] Microphone stream acquired:', stream.id);
+      addLog(`Mic acquired. Tracks: ${stream.getAudioTracks().length}`);
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      // Request native 16,000 Hz sample rate so Chromium resamples in C++ without distortion
       const audioContext = new AudioCtx({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
       audioSampleRateRef.current = audioContext.sampleRate;
-      console.log('[Voice] AudioContext sampleRate:', audioContext.sampleRate, 'state:', audioContext.state);
+      addLog(`AudioContext: ${audioContext.sampleRate}Hz, State: ${audioContext.state}`);
 
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
-        console.log('[Voice] AudioContext resumed:', audioContext.state);
+        addLog(`AudioContext resumed: ${audioContext.state}`);
       }
 
       const source = audioContext.createMediaStreamSource(stream);
@@ -441,8 +451,9 @@ CRITICAL FORMATTING & ANSWER RULES:
 
       setIsVoiceMode(true);
       setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Mic is recording — click 'Voice' again when finished)");
+      addLog('Recording live audio...');
     } catch (err) {
-      console.error("[Voice] Mic error:", err);
+      addLog(`❌ Mic error: ${err.message}`);
       setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
       cleanupVoiceResources();
     }
@@ -456,11 +467,12 @@ CRITICAL FORMATTING & ANSWER RULES:
     const capturedBuffers = [...audioBuffersRef.current];
     const actualSampleRate = audioSampleRateRef.current || 16000;
     const maxVol = maxVolumeRef.current;
-    console.log(`[Voice] Stopped. Buffers: ${capturedBuffers.length}, SampleRate: ${actualSampleRate}, MaxVolume: ${maxVol.toFixed(4)}`);
+    addLog(`Stopped recording. Buffers: ${capturedBuffers.length}, Peak Vol: ${maxVol.toFixed(4)}`);
     cleanupVoiceResources();
 
     if (!capturedBuffers || capturedBuffers.length === 0 || maxVol < 0.001) {
       setIsLoading(false);
+      addLog('⚠️ No audio/silence detected from microphone.');
       setOutputText("⚠️ No sound was detected from your microphone. Please check your Windows default input device or mic volume.");
       return;
     }
@@ -486,7 +498,7 @@ CRITICAL FORMATTING & ANSWER RULES:
       binary += String.fromCharCode(bytes[i]);
     }
     const base64Wav = btoa(binary);
-    console.log(`[Voice] Encoded WAV Base64 length: ${base64Wav.length}`);
+    addLog(`WAV Encoded: ${(base64Wav.length / 1024).toFixed(1)} KB`);
 
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
 
@@ -503,6 +515,7 @@ CRITICAL FORMATTING & ANSWER RULES:
 
       for (const modelId of geminiModels) {
         try {
+          addLog(`Calling Gemini (${modelId})...`);
           const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
 
           const response = await fetch(geminiUrl, {
@@ -552,7 +565,9 @@ Format:
           const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
           if (response.ok && reply) {
+            addLog(`✅ Gemini Success (${modelId})`);
             if (reply.includes('NO_CLEAR_SPEECH')) {
+              addLog('Gemini reported: NO_CLEAR_SPEECH');
               setOutputText("⚠️ No clear speech heard. Please speak closer to your microphone or check volume, then click Voice again.");
               setIsLoading(false);
               return;
@@ -561,10 +576,12 @@ Format:
             geminiSuccess = true;
             break;
           } else {
-            lastErr = data.error?.message || 'Gemini audio error';
+            lastErr = data.error?.message || `HTTP ${response.status}`;
+            addLog(`⚠️ Gemini ${modelId} error: ${lastErr}`);
           }
         } catch (err) {
           lastErr = err.message;
+          addLog(`❌ Fetch error: ${err.message}`);
         }
       }
 
@@ -577,6 +594,7 @@ Format:
     }
 
     setIsLoading(false);
+    addLog('Could not obtain reply from Gemini.');
     setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
   };
 
@@ -726,6 +744,19 @@ Format:
         {/* Minimal Window Controls */}
         <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
+            onClick={() => {
+              if (window.require) {
+                const { ipcRenderer } = window.require('electron');
+                ipcRenderer.send('open-devtools');
+              }
+              setShowLogs(prev => !prev);
+            }}
+            className="text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+            title="Open Console / Live Logs"
+          >
+            <span>🐞 Logs</span>
+          </button>
+          <button 
             onClick={() => setShowSettings(true)}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Settings"
@@ -748,6 +779,38 @@ Format:
           </button>
         </div>
       </header>
+
+      {/* On-Screen Diagnostic Logs Drawer */}
+      {showLogs && (
+        <div className="mb-2 bg-black/90 border border-amber-500/30 rounded-xl p-2.5 max-h-40 overflow-y-auto no-scrollbar font-mono text-[10px] text-amber-300 shadow-2xl z-30" style={{ WebkitAppRegion: 'no-drag' }}>
+          <div className="flex justify-between items-center pb-1 mb-1 border-b border-amber-500/20">
+            <span className="font-bold uppercase text-[9px] text-amber-400">Live Diagnostic Logs</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setDebugLogs([])} 
+                className="text-[9px] text-gray-400 hover:text-white"
+              >
+                Clear
+              </button>
+              <button 
+                onClick={() => setShowLogs(false)} 
+                className="text-[9px] text-amber-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          <div className="space-y-0.5">
+            {debugLogs.length === 0 ? (
+              <p className="text-gray-500 italic">No logs yet. Click 'Voice' or ask a question to see activity.</p>
+            ) : (
+              debugLogs.map((log, idx) => (
+                <div key={idx} className="leading-tight break-all">{log}</div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
 
 
