@@ -729,9 +729,10 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       const constraints = {
         audio: {
           deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: true,
+          channelCount: 1
         }
       };
 
@@ -786,8 +787,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }, 1000);
 
       setIsVoiceMode(true);
-      setStreamStatus('Listening...');
-      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Click 'Voice' or button below when finished)");
+      setStreamStatus('🎙️ Listening...');
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Click 'Voice' when done to get instant answer)");
       addLog('Listening for speech...');
     } catch (err) {
       addLog(`❌ Microphone error: ${err.message}`);
@@ -800,9 +801,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const speechEndTime = Date.now();
     setIsVoiceMode(false);
     setIsLoading(true);
-    setStreamStatus('Processing...');
-    setOutputText('⚡ Processing speech...');
-    addLog(`[${new Date().toLocaleTimeString()}] Speech ended (${recordingSeconds}s, Peak: ${maxVolumeRef.current}%). Encoding 16kHz WAV...`);
+    setStreamStatus('⚡ Transcribing...');
+    setOutputText('⚡ Transcribing speech...');
+    addLog(`[${new Date().toLocaleTimeString()}] Speech ended (${recordingSeconds}s, Peak: ${maxVolumeRef.current}%). Processing audio...`);
 
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
@@ -826,11 +827,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const currentSampleRate = audioContextRef.current ? audioContextRef.current.sampleRate : 44100;
     cleanupVoiceResources();
 
-    if (totalLength === 0 || (maxVolumeRef.current < 0.5 && totalLength < currentSampleRate * 0.5)) {
+    if (totalLength < 2000) {
       setIsLoading(false);
       setStreamStatus('');
-      addLog(`[${new Date().toLocaleTimeString()}] ⚠️ No audible speech detected (Max vol: ${maxVolumeRef.current}%)`);
-      setOutputText("⚠️ No speech detected. Please speak closer to your microphone and click Voice again.");
+      addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Audio too short (<0.1s)`);
+      setOutputText("⚠️ Speech was too short. Please click Voice, speak your question, and click Voice again.");
       return;
     }
 
@@ -841,13 +842,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       offset += chunks[i].length;
     }
 
-    // Convert raw PCM to 16kHz mono WAV and Base64 instantly
+    // Convert raw PCM to 16kHz mono WAV and Base64
     const downsampled = downsampleBuffer(merged, currentSampleRate, 16000);
     const wavBuffer = encodeWAV(downsampled, 16000);
     const base64Wav = arrayBufferToBase64(wavBuffer);
-    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Processing Voice QA...`);
+    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Sending to Whisper...`);
 
     const isTrial = isFreeTrial || planType === 'free_trial';
+    const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
 
@@ -857,74 +859,180 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       voiceSysInstruction += ` Profile: ${candidateProfile.trim()}`;
     }
 
+    let transcript = '';
     let voiceSuccess = false;
     let accumulatedText = '';
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. FREE TRIAL VOICE ENGINE: GROQ WHISPER + GROQ LLAMA 3.3 (WITH 15s TIMEOUT)
-    if (isTrial && groqKey) {
-      const whisperController = new AbortController();
-      const whisperTimeout = setTimeout(() => whisperController.abort(), 15000);
+    // STEP 1: ULTRA-FAST SPEECH-TO-TEXT WITH GROQ WHISPER (<0.25s)
+    if (groqKey) {
+      const whisperModels = ['whisper-large-v3-turbo', 'whisper-large-v3'];
+      for (const whisperModel of whisperModels) {
+        const whisperController = new AbortController();
+        const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
 
-      try {
-        addLog(`[Plan: free_trial] Voice Engine: Groq Whisper + Llama 3.3 | Key: ${maskKey(groqKey)}`);
-        addLog(`[Request] POST https://api.groq.com/openai/v1/audio/transcriptions | Model: whisper-large-v3-turbo`);
+        try {
+          addLog(`[STT Request] Groq Whisper (${whisperModel})...`);
 
-        const formData = new FormData();
-        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-        formData.append('file', wavBlob, 'audio.wav');
-        formData.append('model', 'whisper-large-v3-turbo');
-        formData.append('response_format', 'json');
+          const formData = new FormData();
+          const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+          formData.append('file', wavBlob, 'audio.wav');
+          formData.append('model', whisperModel);
+          formData.append('response_format', 'json');
+          formData.append('temperature', '0');
 
-        const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${groqKey}` },
-          body: formData,
-          signal: whisperController.signal
-        });
+          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${groqKey}` },
+            body: formData,
+            signal: whisperController.signal
+          });
 
-        clearTimeout(whisperTimeout);
-        addLog(`[Response] Groq Whisper HTTP ${whisperRes.status}`);
+          clearTimeout(whisperTimeout);
 
-        if (whisperRes.ok) {
-          const whisperData = await whisperRes.json();
-          const transcript = whisperData.text?.trim();
+          if (whisperRes.ok) {
+            const whisperData = await whisperRes.json();
+            transcript = whisperData.text?.trim();
+            if (transcript) {
+              const sttLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+              addLog(`[STT Success (${sttLatency}s)] Heard: "${transcript}"`);
+              break;
+            }
+          } else {
+            const errTxt = await whisperRes.text();
+            addLog(`⚠️ Whisper ${whisperModel} returned ${whisperRes.status}: ${errTxt}`);
+            lastErr = errTxt;
+          }
+        } catch (err) {
+          clearTimeout(whisperTimeout);
+          addLog(`⚠️ Whisper ${whisperModel} error: ${err.message}`);
+          lastErr = err.message;
+        }
+      }
+    }
 
-          if (transcript) {
-            addLog(`[${new Date().toLocaleTimeString()}] Question: "${transcript.slice(0, 50)}...". Streaming Groq Llama 3.3...`);
-            
-            const chatController = new AbortController();
-            const chatTimeout = setTimeout(() => chatController.abort(), 15000);
+    // STEP 2: INSTANT STREAMING ANSWER GENERATION (<0.3s FIRST TOKEN)
+    if (transcript) {
+      setStreamStatus('⚡ Streaming Answer...');
+      setOutputText('');
 
-            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      // 2A. FREE TRIAL: STREAM WITH GROQ LLAMA 3.3
+      if (isTrial && groqKey) {
+        const chatController = new AbortController();
+        const chatTimeout = setTimeout(() => chatController.abort(), 12000);
+
+        try {
+          addLog(`[Answer Request] Groq Llama 3.3 70B Streaming...`);
+
+          const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                { role: 'system', content: voiceSysInstruction },
+                { role: 'user', content: transcript }
+              ],
+              temperature: 0.1,
+              max_tokens: 300,
+              stream: true
+            }),
+            signal: chatController.signal
+          });
+
+          clearTimeout(chatTimeout);
+
+          if (chatRes.ok && chatRes.body) {
+            const reader = chatRes.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (firstTokenLatency === null) {
+                          firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ First word: ${firstTokenLatency}s (Trial)`);
+                        }
+                        accumulatedText += chunk;
+                        setOutputText(accumulatedText);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedText && accumulatedText.trim()) {
+              const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (First word: ${firstTokenLatency}s)`);
+              setInterviewCount(prev => prev + 1);
+              voiceSuccess = true;
+            }
+          }
+        } catch (chatErr) {
+          clearTimeout(chatTimeout);
+          addLog(`⚠️ Groq Chat Streaming Error: ${chatErr.message}`);
+          lastErr = chatErr.message;
+        }
+      }
+
+      // 2B. PAID PLAN: STREAM WITH GOOGLE GEMINI 2.0 FLASH
+      if (!voiceSuccess && geminiKey) {
+        const geminiModels = ['gemini-2.0-flash', 'gemini-flash-latest'];
+
+        for (const modelId of geminiModels) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+          try {
+            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+            addLog(`[Answer Request] Google Gemini (${modelId}) Streaming...`);
+
+            const response = await fetch(geminiStreamUrl, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${groqKey}`
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                  { role: 'system', content: voiceSysInstruction },
-                  { role: 'user', content: transcript }
-                ],
-                temperature: 0.1,
-                max_tokens: 300,
-                stream: true
+                systemInstruction: {
+                  parts: [{ text: voiceSysInstruction }]
+                },
+                contents: [{
+                  parts: [{ text: `Question: ${transcript}` }]
+                }],
+                generationConfig: {
+                  temperature: 0.1,
+                  maxOutputTokens: 300
+                }
               }),
-              signal: chatController.signal
+              signal: controller.signal
             });
 
-            clearTimeout(chatTimeout);
+            clearTimeout(timeoutId);
 
-            if (chatRes.ok && chatRes.body) {
-              const reader = chatRes.body.getReader();
+            if (response.ok && response.body) {
+              const streamReader = response.body.getReader();
               const decoder = new TextDecoder();
               let buffer = '';
 
               while (true) {
-                const { value, done } = await reader.read();
+                const { value, done } = await streamReader.read();
                 if (done) break;
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
@@ -933,17 +1041,16 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                 for (const line of lines) {
                   if (line.startsWith('data: ')) {
                     const jsonStr = line.slice(6).trim();
-                    if (jsonStr && jsonStr !== '[DONE]') {
+                    if (jsonStr) {
                       try {
-                        const data = JSON.parse(jsonStr);
-                        const chunk = data.choices?.[0]?.delta?.content;
-                        if (chunk) {
+                        const chunkData = JSON.parse(jsonStr);
+                        const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (chunkText) {
                           if (firstTokenLatency === null) {
                             firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                            setStreamStatus(`⚡ Trial First word: ${firstTokenLatency}s (Streaming...)`);
-                            setOutputText('');
+                            setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
                           }
-                          accumulatedText += chunk;
+                          accumulatedText += chunkText;
                           setOutputText(accumulatedText);
                         }
                       } catch (e) {}
@@ -954,79 +1061,59 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
               if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Streamed voice answer in ${totalSec}s`);
+                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (First word: ${firstTokenLatency}s)`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;
+                break;
               }
-            } else {
-              const errTxt = await chatRes.text();
-              addLog(`❌ Groq chat error: ${errTxt}`);
-              lastErr = errTxt;
             }
+          } catch (gErr) {
+            clearTimeout(timeoutId);
+            addLog(`⚠️ Gemini Voice Stream notice: ${gErr.message}`);
+            lastErr = gErr.message;
           }
-        } else {
-          const errTxt = await whisperRes.text();
-          addLog(`❌ Groq Whisper error: ${errTxt}`);
-          lastErr = errTxt;
         }
-      } catch (err) {
-        clearTimeout(whisperTimeout);
-        lastErr = err.name === 'AbortError' ? 'Groq Voice timed out (15s)' : err.message;
-        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Groq Voice Notice: ${lastErr}`);
       }
     }
 
-    // 2. PRIMARY (FOR PAID) OR EMERGENCY FALLBACK (GEMINI FLASH)
+    // STEP 3: EMERGENCY DIRECT GEMINI AUDIO FALLBACK IF WHISPER DID NOT GET TRANSCRIPT
     if (!voiceSuccess && geminiKey) {
-      const geminiModels = [
-        'gemini-2.0-flash',
-        'gemini-flash-latest',
-        'gemini-1.5-flash'
-      ];
+      addLog(`[Emergency Fallback] Direct Gemini Audio Recognition...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      addLog(`[Plan: ${activePlan}] Voice Engine: Google Gemini Flash | Key: ${maskKey(geminiKey)}`);
-
-      const executeGeminiCall = async (modelId, isRetry = false) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        try {
-          const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-          addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
-
-          const response = await fetch(geminiStreamUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: {
-                parts: [{ text: voiceSysInstruction }]
-              },
-              contents: [{
-                parts: [
-                  { text: "Transcribe spoken question and give immediate bullet points to say." },
-                  {
-                    inlineData: {
-                      mimeType: 'audio/wav',
-                      data: base64Wav
-                    }
+      try {
+        const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${geminiKey}`;
+        const response = await fetch(geminiStreamUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: voiceSysInstruction }]
+            },
+            contents: [{
+              parts: [
+                { text: "Transcribe spoken question and give immediate bullet points to say." },
+                {
+                  inlineData: {
+                    mimeType: 'audio/wav',
+                    data: base64Wav
                   }
-                ]
-              }],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 300
-              }
-            }),
-            signal: controller.signal
-          });
+                }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 300
+            }
+          }),
+          signal: controller.signal
+        });
 
-          clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-          if (!response.ok || !response.body) {
-            throw new Error(`HTTP ${response.status} from ${modelId}`);
-          }
-
+        if (response.ok && response.body) {
           const streamReader = response.body.getReader();
           const decoder = new TextDecoder();
           let buffer = '';
@@ -1048,8 +1135,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                     if (chunkText) {
                       if (firstTokenLatency === null) {
                         firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                        setStreamStatus(isTrial ? `⚡ Trial First word: ${firstTokenLatency}s` : `⚡ First word: ${firstTokenLatency}s`);
-                        setOutputText('');
+                        setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
                       }
                       accumulatedText += chunkText;
                       setOutputText(accumulatedText);
@@ -1060,29 +1146,17 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             }
           }
 
-          return accumulatedText;
-        } catch (err) {
-          clearTimeout(timeoutId);
-          throw err;
-        }
-      };
-
-      for (let i = 0; i < geminiModels.length; i++) {
-        const modelId = geminiModels[i];
-        try {
-          const resText = await executeGeminiCall(modelId, i > 0);
-          if (resText && resText.trim()) {
+          if (accumulatedText && accumulatedText.trim()) {
             const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-            setStreamStatus(`⚡ First word: ${firstTokenLatency || totalSec}s | Total: ${totalSec}s${isTrial ? ' (Trial)' : ''}`);
-            addLog(`[${new Date().toLocaleTimeString()}] ✅ Done in ${totalSec}s (First token: ${firstTokenLatency}s)`);
+            setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
+            addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Direct Audio done in ${totalSec}s`);
             setInterviewCount(prev => prev + 1);
             voiceSuccess = true;
-            break;
           }
-        } catch (err) {
-          lastErr = err.message;
-          addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Notice from ${modelId}: ${err.message}`);
         }
+      } catch (fbErr) {
+        clearTimeout(timeoutId);
+        lastErr = fbErr.message;
       }
     }
 
@@ -1090,7 +1164,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       setIsLoading(false);
       setStreamStatus('');
       addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
-      setOutputText(lastErr ? `⚠️ Error (${lastErr}). Please try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
     } else {
       setIsLoading(false);
     }
