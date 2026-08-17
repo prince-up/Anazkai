@@ -384,6 +384,7 @@ CRITICAL FORMATTING & ANSWER RULES:
     try {
       cleanupVoiceResources();
       maxVolumeRef.current = 0;
+      console.log('[Voice] Requesting microphone stream...');
 
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -393,25 +394,29 @@ CRITICAL FORMATTING & ANSWER RULES:
         } 
       });
       audioStreamRef.current = stream;
+      console.log('[Voice] Microphone stream acquired:', stream.id);
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const audioContext = new AudioCtx();
+      // Request native 16,000 Hz sample rate so Chromium resamples in C++ without distortion
+      const audioContext = new AudioCtx({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
       audioSampleRateRef.current = audioContext.sampleRate;
+      console.log('[Voice] AudioContext sampleRate:', audioContext.sampleRate, 'state:', audioContext.state);
 
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
+        console.log('[Voice] AudioContext resumed:', audioContext.state);
       }
 
       const source = audioContext.createMediaStreamSource(stream);
       audioInputRef.current = source;
 
-      // 3.0x High sensitivity gain node so quiet mic or laptop speakers are clearly heard
+      // 2.5x gain booster
       const gainNode = audioContext.createGain();
-      gainNode.gain.value = 3.0;
+      gainNode.gain.value = 2.5;
       source.connect(gainNode);
 
-      // ScriptProcessor buffer size 4096 gives real-time raw PCM
+      // ScriptProcessor buffer size 4096
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
       audioProcessorRef.current = processor;
       audioBuffersRef.current = [];
@@ -435,9 +440,9 @@ CRITICAL FORMATTING & ANSWER RULES:
       processor.connect(audioContext.destination);
 
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Mic active — click 'Voice' again when finished)");
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Mic is recording — click 'Voice' again when finished)");
     } catch (err) {
-      console.error("Mic error:", err);
+      console.error("[Voice] Mic error:", err);
       setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
       cleanupVoiceResources();
     }
@@ -449,12 +454,14 @@ CRITICAL FORMATTING & ANSWER RULES:
     setOutputText("Transcribing & analyzing speech with AI...");
 
     const capturedBuffers = [...audioBuffersRef.current];
-    const originalSampleRate = audioSampleRateRef.current;
+    const actualSampleRate = audioSampleRateRef.current || 16000;
+    const maxVol = maxVolumeRef.current;
+    console.log(`[Voice] Stopped. Buffers: ${capturedBuffers.length}, SampleRate: ${actualSampleRate}, MaxVolume: ${maxVol.toFixed(4)}`);
     cleanupVoiceResources();
 
-    if (!capturedBuffers || capturedBuffers.length === 0) {
+    if (!capturedBuffers || capturedBuffers.length === 0 || maxVol < 0.001) {
       setIsLoading(false);
-      setOutputText("⚠️ No audio captured. Please click 'Voice' and speak.");
+      setOutputText("⚠️ No sound was detected from your microphone. Please check your Windows default input device or mic volume.");
       return;
     }
 
@@ -468,9 +475,8 @@ CRITICAL FORMATTING & ANSWER RULES:
       offset += b.length;
     }
 
-    // Downsample to 16,000 Hz Mono for crisp AI speech recognition
-    const downsampled = downsampleBuffer(mergedSamples, originalSampleRate, 16000);
-    const wavArrayBuffer = encodeWAV(downsampled, 16000);
+    // Direct clean encode to WAV without lossy JS resampling
+    const wavArrayBuffer = encodeWAV(mergedSamples, actualSampleRate);
 
     // Convert ArrayBuffer to Base64 safely
     let binary = '';
@@ -480,6 +486,7 @@ CRITICAL FORMATTING & ANSWER RULES:
       binary += String.fromCharCode(bytes[i]);
     }
     const base64Wav = btoa(binary);
+    console.log(`[Voice] Encoded WAV Base64 length: ${base64Wav.length}`);
 
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
 

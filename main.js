@@ -21,7 +21,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false, // For simplicity in this example to allow IPC from React
-      devTools: process.argv.includes('--dev') // Enabled Developer Tools only for debugging in dev mode
+      devTools: true // Enable Developer Tools for live console inspection
     }
   });
 
@@ -29,7 +29,7 @@ function createWindow() {
   
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
   }
@@ -99,6 +99,16 @@ app.whenReady().then(() => {
   globalShortcut.register('F4', () => {
     if (mainWindow) {
       mainWindow.webContents.send('shortcut-triggered', 'F4');
+    }
+  });
+
+  globalShortcut.register('F12', () => {
+    if (mainWindow) {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
+      }
     }
   });
 
