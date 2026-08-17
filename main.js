@@ -15,13 +15,14 @@ function createWindow() {
     alwaysOnTop: true, // Always on top as requested
     resizable: true,
     show: true, // Start visible by default
-    skipTaskbar: true, // Hide from the taskbar
+    skipTaskbar: false,
     transparent: true, // Make background transparent
+    backgroundColor: '#00000000', // Clear transparent window background
     frame: false, // Remove window frame
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false, // For simplicity in this example to allow IPC from React
-      devTools: process.argv.includes('--dev') // Enabled Developer Tools only in dev mode
+      contextIsolation: false, // Allow IPC from React
+      devTools: true // Always enable DevTools for debugging
     }
   });
 

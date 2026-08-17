@@ -1677,17 +1677,21 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   );
 }
 
+const isDesktopEnvironment = () => {
+  if (typeof window === 'undefined') return true;
+  const userAgent = (window.navigator?.userAgent || '').toLowerCase();
+  const isElectronAgent = userAgent.indexOf('electron') > -1;
+  const isElectronRequire = typeof window.require === 'function';
+  const isFileProtocol = window.location.protocol === 'file:';
+  const isSearchParamApp = window.location.search.includes('app=true');
+  return isElectronAgent || isElectronRequire || isFileProtocol || isSearchParamApp;
+};
+
 function App() {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(isDesktopEnvironment);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      const isElectronAgent = userAgent.indexOf(' electron/') > -1;
-      const isElectronRequire = !!window.require;
-      const isSearchParamApp = window.location.search.includes('app=true');
-      setIsDesktop(isElectronAgent || isElectronRequire || isSearchParamApp);
-    }
+    setIsDesktop(isDesktopEnvironment());
   }, []);
 
   if (!isDesktop) {
