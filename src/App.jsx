@@ -8,6 +8,61 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
 
+// Audio WAV Encoder & Downsampler Helper Utilities
+function encodeWAV(samples, sampleRate) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  function writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  }
+
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, 1, true); // Mono channel
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // Byte rate
+  view.setUint16(32, 2, true); // Block align
+  view.setUint16(34, 16, true); // 16-bit
+  writeString(view, 36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    let s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+
+  return buffer;
+}
+
+function downsampleBuffer(buffer, inputSampleRate, outputSampleRate = 16000) {
+  if (inputSampleRate === outputSampleRate) return buffer;
+  const sampleRateRatio = inputSampleRate / outputSampleRate;
+  const newLength = Math.round(buffer.length / sampleRateRatio);
+  const result = new Float32Array(newLength);
+  let offsetResult = 0;
+  let offsetBuffer = 0;
+  while (offsetResult < result.length) {
+    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    let accum = 0, count = 0;
+    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+      accum += buffer[i];
+      count++;
+    }
+    result[offsetResult] = count > 0 ? accum / count : 0;
+    offsetResult++;
+    offsetBuffer = nextOffsetBuffer;
+  }
+  return result;
+}
+
 // Fallback / default built-in AI keys for subscribed users
 const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA';
 const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
@@ -27,13 +82,14 @@ function AppContent({ timeRemaining, onLogout }) {
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
-  // Voice Mode State
+  // Voice Audio State & Refs
   const [isVoiceMode, setIsVoiceMode] = useState(false);
-
-  // Refs
-  const mediaRecorderRef = useRef(null);
+  const audioContextRef = useRef(null);
   const audioStreamRef = useRef(null);
-  const chunksRef = useRef([]);
+  const audioProcessorRef = useRef(null);
+  const audioInputRef = useRef(null);
+  const audioBuffersRef = useRef([]);
+  const audioSampleRateRef = useRef(44100);
   const outputScrollRef = useRef(null);
 
   // Auto cleanup legacy stored resume to prevent irrelevant answers
@@ -170,9 +226,9 @@ CRITICAL FORMATTING & ANSWER RULES:
     // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE (UNLIMITED)
     if (geminiKey) {
       const geminiModels = [
-        'gemini-3.7-flash',
+        'gemini-flash-latest',
         'gemini-3.5-flash',
-        'gemini-flash-latest'
+        'gemini-3.7-flash'
       ];
       
       let imageBase64 = null;
@@ -297,71 +353,35 @@ CRITICAL FORMATTING & ANSWER RULES:
     }
   };
 
-  const recognitionRef = useRef(null);
-  const liveTranscriptRef = useRef('');
-
   const cleanupVoiceResources = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
-      recognitionRef.current = null;
-    }
-    if (mediaRecorderRef.current) {
-      try {
-        if (mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.stop();
-        }
-      } catch (e) {}
-      mediaRecorderRef.current = null;
-    }
-    if (audioStreamRef.current) {
-      try {
+    try {
+      if (audioProcessorRef.current) {
+        audioProcessorRef.current.disconnect();
+        audioProcessorRef.current.onaudioprocess = null;
+        audioProcessorRef.current = null;
+      }
+      if (audioInputRef.current) {
+        audioInputRef.current.disconnect();
+        audioInputRef.current = null;
+      }
+      if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach(track => track.stop());
-      } catch (e) {}
-      audioStreamRef.current = null;
+        audioStreamRef.current = null;
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    } catch (e) {
+      console.warn('Voice cleanup notice:', e);
     }
     setIsVoiceMode(false);
   };
 
   const startVoiceMode = async () => {
-    liveTranscriptRef.current = '';
-    
-    // 1. Initialize native Web Speech API if supported in browser/electron
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-
-        recognition.onresult = (event) => {
-          let fullTranscript = '';
-          for (let i = 0; i < event.results.length; i++) {
-            fullTranscript += event.results[i][0].transcript + ' ';
-          }
-          const cleaned = fullTranscript.trim();
-          if (cleaned) {
-            liveTranscriptRef.current = cleaned;
-            setOutputText(`🎙️ Listening...\n\n"${cleaned}"`);
-            setInputText(cleaned);
-          }
-        };
-
-        recognition.onerror = (e) => {
-          console.warn('SpeechRecognition notice:', e.error);
-        };
-
-        recognition.start();
-        recognitionRef.current = recognition;
-      } catch (speechErr) {
-        console.warn('Web Speech API could not start, using audio stream:', speechErr);
-      }
-    }
-
-    // 2. Initialize MediaRecorder audio stream capture
     try {
+      cleanupVoiceResources();
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -370,35 +390,30 @@ CRITICAL FORMATTING & ANSWER RULES:
         } 
       });
       audioStreamRef.current = stream;
-      
-      const options = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? { mimeType: 'audio/webm;codecs=opus' }
-        : MediaRecorder.isTypeSupported('audio/webm')
-        ? { mimeType: 'audio/webm' }
-        : {};
 
-      const mediaRecorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioCtx();
+      audioContextRef.current = audioContext;
+      audioSampleRateRef.current = audioContext.sampleRate;
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
+      const source = audioContext.createMediaStreamSource(stream);
+      audioInputRef.current = source;
+
+      // ScriptProcessor buffer size 4096 gives real-time raw PCM
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      audioProcessorRef.current = processor;
+      audioBuffersRef.current = [];
+
+      processor.onaudioprocess = (e) => {
+        const channel = e.inputBuffer.getChannelData(0);
+        audioBuffersRef.current.push(new Float32Array(channel));
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
-        chunksRef.current = [];
-        const capturedLiveText = liveTranscriptRef.current;
-        await processVoiceAudio(audioBlob, capturedLiveText);
-      };
+      source.connect(processor);
+      processor.connect(audioContext.destination);
 
-      mediaRecorder.start(100);
       setIsVoiceMode(true);
-      if (!liveTranscriptRef.current) {
-        setOutputText("🎙️ Listening... Speak your interview question now!\nClick 'Voice' again when finished.");
-      }
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\nClick 'Voice' again when finished speaking.");
     } catch (err) {
       console.error("Mic error:", err);
       setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
@@ -406,160 +421,124 @@ CRITICAL FORMATTING & ANSWER RULES:
     }
   };
 
-  const stopVoiceMode = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      try {
-        if (typeof mediaRecorderRef.current.requestData === 'function') {
-          mediaRecorderRef.current.requestData();
-        }
-        setTimeout(() => {
-          try {
-            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-              mediaRecorderRef.current.stop();
-            }
-          } catch (e) {}
-        }, 150);
-      } catch (e) {
-        cleanupVoiceResources();
-      }
-    } else {
-      cleanupVoiceResources();
-    }
-  };
+  const stopVoiceMode = async () => {
+    setIsVoiceMode(false);
+    setIsLoading(true);
+    setOutputText("Processing speech with AI...");
 
-  const processVoiceAudio = async (audioBlob) => {
+    const capturedBuffers = [...audioBuffersRef.current];
+    const originalSampleRate = audioSampleRateRef.current;
     cleanupVoiceResources();
+
+    if (!capturedBuffers || capturedBuffers.length === 0) {
+      setIsLoading(false);
+      setOutputText("⚠️ No audio captured. Please click 'Voice' and speak.");
+      return;
+    }
+
+    // Merge Float32 PCM audio buffers
+    let totalLen = 0;
+    for (const b of capturedBuffers) totalLen += b.length;
+    const mergedSamples = new Float32Array(totalLen);
+    let offset = 0;
+    for (const b of capturedBuffers) {
+      mergedSamples.set(b, offset);
+      offset += b.length;
+    }
+
+    // Downsample to 16,000 Hz Mono for crisp AI speech recognition
+    const downsampled = downsampleBuffer(mergedSamples, originalSampleRate, 16000);
+    const wavArrayBuffer = encodeWAV(downsampled, 16000);
+
+    // Convert ArrayBuffer to Base64 safely
+    let binary = '';
+    const bytes = new Uint8Array(wavArrayBuffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64Wav = btoa(binary);
 
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = getEffectiveApiKey();
 
-    setIsLoading(true);
-    setOutputText('Analyzing spoken audio with AI...');
+    if (geminiKey) {
+      const geminiModels = [
+        'gemini-flash-latest',
+        'gemini-3.5-flash',
+        'gemini-3.7-flash'
+      ];
 
-    if (geminiKey && audioBlob) {
-      try {
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = async () => {
-          try {
-            const base64Audio = reader.result.split(',')[1];
-            const cleanMime = 'audio/webm';
-            const geminiModels = [
-              'gemini-3.7-flash',
-              'gemini-3.5-flash',
-              'gemini-flash-latest'
-            ];
+      let geminiSuccess = false;
+      let geminiReply = '';
+      let lastErr = null;
 
-            let geminiSuccess = false;
-            let geminiReply = '';
+      for (const modelId of geminiModels) {
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
 
-            for (const modelId of geminiModels) {
-              try {
-                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
-
-                const response = await fetch(geminiUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    contents: [{
-                      parts: [
-                        { 
-                          text: `You are an expert interview assistant listening to the interview audio.
-1. Transcribe the interview question spoken in the audio.
-2. Provide a short, direct, and punchy spoken answer in 2 to 4 bullet points.
+          const response = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { 
+                    text: `You are a real-time live interview copilot listening to the candidate's audio.
+CRITICAL INSTRUCTIONS:
+1. Listen carefully and transcribe the question asked in the audio accurately.
+2. Provide a short, direct, and punchy spoken answer in 2 to 4 bullet points maximum. Bold key technical terms.
+3. No generic intro or outro filler.
 
 Format:
 **Question:** [Transcribed question]
 
 **Answer:**
-• [Direct key point 1]
-• [Direct key point 2]
-• [Direct key point 3]` 
-                        },
-                        {
-                          inlineData: {
-                            mimeType: cleanMime,
-                            data: base64Audio
-                          }
-                        }
-                      ]
-                    }],
-                    generationConfig: {
-                      temperature: 0.2,
-                      thinkingConfig: { thinkingBudget: 0 },
-                      maxOutputTokens: 500
+• [Direct, punchy key point 1]
+• [Direct, punchy key point 2]
+• [Direct, punchy key point 3]` 
+                  },
+                  {
+                    inlineData: {
+                      mimeType: 'audio/wav',
+                      data: base64Wav
                     }
-                  })
-                });
-
-                const data = await response.json();
-                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                if (response.ok && reply) {
-                  geminiReply = reply;
-                  geminiSuccess = true;
-                  break;
-                }
-              } catch (err) {
-                console.warn(`Gemini ${modelId} voice error:`, err);
+                  }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 500
               }
-            }
+            })
+          });
 
-            if (geminiSuccess && geminiReply) {
-              setOutputText(geminiReply);
-              setInterviewCount(prev => prev + 1);
-              setIsLoading(false);
-              return;
-            } else {
-              fallbackWhisper(audioBlob, groqKey);
-            }
-          } catch (e) {
-            fallbackWhisper(audioBlob, groqKey);
+          const data = await response.json();
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (response.ok && reply) {
+            geminiReply = reply;
+            geminiSuccess = true;
+            break;
+          } else {
+            lastErr = data.error?.message || 'Gemini audio error';
           }
-        };
-        return;
-      } catch (e) {
-        console.warn('Gemini audio failed, trying Whisper:', e);
-      }
-    }
-
-    fallbackWhisper(audioBlob, groqKey);
-  };
-
-  const fallbackWhisper = async (audioBlob, groqKey) => {
-    if (!groqKey || !audioBlob || audioBlob.size < 1000) {
-      setIsLoading(false);
-      setOutputText('⚠️ No speech detected. Please speak clearly into your microphone and try again, or type your question below.');
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('file', audioBlob, 'speech.webm');
-      formData.append('model', 'whisper-large-v3-turbo');
-      formData.append('response_format', 'json');
-
-      const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${groqKey}` },
-        body: formData
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const transcribedText = data.text;
-        if (transcribedText && transcribedText.trim().length > 2) {
-          setOutputText(`Question: "${transcribedText.trim()}"\n\nGenerating answer...`);
-          await handleAskAI(transcribedText.trim());
-          return;
+        } catch (err) {
+          lastErr = err.message;
         }
       }
-      setOutputText('⚠️ No speech detected. Please speak clearly into your microphone and try again.');
-    } catch (err) {
-      setOutputText('⚠️ No clear speech detected. Please check microphone permissions and try again.');
-    } finally {
-      setIsLoading(false);
+
+      if (geminiSuccess && geminiReply) {
+        setOutputText(geminiReply);
+        setInterviewCount(prev => prev + 1);
+        setIsLoading(false);
+        return;
+      }
     }
+
+    // Fallback if needed
+    setIsLoading(false);
+    setOutputText("⚠️ Could not recognize speech. Please speak clearly into your mic and try clicking Voice again!");
   };
 
   const handleCopy = () => {
