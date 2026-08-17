@@ -67,6 +67,16 @@ function downsampleBuffer(buffer, inputSampleRate, outputSampleRate = 16000) {
   return result;
 }
 
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i += 8192) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 8192, len)));
+  }
+  return window.btoa(binary);
+}
+
 // Fallback / default built-in AI keys for subscribed users
 const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA';
 const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
@@ -524,13 +534,12 @@ function AppContent({ timeRemaining, onLogout }) {
   const audioContextRef = useRef(null);
   const audioStreamRef = useRef(null);
   const analyserRef = useRef(null);
+  const processorRef = useRef(null);
+  const pcmAudioChunksRef = useRef([]);
   const animFrameRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordedChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const maxVolumeRef = useRef(0);
   const silenceStartTimeRef = useRef(null);
-  const audioSampleRateRef = useRef(16000);
   const outputScrollRef = useRef(null);
 
   const loadAudioDevices = async () => {
@@ -562,13 +571,12 @@ function AppContent({ timeRemaining, onLogout }) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
-    try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-      mediaRecorderRef.current = null;
-    } catch (e) {}
-
+    if (processorRef.current) {
+      try {
+        processorRef.current.disconnect();
+      } catch (e) {}
+      processorRef.current = null;
+    }
     try {
       if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach(t => t.stop());
@@ -590,8 +598,8 @@ function AppContent({ timeRemaining, onLogout }) {
   const attachVolumeMeter = (stream, audioContext) => {
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.4;
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.3;
     source.connect(analyser);
     analyserRef.current = analyser;
 
@@ -607,20 +615,18 @@ function AppContent({ timeRemaining, onLogout }) {
         sum += dataArray[i];
       }
       const avg = sum / dataArray.length;
-      // Sensitive volume scaling (0 - 100%)
-      const normalizedVol = Math.min(100, Math.round((avg / 90) * 100));
+      const normalizedVol = Math.min(100, Math.round((avg / 80) * 100));
       setLiveVolume(normalizedVol);
 
       if (normalizedVol > maxVolumeRef.current) {
         maxVolumeRef.current = normalizedVol;
       }
 
-      // Sensitive threshold: treat even low audio (>0.5) as active speech
       if (normalizedVol > 0.5) {
         silenceStartTimeRef.current = Date.now();
         setSilenceWarning(false);
       } else {
-        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 4000)) {
+        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 5000)) {
           setSilenceWarning(true);
         }
       }
@@ -677,7 +683,8 @@ function AppContent({ timeRemaining, onLogout }) {
       maxVolumeRef.current = 0;
       setRecordingSeconds(0);
       setSilenceWarning(false);
-      addLog('🎙️ Initializing microphone...');
+      pcmAudioChunksRef.current = [];
+      addLog('🎙️ Initializing 16kHz PCM audio stream...');
 
       await loadAudioDevices();
 
@@ -695,35 +702,50 @@ function AppContent({ timeRemaining, onLogout }) {
       addLog(`Microphone ready (${stream.getAudioTracks()[0]?.label || 'Default'}).`);
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const audioContext = new AudioCtx({ sampleRate: 16000 });
+      const audioContext = new AudioCtx();
       audioContextRef.current = audioContext;
-      audioSampleRateRef.current = audioContext.sampleRate;
 
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
 
-      attachVolumeMeter(stream, audioContext);
+      const source = audioContext.createMediaStreamSource(stream);
 
-      recordedChunksRef.current = [];
-      let mimeType = 'audio/webm;codecs=opus';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/ogg') ? 'audio/ogg' : '');
-      }
+      // Dedicated audio processor for sample-accurate PCM recording
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        pcmAudioChunksRef.current.push(new Float32Array(inputData));
 
-      const mediaRecorder = mimeType
-        ? new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 })
-        : new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+        // High-precision live RMS volume meter
+        let sum = 0;
+        for (let i = 0; i < inputData.length; i++) {
+          sum += inputData[i] * inputData[i];
+        }
+        const rms = Math.sqrt(sum / inputData.length);
+        const vol = Math.min(100, Math.round(rms * 450));
+        setLiveVolume(vol);
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          recordedChunksRef.current.push(e.data);
+        if (vol > maxVolumeRef.current) {
+          maxVolumeRef.current = vol;
+        }
+
+        if (vol > 0.5) {
+          silenceStartTimeRef.current = Date.now();
+          setSilenceWarning(false);
+        } else {
+          if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 5000)) {
+            setSilenceWarning(true);
+          }
         }
       };
 
-      // 100ms slice interval to prevent losing any audio buffers
-      mediaRecorder.start(100);
+      source.connect(processor);
+      const muteGain = audioContext.createGain();
+      muteGain.gain.value = 0;
+      processor.connect(muteGain);
+      muteGain.connect(audioContext.destination);
+      processorRef.current = processor;
 
       let sec = 0;
       recordingTimerRef.current = setInterval(() => {
@@ -746,190 +768,177 @@ function AppContent({ timeRemaining, onLogout }) {
   };
 
   const stopVoiceMode = async () => {
+    const speechEndTime = Date.now();
     setIsVoiceMode(false);
     setIsLoading(true);
     setStreamStatus('Processing...');
-    setOutputText('');
-
-    const maxVol = maxVolumeRef.current;
-    const duration = recordingSeconds;
-    addLog(`Speech ended (${duration}s). Peak Vol: ${maxVol}%. Processing...`);
+    setOutputText('⚡ Processing speech...');
+    addLog(`[${new Date().toLocaleTimeString()}] Speech ended (${recordingSeconds}s, Peak: ${maxVolumeRef.current}%). Encoding 16kHz WAV...`);
 
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
 
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = null;
+    if (processorRef.current) {
+      try {
+        processorRef.current.disconnect();
+      } catch (e) {}
+      processorRef.current = null;
     }
 
-    const getAudioBlob = () => {
-      return new Promise((resolve) => {
-        if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
-          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
-          return;
-        }
+    // Merge PCM chunks
+    const chunks = pcmAudioChunksRef.current;
+    let totalLength = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      totalLength += chunks[i].length;
+    }
 
-        // Request final data chunk before stopping to capture trailing words
-        try {
-          if (mediaRecorderRef.current.state === 'recording') {
-            mediaRecorderRef.current.requestData();
-          }
-        } catch (e) {}
-
-        mediaRecorderRef.current.onstop = () => {
-          setTimeout(() => {
-            resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
-          }, 100);
-        };
-
-        try {
-          mediaRecorderRef.current.stop();
-        } catch (e) {
-          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
-        }
-      });
-    };
-
-    const audioBlob = await getAudioBlob();
+    const currentSampleRate = audioContextRef.current ? audioContextRef.current.sampleRate : 44100;
     cleanupVoiceResources();
 
-    if (!audioBlob || audioBlob.size < 500) {
+    if (totalLength === 0 || (maxVolumeRef.current < 0.5 && totalLength < currentSampleRate * 0.5)) {
       setIsLoading(false);
       setStreamStatus('');
-      addLog('⚠️ No audio data captured.');
-      setOutputText("⚠️ No speech detected. Please speak clearly into your microphone and click Voice again.");
+      addLog(`[${new Date().toLocaleTimeString()}] ⚠️ No audible speech detected (Max vol: ${maxVolumeRef.current}%)`);
+      setOutputText("⚠️ No speech detected. Please speak closer to your microphone and click Voice again.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(audioBlob);
-    reader.onloadend = async () => {
-      const base64Audio = reader.result.split(',')[1];
-      const mimeType = audioBlob.type || 'audio/webm';
-      addLog(`Audio payload ready: ${(base64Audio.length / 1024).toFixed(1)} KB`);
+    const merged = new Float32Array(totalLength);
+    let offset = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      merged.set(chunks[i], offset);
+      offset += chunks[i].length;
+    }
 
-      const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-      const startTime = Date.now();
+    // Convert raw PCM to 16kHz mono WAV and Base64 instantly
+    const downsampled = downsampleBuffer(merged, currentSampleRate, 16000);
+    const wavBuffer = encodeWAV(downsampled, 16000);
+    const base64Wav = arrayBufferToBase64(wavBuffer);
+    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Streaming to Gemini Flash...`);
 
-      if (geminiKey) {
-        // Fastest Gemini Flash models for instant streaming
-        const geminiModels = [
-          'gemini-2.0-flash',
-          'gemini-1.5-flash',
-          'gemini-flash-latest'
-        ];
+    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+    if (!geminiKey) {
+      setIsLoading(false);
+      setStreamStatus('');
+      setOutputText("⚠️ Gemini API key is missing. Please check your configuration.");
+      return;
+    }
 
-        let geminiSuccess = false;
-        let accumulatedText = '';
-        let lastErr = null;
+    const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
+    let voiceSysInstruction = `Direct interview copilot. Transcribe question verbatim and provide 2-3 concise spoken bullet points with bold key terms.`;
+    if (candidateProfile.trim()) {
+      voiceSysInstruction += ` Profile: ${candidateProfile.trim()}`;
+    }
 
-        // Ultra-compact system prompt for low-latency direct responses
-        let voiceSysInstruction = `Direct spoken interview copilot. Transcribe the audio question verbatim and provide 2-3 concise spoken bullet points with bold key terms.`;
-        const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 200) : '');
-        if (candidateProfile.trim()) {
-          voiceSysInstruction += ` Candidate Profile: ${candidateProfile.trim()}. Personalize points to this background.`;
-        }
+    const geminiModels = [
+      'gemini-2.0-flash',
+      'gemini-flash-latest',
+      'gemini-1.5-flash'
+    ];
 
-        for (const modelId of geminiModels) {
-          try {
-            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-            addLog(`⚡ Streaming Gemini Flash (${modelId})...`);
+    let geminiSuccess = false;
+    let accumulatedText = '';
+    let lastErr = null;
+    let firstTokenLatency = null;
 
-            const response = await fetch(geminiStreamUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                systemInstruction: {
-                  parts: [{
-                    text: voiceSysInstruction
-                  }]
-                },
-                contents: [{
-                  parts: [
-                    { 
-                      text: `Transcribe question from the audio and provide immediate spoken bullet points.` 
-                    },
-                    {
-                      inlineData: {
-                        mimeType: mimeType,
-                        data: base64Audio
-                      }
-                    }
-                  ]
-                }],
-                generationConfig: {
-                  temperature: 0.1,
-                  maxOutputTokens: 350
-                }
-              })
-            });
+    const executeGeminiCall = async (modelId, isRetry = false) => {
+      const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+      addLog(`[${new Date().toLocaleTimeString()}] ⚡ ${isRetry ? 'Retrying with' : 'Streaming from'} ${modelId}...`);
 
-            if (response.ok && response.body) {
-              const streamReader = response.body.getReader();
-              const decoder = new TextDecoder();
-              let buffer = '';
-              let firstTokenTime = null;
-
-              while (true) {
-                const { value, done } = await streamReader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                  if (line.startsWith('data: ')) {
-                    const jsonStr = line.slice(6).trim();
-                    if (jsonStr) {
-                      try {
-                        const chunkData = JSON.parse(jsonStr);
-                        const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (chunkText) {
-                          if (!firstTokenTime) {
-                            firstTokenTime = Date.now();
-                            setStreamStatus('Streaming answer...');
-                          }
-                          accumulatedText += chunkText;
-                          setOutputText(accumulatedText);
-                        }
-                      } catch (e) {}
-                    }
-                  }
+      const response = await fetch(geminiStreamUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: voiceSysInstruction }]
+          },
+          contents: [{
+            parts: [
+              { text: "Transcribe spoken question and give immediate bullet points to say." },
+              {
+                inlineData: {
+                  mimeType: 'audio/wav',
+                  data: base64Wav
                 }
               }
-
-              if (accumulatedText) {
-                const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
-                setStreamStatus(`⚡ ${totalSec}s`);
-                addLog(`✅ Streamed full reply in ${totalSec}s`);
-                setInterviewCount(prev => prev + 1);
-                geminiSuccess = true;
-                break;
-              }
-            } else {
-              lastErr = `HTTP ${response.status}`;
-              addLog(`⚠️ Gemini ${modelId} notice: ${lastErr}`);
-            }
-          } catch (err) {
-            lastErr = err.message;
-            addLog(`❌ Fetch notice: ${err.message}`);
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 300
           }
-        }
+        })
+      });
 
-        if (geminiSuccess && accumulatedText) {
-          setIsLoading(false);
-          return;
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP ${response.status} from ${modelId}`);
+      }
+
+      const streamReader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await streamReader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr) {
+              try {
+                const chunkData = JSON.parse(jsonStr);
+                const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (chunkText) {
+                  if (firstTokenLatency === null) {
+                    firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                    setStreamStatus(`⚡ First word: ${firstTokenLatency}s (Streaming...)`);
+                    setOutputText('');
+                  }
+                  accumulatedText += chunkText;
+                  setOutputText(accumulatedText);
+                }
+              } catch (e) {}
+            }
+          }
         }
       }
 
+      return accumulatedText;
+    };
+
+    // Primary call + 1 silent automatic retry
+    for (let i = 0; i < geminiModels.length; i++) {
+      const modelId = geminiModels[i];
+      try {
+        const resText = await executeGeminiCall(modelId, i > 0);
+        if (resText && resText.trim()) {
+          const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+          setStreamStatus(`⚡ First word: ${firstTokenLatency || totalSec}s | Total: ${totalSec}s`);
+          addLog(`[${new Date().toLocaleTimeString()}] ✅ Done in ${totalSec}s (First token: ${firstTokenLatency}s)`);
+          setInterviewCount(prev => prev + 1);
+          geminiSuccess = true;
+          break;
+        }
+      } catch (err) {
+        lastErr = err.message;
+        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Notice from ${modelId}: ${err.message}`);
+      }
+    }
+
+    if (!geminiSuccess || !accumulatedText) {
       setIsLoading(false);
       setStreamStatus('');
-      addLog(`Voice processing ended. Last note: ${lastErr || 'No speech detected'}`);
-      setOutputText(lastErr ? `⚠️ Voice AI note (${lastErr}). Please speak closer to your microphone and click Voice again!` : "⚠️ No speech detected. Please speak closer to your microphone and click Voice again.");
-    };
+      addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
+      setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+    } else {
+      setIsLoading(false);
+    }
   };
 
   const handleCopy = () => {
