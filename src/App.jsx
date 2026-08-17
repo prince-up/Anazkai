@@ -87,7 +87,7 @@ function maskKey(key) {
 
 // AI Engine API Keys: Gemini for Paid Users, Built-in Groq for Free Trial Users
 const SYSTEM_DEFAULT_GEMINI_KEY = (import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA').trim();
-const SYSTEM_DEFAULT_GROQ_KEY = (import.meta.env.VITE_GROQ_API_KEY || '').trim();
+const SYSTEM_DEFAULT_GROQ_KEY = (import.meta.env.VITE_GROQ_API_KEY || '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').trim();
 
 function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false }) {
   const [inputText, setInputText] = useState('');
@@ -329,7 +329,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
 
-    addLog(`[Plan: ${activePlan}] AI Engine: ${isTrial ? 'Free Trial (Groq/Flash Auto)' : 'Paid (Gemini Flash)'}`);
+    addLog(`[Plan: ${activePlan}] Starting AI query... (Engine: ${isTrial ? 'Groq Llama 3.3' : 'Gemini Flash'})`);
     
     const textToSend = overrideText !== null ? overrideText : inputText;
     const imageToSend = overrideImage || screenshotData;
@@ -357,101 +357,116 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. FREE TRIAL: TRY BUILT-IN GROQ LLAMA 3.3 IF CONFIGURED
-    if (isTrial && groqKey && !groqKey.includes('FreeTrialGroqKey')) {
-      try {
-        const url = `https://api.groq.com/openai/v1/chat/completions`;
-        const content = [{ type: 'text', text: promptText }];
+    // 1. FREE TRIAL: GROQ LLAMA 3.3 70B & VISION ENGINE (WITH 15s TIMEOUT)
+    if (isTrial && groqKey) {
+      const url = `https://api.groq.com/openai/v1/chat/completions`;
+      const groqModels = imageToSend ? [
+        'llama-3.2-11b-vision-preview',
+        'llama-3.2-90b-vision-preview'
+      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 
-        if (imageToSend) {
-          content.push({
-            type: 'image_url',
-            image_url: { url: imageToSend }
+      for (const modelId of groqModels) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        try {
+          const messages = imageToSend ? [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: promptText },
+                { type: 'image_url', image_url: { url: imageToSend } }
+              ]
+            }
+          ] : [
+            { role: 'user', content: promptText }
+          ];
+
+          const requestBody = { 
+            model: modelId, 
+            messages,
+            temperature: 0.2,
+            max_tokens: 450,
+            stream: true
+          };
+
+          addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': `Bearer ${groqKey}` 
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
           });
-        }
 
-        const groqModels = imageToSend ? [
-          'llama-3.2-11b-vision-preview',
-          'llama-3.2-90b-vision-preview',
-          'qwen-2.5-vl-72b-instruct'
-        ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+          clearTimeout(timeoutId);
+          addLog(`[Response] Groq HTTP ${response.status} (${response.statusText})`);
 
-        for (const modelId of groqModels) {
-          try {
-            const requestBody = { 
-              model: modelId, 
-              messages: [{ role: 'user', content }],
-              temperature: 0.2,
-              max_tokens: 450,
-              stream: true
-            };
+          if (response.ok && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstTokenTime = null;
 
-            addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
 
-            const response = await fetch(url, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${groqKey}` 
-              },
-              body: JSON.stringify(requestBody)
-            });
-
-            if (response.ok && response.body) {
-              const reader = response.body.getReader();
-              const decoder = new TextDecoder();
-              let buffer = '';
-              let firstTokenTime = null;
-
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                  if (line.startsWith('data: ')) {
-                    const jsonStr = line.slice(6).trim();
-                    if (jsonStr && jsonStr !== '[DONE]') {
-                      try {
-                        const data = JSON.parse(jsonStr);
-                        const chunk = data.choices?.[0]?.delta?.content;
-                        if (chunk) {
-                          if (!firstTokenTime) {
-                            firstTokenTime = Date.now();
-                            const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                            setStreamStatus(`⚡ Trial Stream (${latency}s)`);
-                          }
-                          accumulatedReply += chunk;
-                          setOutputText(accumulatedReply);
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (!firstTokenTime) {
+                          firstTokenTime = Date.now();
+                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ Groq Stream (${latency}s)`);
                         }
-                      } catch (e) {}
-                    }
+                        accumulatedReply += chunk;
+                        setOutputText(accumulatedReply);
+                      }
+                    } catch (e) {}
                   }
                 }
               }
-
-              if (accumulatedReply) {
-                const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${totalSec}s (Free Trial)`);
-                setInterviewCount(prev => prev + 1);
-                success = true;
-                break;
-              }
-            } else {
-              lastErr = `Groq HTTP ${response.status}`;
             }
-          } catch (fetchErr) {
+
+            if (accumulatedReply && accumulatedReply.trim()) {
+              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${totalSec}s (Free Trial)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
+              setInterviewCount(prev => prev + 1);
+              success = true;
+              break;
+            }
+          } else {
+            const errTxt = await response.text();
+            addLog(`❌ Groq Error Response (${response.status}): ${errTxt}`);
+            lastErr = `Groq HTTP ${response.status}: ${errTxt}`;
+          }
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          if (fetchErr.name === 'AbortError') {
+            addLog(`❌ Groq request timed out after 15s.`);
+            lastErr = 'Request timed out (15s limit).';
+          } else {
+            addLog(`❌ Groq fetch error: ${fetchErr.message}`);
             lastErr = fetchErr.message;
           }
         }
-      } catch (groqErr) {
-        lastErr = groqErr.message;
       }
     }
 
-    // 2. PRIMARY (FOR PAID) OR AUTOMATIC OUT-OF-THE-BOX FALLBACK (FOR FREE TRIAL)
+    // 2. PAID PLAN OR EMERGENCY FALLBACK (GEMINI FLASH)
     if (!success && geminiKey) {
       const geminiModels = [
         'gemini-2.0-flash',
@@ -473,6 +488,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
 
       for (const modelId of geminiModels) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
         try {
           const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
           addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
@@ -496,8 +514,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                 temperature: 0.1,
                 maxOutputTokens: 500
               }
-            })
+            }),
+            signal: controller.signal
           });
+
+          clearTimeout(timeoutId);
 
           if (response.ok && response.body) {
             const reader = response.body.getReader();
@@ -534,24 +555,28 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               }
             }
 
-            if (accumulatedReply) {
+            if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
               setStreamStatus(`⚡ ${totalSec}s${isTrial ? ' (Trial)' : ''}`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
               success = true;
               break;
             }
           } else {
-            lastErr = `HTTP ${response.status}`;
+            const errTxt = await response.text();
+            lastErr = `Gemini HTTP ${response.status}: ${errTxt}`;
           }
         } catch (err) {
-          lastErr = err.message;
+          clearTimeout(timeoutId);
+          lastErr = err.name === 'AbortError' ? 'Gemini request timed out (15s)' : err.message;
         }
       }
     }
 
     if (!success && !accumulatedReply) {
-      setOutputText(`Error: ${lastErr || 'Failed to connect to AI engine. Please check internet connection.'}`);
+      setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Please check internet connection.'}`);
+      setStreamStatus('');
     }
 
     setIsLoading(false);
@@ -570,33 +595,30 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [liveVolume, setLiveVolume] = useState(0); 
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [silenceWarning, setSilenceWarning] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState('');
-  
+
+  // Audio Context & Native PCM Recording References
   const audioContextRef = useRef(null);
-  const audioStreamRef = useRef(null);
-  const analyserRef = useRef(null);
+  const mediaStreamRef = useRef(null);
   const processorRef = useRef(null);
   const pcmAudioChunksRef = useRef([]);
-  const animFrameRef = useRef(null);
   const recordingTimerRef = useRef(null);
-  const maxVolumeRef = useRef(0);
   const silenceStartTimeRef = useRef(null);
-  const outputScrollRef = useRef(null);
+  const maxVolumeRef = useRef(0);
 
+  // Audio Hardware Devices
+  const [availableDevices, setAvailableDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(() => localStorage.getItem('selected_audio_device') || '');
+
+  // Load available microphone devices
   const loadAudioDevices = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const inputs = devices.filter(d => d.kind === 'audioinput');
-      setAvailableDevices(inputs);
-      console.log('[AudioDevices] Available input devices:', inputs);
-      addLog(`Found ${inputs.length} audio input device(s):`);
-      inputs.forEach((d, i) => {
-        addLog(`  ${i + 1}. ${d.label || 'Microphone (Standard)'} [ID: ${d.deviceId.slice(0, 8)}...]`);
-      });
-    } catch (err) {
-      console.warn('Error enumerating devices:', err);
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+        setAvailableDevices(audioInputs);
+      }
+    } catch (e) {
+      console.warn('Failed to enumerate audio devices:', e);
     }
   };
 
@@ -604,152 +626,116 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     loadAudioDevices();
   }, []);
 
+  useEffect(() => {
+    if (selectedDeviceId) {
+      localStorage.setItem('selected_audio_device', selectedDeviceId);
+    } else {
+      localStorage.removeItem('selected_audio_device');
+    }
+  }, [selectedDeviceId]);
+
+  // Clean up recording & audio graph nodes
   const cleanupVoiceResources = () => {
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = null;
-    }
-    if (recordingTimerRef.current) {
-      clearInterval(recordingTimerRef.current);
-      recordingTimerRef.current = null;
-    }
     if (processorRef.current) {
       try {
         processorRef.current.disconnect();
       } catch (e) {}
       processorRef.current = null;
     }
-    try {
-      if (audioStreamRef.current) {
-        audioStreamRef.current.getTracks().forEach(t => t.stop());
-        audioStreamRef.current = null;
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-    } catch (e) {
-      console.warn('Voice cleanup notice:', e);
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      } catch (e) {}
+      mediaStreamRef.current = null;
     }
-    setLiveVolume(0);
-    setSilenceWarning(false);
-    setIsVoiceMode(false);
-    setIsTestingMic(false);
-  };
-
-  const attachVolumeMeter = (stream, audioContext) => {
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.3;
-    source.connect(analyser);
-    analyserRef.current = analyser;
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    silenceStartTimeRef.current = Date.now();
-
-    const checkVolume = () => {
-      if (!analyserRef.current) return;
-      analyserRef.current.getByteFrequencyData(dataArray);
-
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += dataArray[i];
-      }
-      const avg = sum / dataArray.length;
-      const normalizedVol = Math.min(100, Math.round((avg / 80) * 100));
-      setLiveVolume(normalizedVol);
-
-      if (normalizedVol > maxVolumeRef.current) {
-        maxVolumeRef.current = normalizedVol;
-      }
-
-      if (normalizedVol > 0.5) {
-        silenceStartTimeRef.current = Date.now();
-        setSilenceWarning(false);
-      } else {
-        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 5000)) {
-          setSilenceWarning(true);
+    if (audioContextRef.current) {
+      try {
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close();
         }
-      }
-
-      animFrameRef.current = requestAnimationFrame(checkVolume);
-    };
-
-    animFrameRef.current = requestAnimationFrame(checkVolume);
+      } catch (e) {}
+      audioContextRef.current = null;
+    }
   };
 
   const toggleTestMic = async () => {
     if (isTestingMic) {
       cleanupVoiceResources();
-      addLog('Test Microphone stopped.');
-      return;
-    }
+      setIsTestingMic(false);
+      setLiveVolume(0);
+    } else {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContextClass();
+        audioContextRef.current = audioContext;
 
-    try {
-      cleanupVoiceResources();
-      addLog('🎙️ Starting Test Microphone...');
-      await loadAudioDevices();
+        const constraints = {
+          audio: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true
+        };
 
-      const audioConstraints = {
-        echoCancellation: true,
-        noiseSuppression: false,
-        autoGainControl: true
-      };
-      if (selectedDeviceId) {
-        audioConstraints.deviceId = { exact: selectedDeviceId };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        mediaStreamRef.current = stream;
+
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(2048, 1, 1);
+
+        processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          let sum = 0;
+          for (let i = 0; i < inputData.length; i++) {
+            sum += inputData[i] * inputData[i];
+          }
+          const rms = Math.sqrt(sum / inputData.length);
+          const vol = Math.min(100, Math.round(rms * 450));
+          setLiveVolume(vol);
+          if (vol > 1) {
+            setSilenceWarning(false);
+          }
+        };
+
+        source.connect(processor);
+        const muteGain = audioContext.createGain();
+        muteGain.gain.value = 0;
+        processor.connect(muteGain);
+        muteGain.connect(audioContext.destination);
+        processorRef.current = processor;
+
+        setIsTestingMic(true);
+      } catch (err) {
+        alert(`Mic Test Failed: ${err.message}`);
+        cleanupVoiceResources();
       }
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-      audioStreamRef.current = stream;
-
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const audioContext = new AudioCtx();
-      audioContextRef.current = audioContext;
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      attachVolumeMeter(stream, audioContext);
-      setIsTestingMic(true);
-      addLog('Test Microphone active. Speak to verify live meter!');
-    } catch (err) {
-      addLog(`❌ Test Mic error: ${err.message}`);
-      cleanupVoiceResources();
     }
   };
 
   const startVoiceMode = async () => {
     try {
       cleanupVoiceResources();
-      maxVolumeRef.current = 0;
-      setRecordingSeconds(0);
-      setSilenceWarning(false);
       pcmAudioChunksRef.current = [];
-      addLog('🎙️ Initializing 16kHz PCM audio stream...');
+      maxVolumeRef.current = 0;
+      silenceStartTimeRef.current = Date.now();
+      setSilenceWarning(false);
+      setRecordingSeconds(0);
 
-      await loadAudioDevices();
-
-      const audioConstraints = {
-        echoCancellation: true,
-        noiseSuppression: false,
-        autoGainControl: true
-      };
-      if (selectedDeviceId) {
-        audioConstraints.deviceId = { exact: selectedDeviceId };
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-      audioStreamRef.current = stream;
-      addLog(`Microphone ready (${stream.getAudioTracks()[0]?.label || 'Default'}).`);
-
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const audioContext = new AudioCtx();
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
 
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
+
+      const constraints = {
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      mediaStreamRef.current = stream;
 
       const source = audioContext.createMediaStreamSource(stream);
 
@@ -862,7 +848,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const isTrial = isFreeTrial || planType === 'free_trial';
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    const groqKey = getEffectiveGroqKey();
+    const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
     let voiceSysInstruction = `Direct interview copilot. Answer question verbatim in 2-3 concise spoken bullet points with bold key terms.`;
@@ -875,11 +861,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. FREE TRIAL VOICE ENGINE: TRY BUILT-IN GROQ IF CONFIGURED
-    if (isTrial && groqKey && !groqKey.includes('FreeTrialGroqKey')) {
+    // 1. FREE TRIAL VOICE ENGINE: GROQ WHISPER + GROQ LLAMA 3.3 (WITH 15s TIMEOUT)
+    if (isTrial && groqKey) {
+      const whisperController = new AbortController();
+      const whisperTimeout = setTimeout(() => whisperController.abort(), 15000);
+
       try {
         addLog(`[Plan: free_trial] Voice Engine: Groq Whisper + Llama 3.3 | Key: ${maskKey(groqKey)}`);
-        addLog(`[Request] POST https://api.groq.com/openai/v1/audio/transcriptions | Model: whisper-large-v3-turbo | Auth: Bearer ${maskKey(groqKey)}`);
+        addLog(`[Request] POST https://api.groq.com/openai/v1/audio/transcriptions | Model: whisper-large-v3-turbo`);
 
         const formData = new FormData();
         const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
@@ -890,8 +879,12 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${groqKey}` },
-          body: formData
+          body: formData,
+          signal: whisperController.signal
         });
+
+        clearTimeout(whisperTimeout);
+        addLog(`[Response] Groq Whisper HTTP ${whisperRes.status}`);
 
         if (whisperRes.ok) {
           const whisperData = await whisperRes.json();
@@ -899,7 +892,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
           if (transcript) {
             addLog(`[${new Date().toLocaleTimeString()}] Question: "${transcript.slice(0, 50)}...". Streaming Groq Llama 3.3...`);
-            addLog(`[Request] POST https://api.groq.com/openai/v1/chat/completions | Model: llama-3.3-70b-versatile | Auth: Bearer ${maskKey(groqKey)}`);
+            
+            const chatController = new AbortController();
+            const chatTimeout = setTimeout(() => chatController.abort(), 15000);
 
             const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
               method: 'POST',
@@ -916,8 +911,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                 temperature: 0.1,
                 max_tokens: 300,
                 stream: true
-              })
+              }),
+              signal: chatController.signal
             });
+
+            clearTimeout(chatTimeout);
 
             if (chatRes.ok && chatRes.body) {
               const reader = chatRes.body.getReader();
@@ -953,23 +951,32 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                 }
               }
 
-              if (accumulatedText) {
+              if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
                 setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Streamed in ${totalSec}s`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Streamed voice answer in ${totalSec}s`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;
               }
+            } else {
+              const errTxt = await chatRes.text();
+              addLog(`❌ Groq chat error: ${errTxt}`);
+              lastErr = errTxt;
             }
           }
+        } else {
+          const errTxt = await whisperRes.text();
+          addLog(`❌ Groq Whisper error: ${errTxt}`);
+          lastErr = errTxt;
         }
       } catch (err) {
-        lastErr = err.message;
-        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Groq Voice Notice: ${err.message}`);
+        clearTimeout(whisperTimeout);
+        lastErr = err.name === 'AbortError' ? 'Groq Voice timed out (15s)' : err.message;
+        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Groq Voice Notice: ${lastErr}`);
       }
     }
 
-    // 2. PRIMARY (FOR PAID) OR AUTOMATIC OUT-OF-THE-BOX FALLBACK (FOR FREE TRIAL)
+    // 2. PRIMARY (FOR PAID) OR EMERGENCY FALLBACK (GEMINI FLASH)
     if (!voiceSuccess && geminiKey) {
       const geminiModels = [
         'gemini-2.0-flash',
@@ -980,72 +987,83 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       addLog(`[Plan: ${activePlan}] Voice Engine: Google Gemini Flash | Key: ${maskKey(geminiKey)}`);
 
       const executeGeminiCall = async (modelId, isRetry = false) => {
-        const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-        addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const response = await fetch(geminiStreamUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: voiceSysInstruction }]
-            },
-            contents: [{
-              parts: [
-                { text: "Transcribe spoken question and give immediate bullet points to say." },
-                {
-                  inlineData: {
-                    mimeType: 'audio/wav',
-                    data: base64Wav
-                  }
-                }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 300
-            }
-          })
-        });
+        try {
+          const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+          addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
 
-        if (!response.ok || !response.body) {
-          throw new Error(`HTTP ${response.status} from ${modelId}`);
-        }
-
-        const streamReader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-          const { value, done } = await streamReader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const jsonStr = line.slice(6).trim();
-              if (jsonStr) {
-                try {
-                  const chunkData = JSON.parse(jsonStr);
-                  const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
-                  if (chunkText) {
-                    if (firstTokenLatency === null) {
-                      firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                      setStreamStatus(isTrial ? `⚡ Trial First word: ${firstTokenLatency}s` : `⚡ First word: ${firstTokenLatency}s`);
-                      setOutputText('');
+          const response = await fetch(geminiStreamUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: voiceSysInstruction }]
+              },
+              contents: [{
+                parts: [
+                  { text: "Transcribe spoken question and give immediate bullet points to say." },
+                  {
+                    inlineData: {
+                      mimeType: 'audio/wav',
+                      data: base64Wav
                     }
-                    accumulatedText += chunkText;
-                    setOutputText(accumulatedText);
                   }
-                } catch (e) {}
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 300
+              }
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok || !response.body) {
+            throw new Error(`HTTP ${response.status} from ${modelId}`);
+          }
+
+          const streamReader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { value, done } = await streamReader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr) {
+                  try {
+                    const chunkData = JSON.parse(jsonStr);
+                    const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (chunkText) {
+                      if (firstTokenLatency === null) {
+                        firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                        setStreamStatus(isTrial ? `⚡ Trial First word: ${firstTokenLatency}s` : `⚡ First word: ${firstTokenLatency}s`);
+                        setOutputText('');
+                      }
+                      accumulatedText += chunkText;
+                      setOutputText(accumulatedText);
+                    }
+                  } catch (e) {}
+                }
               }
             }
           }
-        }
 
-        return accumulatedText;
+          return accumulatedText;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
       };
 
       for (let i = 0; i < geminiModels.length; i++) {
@@ -1071,7 +1089,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       setIsLoading(false);
       setStreamStatus('');
       addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
-      setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and click Voice again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      setOutputText(lastErr ? `⚠️ Error (${lastErr}). Please try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
     } else {
       setIsLoading(false);
     }
