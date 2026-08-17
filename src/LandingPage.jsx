@@ -1558,77 +1558,6 @@ class Solution {
         </div>
       </section>
 
-      {/* Interactive Sandbox Simulator */}
-      <section id="sandbox" className="py-20 bg-gradient-to-tr from-[#edf9f3] to-white border-y border-emerald-500/5 px-6">
-        <div className="max-w-4xl mx-auto space-y-12">
-          
-          <div className="text-center space-y-4">
-            <span className="inline-block bg-teal-100 text-teal-800 border border-teal-200 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-              Try It Now
-            </span>
-            <h2 className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
-              Interactive AI Sandbox
-            </h2>
-            <p className="text-gray-600 text-base max-w-xl mx-auto font-medium">
-              Simulate an interview question below (e.g. ask about &quot;React Hooks&quot; or &quot;SQL vs NoSQL&quot;) and watch Anazk AI capture, transcribe, and formulate answers instantly!
-            </p>
-          </div>
-
-          <div className="bg-white rounded-3xl border border-emerald-500/10 p-6 md:p-8 shadow-xl">
-            <form onSubmit={handleSandboxSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-black text-emerald-800 uppercase tracking-wider mb-2">Simulate Interview Question:</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={sandboxQuestion}
-                    onChange={(e) => setSandboxQuestion(e.target.value)}
-                    placeholder="E.g., What are the core features of React Hooks? or Explain SQL vs NoSQL database choices."
-                    className="flex-1 px-4 py-3 bg-emerald-50/50 border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 text-sm rounded-2xl outline-none font-semibold text-gray-800 placeholder-gray-400 transition-all shadow-inner"
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={isSandboxLoading}
-                    className="px-6 bg-[#0d2e27] text-white hover:bg-emerald-950 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    {isSandboxLoading ? "Thinking..." : "Simulate"}
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            {/* Simulated Live Outputs */}
-            {(sandboxTranscript || sandboxResponse || isSandboxLoading) && (
-              <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
-                {sandboxTranscript && (
-                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100 animate-pulse">
-                    <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-ping"></div>
-                    <span>{sandboxTranscript}</span>
-                  </div>
-                )}
-
-                {sandboxResponse && (
-                  <div className="bg-[#0b1227] text-gray-100 p-5 rounded-2xl border border-emerald-500/20 font-sans text-xs leading-relaxed space-y-3 shadow-inner">
-                    <span className="block text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider border-b border-white/5 pb-1">Anazk AI Assistant Response:</span>
-                    <div className="space-y-2 text-gray-300">
-                      {sandboxResponse.split('\n').map((line, idx) => {
-                        if (line.startsWith('###')) {
-                          return <h4 key={idx} className="font-bold text-[13px] text-white mt-3 mb-1 font-display">{line.replace('###', '')}</h4>;
-                        } else if (line.startsWith('*')) {
-                          return <p key={idx} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-emerald-400 font-medium">{line.replace('*', '').trim()}</p>;
-                        }
-                        return <p key={idx} className="font-medium">{line}</p>;
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Privacy Stealth & Undetectability */}
       <section id="privacy" className="py-20 bg-[#0d2e27] text-white px-6">
         <div className="max-w-7xl mx-auto space-y-12">
@@ -2763,9 +2692,8 @@ class Solution {
                   We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.
                 </p>
 
-                <div className="pt-4 border-t border-gray-100 text-xs text-gray-500 font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="pt-4 border-t border-gray-100 text-xs text-gray-500 font-semibold">
                   <span>Questions about these terms? Reach us at <a href="mailto:supportanazkai@gmail.com" className="text-emerald-700 font-bold hover:underline">supportanazkai@gmail.com</a></span>
-                  <span className="text-gray-400 font-bold">Helpline: +91 7986614646</span>
                 </div>
               </div>
             </div>
