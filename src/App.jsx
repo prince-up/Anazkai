@@ -77,9 +77,17 @@ function arrayBufferToBase64(buffer) {
   return window.btoa(binary);
 }
 
+// Mask API Key for safe console debugging
+function maskKey(key) {
+  if (!key) return 'None';
+  const str = key.trim();
+  if (str.length <= 8) return str;
+  return `${str.slice(0, 8)}...${str.slice(-4)}`;
+}
+
 // AI Engine API Keys: Gemini for Paid Users, Groq for Free Trial Users
-const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA';
-const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || 'gsk_v1FreeTrialGroqKey2026_llama70b';
+const SYSTEM_DEFAULT_GEMINI_KEY = (import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA').trim();
+const SYSTEM_DEFAULT_GROQ_KEY = (import.meta.env.VITE_GROQ_API_KEY || '').trim();
 
 function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false }) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
@@ -89,6 +97,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [streamStatus, setStreamStatus] = useState('');
+
+  // Get active Groq key from state, localStorage, or env
+  const getEffectiveGroqKey = () => {
+    const userGroq = (apiKey || localStorage.getItem('groq_api_key') || '').trim();
+    if (userGroq) return userGroq;
+    const envGroq = (import.meta.env.VITE_GROQ_API_KEY || SYSTEM_DEFAULT_GROQ_KEY || '').trim();
+    return envGroq;
+  };
   
   // Debug Logs State
   const [debugLogs, setDebugLogs] = useState([]);
@@ -322,17 +338,25 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const handleAskAI = async (overrideText = null, overrideImage = null) => {
     if (isLoading) return;
     
-    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    const groqKey = getEffectiveApiKey();
     const isTrial = isFreeTrial || planType === 'free_trial';
+    const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
+    const groqKey = getEffectiveGroqKey();
+    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
 
-    if (isTrial && !groqKey) {
-      setOutputText('Groq AI Key is not configured for Free Trial.');
-      return;
-    }
-    if (!isTrial && !geminiKey && !groqKey) {
-      setOutputText('AI Engine is not configured.');
-      return;
+    if (isTrial) {
+      addLog(`[Plan: free_trial] AI Engine: Groq Llama 3.3 | Key: ${maskKey(groqKey)}`);
+      if (!groqKey) {
+        addLog(`❌ [Free Trial] Groq API Key is not configured.`);
+        setOutputText('⚠️ Groq API Key is not configured for Free Trial. Please add a valid Groq key in Settings (⚙️) or .env file.');
+        return;
+      }
+    } else {
+      addLog(`[Plan: ${activePlan}] AI Engine: Google Gemini Flash | Key: ${maskKey(geminiKey)}`);
+      if (!geminiKey) {
+        addLog(`❌ [Paid Plan] Gemini API Key is not configured.`);
+        setOutputText('⚠️ Gemini API Key is not configured. Please check your configuration.');
+        return;
+      }
     }
     
     const textToSend = overrideText !== null ? overrideText : inputText;
@@ -389,11 +413,25 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               max_tokens: 450,
               stream: true
             };
+
+            addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
+
             const response = await fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+              headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${groqKey}` 
+              },
               body: JSON.stringify(requestBody)
             });
+
+            if (response.status === 401) {
+              const errMsg = 'Invalid Groq API Key (HTTP 401). Please check your key in Settings (⚙️) or .env file.';
+              addLog(`❌ [HTTP 401] ${errMsg}`);
+              setOutputText(`⚠️ ${errMsg}`);
+              setIsLoading(false);
+              return;
+            }
 
             if (response.ok && response.body) {
               const reader = response.body.getReader();
@@ -473,6 +511,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       for (const modelId of geminiModels) {
         try {
           const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+          addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
+
           const contentParts = [{ text: promptText }];
           if (imageBase64) {
             contentParts.push({
@@ -494,6 +534,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               }
             })
           });
+
+          if (response.status === 401) {
+            const errMsg = 'Invalid Gemini API Key (HTTP 401). Please verify your subscription.';
+            addLog(`❌ [HTTP 401] ${errMsg}`);
+            setOutputText(`⚠️ ${errMsg}`);
+            setIsLoading(false);
+            return;
+          }
 
           if (response.ok && response.body) {
             const reader = response.body.getReader();
@@ -858,7 +906,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const isTrial = isFreeTrial || planType === 'free_trial';
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    const groqKey = getEffectiveApiKey();
+    const groqKey = getEffectiveGroqKey();
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
     let voiceSysInstruction = `Direct interview copilot. Answer question verbatim in 2-3 concise spoken bullet points with bold key terms.`;
@@ -872,9 +920,19 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let firstTokenLatency = null;
 
     // 1. FREE TRIAL VOICE ENGINE: GROQ WHISPER + GROQ LLAMA 3.3 STREAMING
-    if (isTrial && groqKey) {
+    if (isTrial) {
+      if (!groqKey) {
+        setIsLoading(false);
+        setStreamStatus('');
+        addLog(`❌ [Free Trial] Groq API key is missing.`);
+        setOutputText("⚠️ Groq API Key is not configured for Free Trial. Please add your Groq API Key in Settings (⚙️) or .env file.");
+        return;
+      }
+
       try {
-        addLog(`[${new Date().toLocaleTimeString()}] ⚡ Transcribing with Groq Whisper...`);
+        addLog(`[Plan: free_trial] Voice Engine: Groq Whisper + Llama 3.3 | Key: ${maskKey(groqKey)}`);
+        addLog(`[Request] POST https://api.groq.com/openai/v1/audio/transcriptions | Model: whisper-large-v3-turbo | Auth: Bearer ${maskKey(groqKey)}`);
+
         const formData = new FormData();
         const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
         formData.append('file', wavBlob, 'audio.wav');
@@ -886,6 +944,15 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
           headers: { 'Authorization': `Bearer ${groqKey}` },
           body: formData
         });
+
+        if (whisperRes.status === 401) {
+          const errMsg = 'Invalid Groq API Key (HTTP 401). Please check your key in Settings (⚙️) or .env file.';
+          addLog(`❌ [Groq Whisper 401] ${errMsg}`);
+          setOutputText(`⚠️ ${errMsg}`);
+          setIsLoading(false);
+          setStreamStatus('');
+          return;
+        }
 
         if (!whisperRes.ok) {
           throw new Error(`Groq Whisper HTTP ${whisperRes.status}`);
@@ -899,6 +966,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         }
 
         addLog(`[${new Date().toLocaleTimeString()}] Question: "${transcript.slice(0, 50)}...". Streaming Groq Llama 3.3...`);
+        addLog(`[Request] POST https://api.groq.com/openai/v1/chat/completions | Model: llama-3.3-70b-versatile | Auth: Bearer ${maskKey(groqKey)}`);
 
         const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -917,6 +985,15 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             stream: true
           })
         });
+
+        if (chatRes.status === 401) {
+          const errMsg = 'Invalid Groq API Key (HTTP 401). Please check your key in Settings (⚙️) or .env file.';
+          addLog(`❌ [Groq Chat 401] ${errMsg}`);
+          setOutputText(`⚠️ ${errMsg}`);
+          setIsLoading(false);
+          setStreamStatus('');
+          return;
+        }
 
         if (chatRes.ok && chatRes.body) {
           const reader = chatRes.body.getReader();
@@ -974,9 +1051,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         'gemini-1.5-flash'
       ];
 
+      addLog(`[Plan: ${planType || 'paid'}] Voice Engine: Google Gemini 2.0 Flash | Key: ${maskKey(geminiKey)}`);
+
       const executeGeminiCall = async (modelId, isRetry = false) => {
         const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-        addLog(`[${new Date().toLocaleTimeString()}] ⚡ ${isRetry ? 'Retrying with' : 'Streaming from'} ${modelId}...`);
+        addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
 
         const response = await fetch(geminiStreamUrl, {
           method: 'POST',
@@ -1002,6 +1081,13 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             }
           })
         });
+
+        if (response.status === 401) {
+          const errMsg = 'Invalid Gemini API Key (HTTP 401). Please verify your subscription.';
+          addLog(`❌ [HTTP 401] ${errMsg}`);
+          setOutputText(`⚠️ ${errMsg}`);
+          throw new Error('HTTP 401');
+        }
 
         if (!response.ok || !response.body) {
           throw new Error(`HTTP ${response.status} from ${modelId}`);
@@ -1057,6 +1143,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
           }
         } catch (err) {
           lastErr = err.message;
+          if (err.message === 'HTTP 401') break;
           addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Notice from ${modelId}: ${err.message}`);
         }
       }
@@ -1066,7 +1153,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       setIsLoading(false);
       setStreamStatus('');
       addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
-      setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      if (!lastErr || lastErr !== 'HTTP 401') {
+        setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      }
     } else {
       setIsLoading(false);
     }
@@ -1158,6 +1247,41 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                   />
                   <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
+              </div>
+
+              {/* Free Trial Groq API Key Input */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5 space-y-2">
+                <div className="flex justify-between text-gray-300 font-semibold items-center">
+                  <span className="flex items-center gap-1.5">
+                    <Key size={13} className="text-amber-400" />
+                    <span>Groq API Key (Free Trial)</span>
+                  </span>
+                  {apiKey ? (
+                    <span className="text-[10px] text-emerald-400 font-mono font-bold">Custom Key ✓</span>
+                  ) : (
+                    <span className="text-[10px] text-gray-500 font-mono">Env / Default</span>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-400">
+                  Used exclusively for 5-Min Free Trial (Llama 3.3 & Whisper).
+                </p>
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder="gsk_..."
+                    value={apiKey}
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      setApiKey(val);
+                      if (val) {
+                        localStorage.setItem('groq_api_key', val);
+                      } else {
+                        localStorage.removeItem('groq_api_key');
+                      }
+                    }}
+                    className="w-full bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2 text-xs font-mono outline-none focus:border-amber-500/40"
+                  />
+                </div>
               </div>
 
               {/* Microphone Device Selector */}
