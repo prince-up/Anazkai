@@ -2036,8 +2036,9 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="/release/Anazk Setup 1.0.0.exe" 
-                download 
+                href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
                 className="w-full py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-500/25"
               >
@@ -2045,7 +2046,7 @@ class Solution {
                   <span className="text-2xl">🪟</span>
                   <div>
                     <span className="block text-xs sm:text-sm font-extrabold text-white">Download for Windows</span>
-                    <span className="block text-[10px] text-emerald-100">x64 Installer (.exe)</span>
+                    <span className="block text-[10px] text-emerald-100">x64 Installer (.exe) • Direct from Google Drive</span>
                   </div>
                 </div>
                 <Download size={18} />
