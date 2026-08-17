@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🕶️ Anazk AI (cheaterBoy)
+# 🕶️ Anazk AI 
 
 ### *Invisible Live Interview Copilot & AI Problem-Solving Assistant*
 
