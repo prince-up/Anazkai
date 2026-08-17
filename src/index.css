@@ -73,6 +73,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @keyframes zoomIn95 { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes slideInFromTop5 { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+@keyframes infinite-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee-smooth {
+  display: flex;
+  width: max-content;
+  animation: infinite-scroll 28s linear infinite;
+}
+.animate-marquee-smooth:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

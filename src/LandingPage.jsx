@@ -1258,9 +1258,9 @@ class Solution {
         </div>
       </section>
 
-      {/* Features: Everything You Need To Perform Better */}
-      <section id="features" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-7xl mx-auto text-center space-y-12">
-        <div className="space-y-4">
+      {/* Features: Everything You Need To Perform Better (Infinite Moving Marquee) */}
+      <section id="features" className="py-20 px-4 sm:px-6 w-full max-w-full overflow-hidden text-center space-y-10 sm:space-y-12">
+        <div className="max-w-4xl mx-auto space-y-4 px-4">
           <div>
             <span className="inline-block bg-[#15803d] text-white font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm">
               Features
@@ -1272,53 +1272,91 @@ class Solution {
           </h2>
         </div>
 
-        {/* 4 Feature Items Row / Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 pt-4 text-center">
-          
-          {/* Feature 1: Personalized Answers */}
-          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
-            <div className="text-3xl">🎯</div>
-            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
-              Personalized Answers
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-              Tailors answers based on your resume and experience for authentic, high-scoring responses.
-            </p>
-          </div>
+        {/* Moving Marquee Container */}
+        <div className="w-full relative overflow-hidden py-4 select-none">
+          {/* Gradient Blur Edges for professional look */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#f0f8ff] to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#f0f8ff] to-transparent z-10" />
 
-          {/* Feature 2: Undetectable Overlay */}
-          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
-            <div className="text-3xl">👻</div>
-            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
-              Undetectable Overlay
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-              A discreet overlay that sits on top of your meeting window, visible only to you.
-            </p>
+          <div className="animate-marquee-smooth flex items-center gap-6 sm:gap-8">
+            {/* Array of feature cards rendered twice for seamless infinite loop */}
+            {[
+              {
+                icon: "🎯",
+                title: "Personalized Answers",
+                desc: "Tailors answers based on your resume and experience for authentic, high-scoring responses."
+              },
+              {
+                icon: "👻",
+                title: "Undetectable Overlay",
+                desc: "A discreet overlay that sits on top of your meeting window, visible only to you."
+              },
+              {
+                icon: "🎙️",
+                title: "Real Time Answers",
+                desc: "Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages."
+              },
+              {
+                icon: "💻",
+                title: "Coding Assistance",
+                desc: "Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more."
+              },
+              {
+                icon: "⚡",
+                title: "Sub-Second Latency",
+                desc: "Streams responses in under 0.6 seconds so you answer naturally without awkward silences."
+              },
+              {
+                icon: "🔒",
+                title: "100% Screen Share Proof",
+                desc: "Hardware-level protection prevents capture detection on Zoom, Teams, and Google Meet."
+              },
+              // Duplicate set for infinite loop
+              {
+                icon: "🎯",
+                title: "Personalized Answers",
+                desc: "Tailors answers based on your resume and experience for authentic, high-scoring responses."
+              },
+              {
+                icon: "👻",
+                title: "Undetectable Overlay",
+                desc: "A discreet overlay that sits on top of your meeting window, visible only to you."
+              },
+              {
+                icon: "🎙️",
+                title: "Real Time Answers",
+                desc: "Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages."
+              },
+              {
+                icon: "💻",
+                title: "Coding Assistance",
+                desc: "Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more."
+              },
+              {
+                icon: "⚡",
+                title: "Sub-Second Latency",
+                desc: "Streams responses in under 0.6 seconds so you answer naturally without awkward silences."
+              },
+              {
+                icon: "🔒",
+                title: "100% Screen Share Proof",
+                desc: "Hardware-level protection prevents capture detection on Zoom, Teams, and Google Meet."
+              }
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="w-[280px] sm:w-[320px] shrink-0 p-6 sm:p-7 rounded-3xl bg-white/80 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1 duration-200"
+              >
+                <div className="text-3xl">{item.icon}</div>
+                <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
-
-          {/* Feature 3: Real Time Answers */}
-          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
-            <div className="text-3xl">🎙️</div>
-            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
-              Real Time Answers
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-              Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages.
-            </p>
-          </div>
-
-          {/* Feature 4: Coding Assistance */}
-          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
-            <div className="text-3xl">💻</div>
-            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
-              Coding Assistance
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
-              Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more.
-            </p>
-          </div>
-
         </div>
       </section>
 
