@@ -757,9 +757,16 @@ function AppContent({ timeRemaining, onLogout }) {
 
         for (const modelId of geminiModels) {
           try {
-            let voiceSysInstruction = `Direct interview copilot. Transcribe the audio question verbatim and give 2-3 short, spoken bullet points with bold key terms.`;
+            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+            addLog(`⚡ Streaming Gemini (${modelId})...`);
+
+            let voiceSysInstruction = `You are an expert real-time interview copilot.
+CRITICAL SPEECH RULES:
+1. Transcribe the interview question from the audio accurately. Be tolerant of slight background noise, accents, and natural pauses.
+2. Provide a direct, punchy 2-3 bullet point answer designed for speaking out loud. Bold key terms.`;
+
             if (resumeText && resumeText.trim()) {
-              voiceSysInstruction += `\n\nCandidate's Resume:\n${resumeText.trim()}\n\nAnswer all interview questions based on this resume. Be specific to the candidate's experience.`;
+              voiceSysInstruction += `\n\n[Candidate's Resume Reference for Personalization]:\n${resumeText.trim()}\n\nPersonalize the bullet points according to the candidate's actual projects, skills, and background when relevant.`;
             }
 
             const response = await fetch(geminiStreamUrl, {
@@ -774,7 +781,7 @@ function AppContent({ timeRemaining, onLogout }) {
                 contents: [{
                   parts: [
                     { 
-                      text: `Transcribe question from audio verbatim and provide immediate spoken bullet points.` 
+                      text: `Transcribe question from the audio and provide immediate spoken bullet points.` 
                     },
                     {
                       inlineData: {
@@ -852,8 +859,8 @@ function AppContent({ timeRemaining, onLogout }) {
 
       setIsLoading(false);
       setStreamStatus('');
-      addLog('Could not obtain reply from Gemini.');
-      setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
+      addLog(`Could not obtain reply from Gemini. Last error: ${lastErr || 'Unknown'}`);
+      setOutputText(lastErr ? `⚠️ AI Error (${lastErr}). Please verify microphone input in Settings and click Voice again!` : "⚠️ No speech detected. Please speak closer to your microphone or check microphone volume in Settings.");
     };
   };
 
