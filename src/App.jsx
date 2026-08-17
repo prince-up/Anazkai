@@ -98,11 +98,57 @@ function AppContent({ timeRemaining, onLogout }) {
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
-  // Resume State (Persistent)
+  // Resume State (Persistent & Compactly Cached for Zero Latency)
   const [resumeText, setResumeText] = useState(() => localStorage.getItem('user_resume_text') || '');
   const [resumeFileName, setResumeFileName] = useState(() => localStorage.getItem('user_resume_filename') || '');
+  const [resumeSummary, setResumeSummary] = useState(() => localStorage.getItem('user_resume_summary') || '');
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const resumeFileInputRef = useRef(null);
+
+  // Helper to generate & cache an ultra-compact 2-3 line resume summary for zero-latency AI injection
+  const generateAndCacheResumeSummary = async (fullText, fileName) => {
+    if (!fullText || !fullText.trim()) {
+      setResumeSummary('');
+      localStorage.removeItem('user_resume_summary');
+      return;
+    }
+
+    // Default fast local fallback summary
+    const cleanLines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const quickSummary = cleanLines.slice(0, 5).join(', ').slice(0, 280);
+    setResumeSummary(quickSummary);
+    localStorage.setItem('user_resume_summary', quickSummary);
+
+    // Asynchronously generate an AI compressed profile once on upload
+    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+    if (geminiKey && fullText.length > 150) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Compress this resume into a short 2-sentence Candidate Profile (Role/Title, Top 5 Skills, Key 2 Projects) for quick interview context:\n\n${fullText.slice(0, 3000)}`
+              }]
+            }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+          })
+        });
+        const data = await res.json();
+        const aiSummary = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (aiSummary) {
+          const compact = aiSummary.replace(/\n+/g, ' ').slice(0, 300);
+          setResumeSummary(compact);
+          localStorage.setItem('user_resume_summary', compact);
+          addLog(`✅ Resume summary cached for fast AI calls (${compact.length} chars).`);
+        }
+      } catch (e) {
+        console.warn('Async resume summary error:', e);
+      }
+    }
+  };
 
   const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -112,39 +158,38 @@ function AppContent({ timeRemaining, onLogout }) {
     addLog(`📄 Processing resume: ${file.name}...`);
 
     try {
+      let extractedText = '';
       if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
         const arrayBuffer = await file.arrayBuffer();
         const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
         const pdf = await loadingTask.promise;
         let text = '';
-        for (let i = 1; i <= pdf.numPages; i++) {
+        for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
           const pageText = textContent.items.map(item => item.str).join(' ');
           text += pageText + '\n';
         }
-        const cleaned = text.trim();
-        setResumeText(cleaned);
-        localStorage.setItem('user_resume_text', cleaned);
-        localStorage.setItem('user_resume_filename', file.name);
-        addLog(`✅ Resume PDF extracted (${cleaned.length} chars).`);
+        extractedText = text.trim();
       } else {
         const text = await file.text();
-        const cleaned = text.trim();
-        setResumeText(cleaned);
-        localStorage.setItem('user_resume_text', cleaned);
-        localStorage.setItem('user_resume_filename', file.name);
-        addLog(`✅ Resume text loaded (${cleaned.length} chars).`);
+        extractedText = text.trim();
       }
+
+      setResumeText(extractedText);
+      localStorage.setItem('user_resume_text', extractedText);
+      localStorage.setItem('user_resume_filename', file.name);
+      addLog(`✅ Resume loaded (${extractedText.length} chars). Generating smart summary...`);
+      await generateAndCacheResumeSummary(extractedText, file.name);
     } catch (err) {
       console.error('Resume upload error:', err);
-      addLog(`⚠️ PDF parse warning: ${err.message}. Trying text fallback...`);
       try {
         const text = await file.text();
         const cleaned = text.trim();
         setResumeText(cleaned);
         localStorage.setItem('user_resume_text', cleaned);
         localStorage.setItem('user_resume_filename', file.name);
+        await generateAndCacheResumeSummary(cleaned, file.name);
       } catch (e) {
         addLog(`❌ Failed to read file: ${e.message}`);
       }
@@ -156,8 +201,10 @@ function AppContent({ timeRemaining, onLogout }) {
   const handleClearResume = () => {
     setResumeText('');
     setResumeFileName('');
+    setResumeSummary('');
     localStorage.removeItem('user_resume_text');
     localStorage.removeItem('user_resume_filename');
+    localStorage.removeItem('user_resume_summary');
     if (resumeFileInputRef.current) {
       resumeFileInputRef.current.value = '';
     }
@@ -172,8 +219,12 @@ function AppContent({ timeRemaining, onLogout }) {
     localStorage.setItem('interview_count', interviewCount);
     if (resumeText) {
       localStorage.setItem('user_resume_text', resumeText);
+      if (!resumeSummary) {
+        generateAndCacheResumeSummary(resumeText, resumeFileName);
+      }
     } else {
       localStorage.removeItem('user_resume_text');
+      localStorage.removeItem('user_resume_summary');
     }
   }, [apiKey, autoAsk, opacity, interviewCount, resumeText]);
 
@@ -283,8 +334,9 @@ function AppContent({ timeRemaining, onLogout }) {
 
     let promptText = `Direct live interview copilot. Answer in 2-3 punchy bullet points designed to be spoken. Bold key terms. If coding, give optimal code only with Time/Space complexity.`;
 
-    if (resumeText && resumeText.trim()) {
-      promptText += `\n\nCandidate's Resume:\n${resumeText.trim()}\n\nAnswer all interview questions based on this resume. Be specific to the candidate's experience and background.`;
+    const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 300) : '');
+    if (candidateProfile.trim()) {
+      promptText += `\n[Candidate Profile: ${candidateProfile.trim()}]`;
     }
 
     promptText += `\n\n[Question / Context]:\n${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
@@ -760,13 +812,10 @@ function AppContent({ timeRemaining, onLogout }) {
             const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
             addLog(`⚡ Streaming Gemini (${modelId})...`);
 
-            let voiceSysInstruction = `You are an expert real-time interview copilot.
-CRITICAL SPEECH RULES:
-1. Transcribe the interview question from the audio accurately. Be tolerant of slight background noise, accents, and natural pauses.
-2. Provide a direct, punchy 2-3 bullet point answer designed for speaking out loud. Bold key terms.`;
-
-            if (resumeText && resumeText.trim()) {
-              voiceSysInstruction += `\n\n[Candidate's Resume Reference for Personalization]:\n${resumeText.trim()}\n\nPersonalize the bullet points according to the candidate's actual projects, skills, and background when relevant.`;
+            let voiceSysInstruction = `Direct live interview copilot. Transcribe audio question verbatim and provide 2-3 short, spoken bullet points with bold key terms.`;
+            const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 250) : '');
+            if (candidateProfile.trim()) {
+              voiceSysInstruction += ` Candidate Profile: ${candidateProfile.trim()}. Personalize points to this background.`;
             }
 
             const response = await fetch(geminiStreamUrl, {
