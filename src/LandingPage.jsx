@@ -1471,258 +1471,126 @@ class Solution {
       <section id="pricing" className="py-24 px-6 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-4">
           <span className="inline-block bg-[#e6f4ea] text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest">
-            Pricing
+            Credits Only
           </span>
           <h2 className="font-display font-black text-4xl sm:text-[46px] text-[#0d2e27] tracking-tight">
-            Buy credits or Go unlimited ✨
+            Simple Pay-As-You-Go Credits ✨
           </h2>
-        </div>
-
-        {/* Switch Selector Pill */}
-        <div className="flex flex-col items-center gap-6 mt-8 relative max-w-md mx-auto">
-          <div className="flex bg-[#f1f5f9] p-1.5 rounded-full border border-gray-200">
-            <button 
-              onClick={() => setPricingOption('credits')}
-              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-sm font-extrabold transition-all cursor-pointer ${pricingOption === 'credits' ? 'bg-[#dcfce7] text-[#15803d] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-            >
-              {pricingOption === 'credits' && <span>✓</span>}
-              Credits only
-            </button>
-            <button 
-              onClick={() => setPricingOption('subscription')}
-              className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full text-sm font-extrabold transition-all cursor-pointer ${pricingOption === 'subscription' ? 'bg-[#dcfce7] text-[#15803d] shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-            >
-              {pricingOption === 'subscription' && <span>✓</span>}
-              Subscription
-            </button>
-          </div>
-
-          {/* Sketchy Helper Note */}
-          <div className="hidden lg:block absolute left-[102%] top-0 w-48 text-left">
-            <span className="font-sans text-[11px] text-gray-400 italic block leading-tight font-semibold">Multiple pricing options available</span>
-            <svg className="w-10 h-10 text-gray-300 ml-4 mt-1" viewBox="0 0 40 40" fill="none">
-              <path d="M5,5 C15,15 20,25 35,30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <path d="M28,32 L36,31 L32,23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
+          <p className="text-sm sm:text-base text-gray-500 font-semibold max-w-lg mx-auto">
+            No recurring monthly subscriptions. Buy credits once and use them whenever you have an interview. Credits never expire.
+          </p>
         </div>
 
         {/* Small Centered Policy Links */}
-        <div className="flex justify-center items-center gap-6 text-xs text-gray-500 font-semibold mt-4">
-          <a href="#refund" className="hover:text-gray-800 transition-colors">Refund Policy</a>
+        <div className="flex justify-center items-center gap-6 text-xs text-gray-500 font-semibold mt-2">
+          <a href="#refund" className="hover:text-gray-800 transition-colors">Instant Activation</a>
           <span className="text-gray-300">|</span>
-          <a href="#unlimited" className="hover:text-gray-800 transition-colors">Unlimited Calls</a>
+          <a href="#unlimited" className="hover:text-gray-800 transition-colors">Credits Never Expire</a>
           <span className="text-gray-300">|</span>
-          <a href="#cancel" className="hover:text-gray-800 transition-colors">Cancel Anytime</a>
+          <a href="#cancel" className="hover:text-gray-800 transition-colors">Stealth Mode Included</a>
         </div>
 
-        {/* Slider Card Row */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 sm:mt-12 max-w-5xl mx-auto w-full">
-          
-          {/* Scroll Left Button (Desktop only) */}
-          <button 
-            onClick={() => setPricingOption(pricingOption === 'credits' ? 'subscription' : 'credits')}
-            className="hidden md:flex w-10 h-10 rounded-full border border-gray-200 bg-white items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
-            aria-label="Switch to Subscription"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          {/* Cards Frame */}
+        {/* Cards Frame */}
+        <div className="max-w-5xl mx-auto w-full mt-8 sm:mt-12">
           <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-            {pricingOption === 'subscription' ? (
-              <>
-                {/* Card 1: Weekly */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Weekly</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹1,500</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($19.90) per week</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>∞ Unlimited Calls</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('weekly')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
-                  >
-                    Subscribe
-                  </button>
+            {/* Card 1: 1 Hour for ₹259 */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+              <div className="space-y-3 sm:space-y-4">
+                <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Hour Session</span>
+                <div className="pt-1 sm:pt-2">
+                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹259</span>
+                  <span className="block text-gray-400 text-xs font-semibold mt-1">($3.10) one-time</span>
                 </div>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>1 Hour AI response session</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Stealth Mode active</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Real-time speech & screen analysis</span>
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => startCheckout('1-hour')}
+                className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+              >
+                Buy Credits
+              </button>
+            </div>
 
-                {/* Card 2: Monthly */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-[#15803d] uppercase tracking-wider">Monthly</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹3,000</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($39.90) per month</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>∞ Unlimited Calls</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('monthly')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
-                  >
-                    Subscribe
-                  </button>
-                </div>
+            {/* Card 2: 2 Hours for ₹500 (Best Deal) */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
+              {/* Best Deal Tag */}
+              <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                Best deal
+              </div>
 
-                {/* Card 3: Yearly (Recommended) */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
-                  {/* Best Deal Tag */}
-                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
-                    Best deal
-                  </div>
-                  
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">Yearly</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹6,000</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($79.90) per year</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>∞ Unlimited Calls</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('yearly')}
-                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
-                  >
-                    Subscribe
-                  </button>
+              <div className="space-y-3 sm:space-y-4">
+                <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">2 Hours Session</span>
+                <div className="pt-1 sm:pt-2">
+                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹500</span>
+                  <span className="block text-gray-400 text-xs font-semibold mt-1">($5.99) one-time</span>
                 </div>
-              </>
-            ) : (
-              <>
-                {/* Card 1: 1 Hour for ₹259 */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Hour Session</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹259</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($3.10) one-time</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>1 Hour AI response session</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Stealth Mode active</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Real-time speech & screen analysis</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('1-hour')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
-                  >
-                    Buy Credits
-                  </button>
-                </div>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>2 Hours AI response session</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Stealth Mode active</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Full coding & system design support</span>
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => startCheckout('2-hour')}
+                className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
+              >
+                Buy Credits
+              </button>
+            </div>
 
-                {/* Card 2: 2 Hours for ₹500 (Best Deal) */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-emerald-500 shadow-xl space-y-5 sm:space-y-6 flex flex-col justify-between relative text-left">
-                  {/* Best Deal Tag */}
-                  <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#10b981] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
-                    Best deal
-                  </div>
-
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">2 Hours Session</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹500</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($5.99) one-time</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>2 Hours AI response session</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Stealth Mode active</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Full coding & system design support</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('2-hour')}
-                    className="w-full py-3.5 bg-black hover:bg-gray-900 text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
-                  >
-                    Buy Credits
-                  </button>
+            {/* Card 3: 10 Interview Sessions for ₹2,500 */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
+              <div className="space-y-3 sm:space-y-4">
+                <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Interview Sessions</span>
+                <div className="pt-1 sm:pt-2">
+                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,500</span>
+                  <span className="block text-gray-400 text-xs font-semibold mt-1">($29.90) one-time</span>
                 </div>
-
-                {/* Card 3: 10 Interview Sessions for ₹2,500 */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
-                  <div className="space-y-3 sm:space-y-4">
-                    <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Interview Sessions</span>
-                    <div className="pt-1 sm:pt-2">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,500</span>
-                      <span className="block text-gray-400 text-xs font-semibold mt-1">($29.90) one-time</span>
-                    </div>
-                    <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>10 Full Interview Sessions (up to 2h each)</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Stealth Mode active</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check size={16} className="text-emerald-500 shrink-0" />
-                        <span>Save over 50% on session credits</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <button 
-                    onClick={() => startCheckout('10-sessions')}
-                    className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
-                  >
-                    Buy Credits
-                  </button>
-                </div>
-              </>
-            )}
+                <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>10 Full Interview Sessions (up to 2h each)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Stealth Mode active</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Save over 50% on session credits</span>
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => startCheckout('10-sessions')}
+                className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-[#0d2e27] rounded-full text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+              >
+                Buy Credits
+              </button>
+            </div>
           </div>
-
-          {/* Scroll Right Button (Desktop only) */}
-          <button 
-            onClick={() => setPricingOption(pricingOption === 'credits' ? 'subscription' : 'credits')}
-            className="hidden md:flex w-10 h-10 rounded-full border border-gray-200 bg-white items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all shadow-sm cursor-pointer shrink-0"
-            aria-label="Switch to Credits"
-          >
-            <ChevronRight size={20} />
-          </button>
-
-        </div>
-
-        {/* Bottom Weekly option */}
-        <div className="text-center pt-6 text-sm text-gray-500 font-semibold">
-          or, only need a week? <a href="#weekly" className="text-emerald-600 font-bold hover:underline">Weekly for ₹4,980 →</a>
         </div>
       </section>
 
