@@ -93,16 +93,6 @@ function AppContent({ timeRemaining, onLogout }) {
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
-  // Voice Audio State & Refs
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const audioContextRef = useRef(null);
-  const audioStreamRef = useRef(null);
-  const audioProcessorRef = useRef(null);
-  const audioInputRef = useRef(null);
-  const audioBuffersRef = useRef([]);
-  const audioSampleRateRef = useRef(44100);
-  const outputScrollRef = useRef(null);
-
   // Auto cleanup legacy stored resume to prevent irrelevant answers
   useEffect(() => {
     localStorage.removeItem('resume_text');
@@ -364,19 +354,65 @@ CRITICAL FORMATTING & ANSWER RULES:
     }
   };
 
-  const cleanupVoiceResources = () => {
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isTestingMic, setIsTestingMic] = useState(false);
+  const [liveVolume, setLiveVolume] = useState(0); 
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [silenceWarning, setSilenceWarning] = useState(false);
+  const [availableDevices, setAvailableDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState('');
+  
+  const audioContextRef = useRef(null);
+  const audioStreamRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
+  const maxVolumeRef = useRef(0);
+  const silenceStartTimeRef = useRef(null);
+  const audioSampleRateRef = useRef(16000);
+  const outputScrollRef = useRef(null);
+
+  const loadAudioDevices = async () => {
     try {
-      if (audioProcessorRef.current) {
-        audioProcessorRef.current.disconnect();
-        audioProcessorRef.current.onaudioprocess = null;
-        audioProcessorRef.current = null;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const inputs = devices.filter(d => d.kind === 'audioinput');
+      setAvailableDevices(inputs);
+      console.log('[AudioDevices] Available input devices:', inputs);
+      addLog(`Found ${inputs.length} audio input device(s):`);
+      inputs.forEach((d, i) => {
+        addLog(`  ${i + 1}. ${d.label || 'Microphone (Standard)'} [ID: ${d.deviceId.slice(0, 8)}...]`);
+      });
+    } catch (err) {
+      console.warn('Error enumerating devices:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadAudioDevices();
+  }, []);
+
+  const cleanupVoiceResources = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
       }
-      if (audioInputRef.current) {
-        audioInputRef.current.disconnect();
-        audioInputRef.current = null;
-      }
+      mediaRecorderRef.current = null;
+    } catch (e) {}
+
+    try {
       if (audioStreamRef.current) {
-        audioStreamRef.current.getTracks().forEach(track => track.stop());
+        audioStreamRef.current.getTracks().forEach(t => t.stop());
         audioStreamRef.current = null;
       }
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
@@ -386,71 +422,155 @@ CRITICAL FORMATTING & ANSWER RULES:
     } catch (e) {
       console.warn('Voice cleanup notice:', e);
     }
+    setLiveVolume(0);
+    setSilenceWarning(false);
     setIsVoiceMode(false);
+    setIsTestingMic(false);
   };
 
-  const maxVolumeRef = useRef(0);
+  const attachVolumeMeter = (stream, audioContext) => {
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.3;
+    source.connect(analyser);
+    analyserRef.current = analyser;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    silenceStartTimeRef.current = Date.now();
+
+    const checkVolume = () => {
+      if (!analyserRef.current) return;
+      analyserRef.current.getByteFrequencyData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avg = sum / dataArray.length;
+      const normalizedVol = Math.min(100, Math.round((avg / 128) * 100));
+      setLiveVolume(normalizedVol);
+
+      if (normalizedVol > maxVolumeRef.current) {
+        maxVolumeRef.current = normalizedVol;
+      }
+
+      if (normalizedVol > 2) {
+        silenceStartTimeRef.current = Date.now();
+        setSilenceWarning(false);
+      } else {
+        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 2000)) {
+          setSilenceWarning(true);
+        }
+      }
+
+      animFrameRef.current = requestAnimationFrame(checkVolume);
+    };
+
+    animFrameRef.current = requestAnimationFrame(checkVolume);
+  };
+
+  const toggleTestMic = async () => {
+    if (isTestingMic) {
+      cleanupVoiceResources();
+      addLog('Test Microphone stopped.');
+      return;
+    }
+
+    try {
+      cleanupVoiceResources();
+      addLog('🎙️ Starting Test Microphone...');
+      await loadAudioDevices();
+
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: false,
+        autoGainControl: true
+      };
+      if (selectedDeviceId) {
+        audioConstraints.deviceId = { exact: selectedDeviceId };
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      audioStreamRef.current = stream;
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioCtx();
+      audioContextRef.current = audioContext;
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      attachVolumeMeter(stream, audioContext);
+      setIsTestingMic(true);
+      addLog('Test Microphone active. Speak to verify live meter!');
+    } catch (err) {
+      addLog(`❌ Test Mic error: ${err.message}`);
+      cleanupVoiceResources();
+    }
+  };
 
   const startVoiceMode = async () => {
     try {
       cleanupVoiceResources();
       maxVolumeRef.current = 0;
+      setRecordingSeconds(0);
+      setSilenceWarning(false);
       addLog('🎙️ Requesting microphone stream...');
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: true
-        } 
-      });
+      await loadAudioDevices();
+
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: false,
+        autoGainControl: true
+      };
+      if (selectedDeviceId) {
+        audioConstraints.deviceId = { exact: selectedDeviceId };
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       audioStreamRef.current = stream;
-      addLog(`Mic acquired. Tracks: ${stream.getAudioTracks().length}`);
+      addLog(`Mic acquired (${stream.getAudioTracks()[0]?.label || 'Default'}).`);
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioCtx({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
       audioSampleRateRef.current = audioContext.sampleRate;
-      addLog(`AudioContext: ${audioContext.sampleRate}Hz, State: ${audioContext.state}`);
 
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
-        addLog(`AudioContext resumed: ${audioContext.state}`);
       }
 
-      const source = audioContext.createMediaStreamSource(stream);
-      audioInputRef.current = source;
+      attachVolumeMeter(stream, audioContext);
 
-      // 2.5x gain booster
-      const gainNode = audioContext.createGain();
-      gainNode.gain.value = 2.5;
-      source.connect(gainNode);
+      recordedChunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg');
 
-      // ScriptProcessor buffer size 4096
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      audioProcessorRef.current = processor;
-      audioBuffersRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
+      mediaRecorderRef.current = mediaRecorder;
 
-      processor.onaudioprocess = (e) => {
-        const channel = e.inputBuffer.getChannelData(0);
-        audioBuffersRef.current.push(new Float32Array(channel));
-
-        // Calculate live RMS volume
-        let sum = 0;
-        for (let i = 0; i < channel.length; i++) {
-          sum += channel[i] * channel[i];
-        }
-        const rms = Math.sqrt(sum / channel.length);
-        if (rms > maxVolumeRef.current) {
-          maxVolumeRef.current = rms;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          recordedChunksRef.current.push(e.data);
         }
       };
 
-      gainNode.connect(processor);
-      processor.connect(audioContext.destination);
+      mediaRecorder.start(250); 
+
+      let sec = 0;
+      recordingTimerRef.current = setInterval(() => {
+        sec++;
+        setRecordingSeconds(sec);
+        if (sec >= 120) {
+          stopVoiceMode();
+        }
+      }, 1000);
 
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Mic is recording — click 'Voice' again when finished)");
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Click 'Voice' again when finished)");
       addLog('Recording live audio...');
     } catch (err) {
       addLog(`❌ Mic error: ${err.message}`);
@@ -462,69 +582,81 @@ CRITICAL FORMATTING & ANSWER RULES:
   const stopVoiceMode = async () => {
     setIsVoiceMode(false);
     setIsLoading(true);
-    setOutputText("Transcribing & analyzing speech with AI...");
+    setOutputText("Transcribing & analyzing speech with Gemini AI...");
 
-    const capturedBuffers = [...audioBuffersRef.current];
-    const actualSampleRate = audioSampleRateRef.current || 16000;
     const maxVol = maxVolumeRef.current;
-    addLog(`Stopped recording. Buffers: ${capturedBuffers.length}, Peak Vol: ${maxVol.toFixed(4)}`);
+    const duration = recordingSeconds;
+    addLog(`Stopped recording (${duration}s). Peak Vol: ${maxVol}%`);
+
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    const getAudioBlob = () => {
+      return new Promise((resolve) => {
+        if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
+          return;
+        }
+        mediaRecorderRef.current.onstop = () => {
+          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
+        };
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
+        }
+      });
+    };
+
+    const audioBlob = await getAudioBlob();
     cleanupVoiceResources();
 
-    if (!capturedBuffers || capturedBuffers.length === 0 || maxVol < 0.001) {
+    if (!audioBlob || audioBlob.size === 0) {
       setIsLoading(false);
-      addLog('⚠️ No audio/silence detected from microphone.');
-      setOutputText("⚠️ No sound was detected from your microphone. Please check your Windows default input device or mic volume.");
+      addLog('⚠️ No audio recorded.');
+      setOutputText("⚠️ No sound captured. Please check your microphone and click Voice again.");
       return;
     }
 
-    // Merge Float32 PCM audio buffers
-    let totalLen = 0;
-    for (const b of capturedBuffers) totalLen += b.length;
-    const mergedSamples = new Float32Array(totalLen);
-    let offset = 0;
-    for (const b of capturedBuffers) {
-      mergedSamples.set(b, offset);
-      offset += b.length;
-    }
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = async () => {
+      const base64Audio = reader.result.split(',')[1];
+      const mimeType = audioBlob.type || 'audio/webm';
+      addLog(`Audio ready: ${(base64Audio.length / 1024).toFixed(1)} KB (${mimeType})`);
 
-    // Direct clean encode to WAV without lossy JS resampling
-    const wavArrayBuffer = encodeWAV(mergedSamples, actualSampleRate);
+      const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
 
-    // Convert ArrayBuffer to Base64 safely
-    let binary = '';
-    const bytes = new Uint8Array(wavArrayBuffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64Wav = btoa(binary);
-    addLog(`WAV Encoded: ${(base64Wav.length / 1024).toFixed(1)} KB`);
+      if (geminiKey) {
+        const geminiModels = [
+          'gemini-flash-latest',
+          'gemini-3.5-flash',
+          'gemini-3.7-flash'
+        ];
 
-    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+        let geminiSuccess = false;
+        let geminiReply = '';
+        let lastErr = null;
 
-    if (geminiKey) {
-      const geminiModels = [
-        'gemini-flash-latest',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash'
-      ];
+        for (const modelId of geminiModels) {
+          try {
+            addLog(`Calling Gemini (${modelId})...`);
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
 
-      let geminiSuccess = false;
-      let geminiReply = '';
-      let lastErr = null;
-
-      for (const modelId of geminiModels) {
-        try {
-          addLog(`Calling Gemini (${modelId})...`);
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
-
-          const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: {
-                parts: [{
-                  text: `You are an ultra-precise speech recognition and interview copilot.
+            const response = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: {
+                  parts: [{
+                    text: `You are an ultra-precise speech recognition and interview copilot.
 STRICT VERBATIM RULES:
 1. Transcribe ONLY the exact words spoken in the audio.
 2. NEVER guess, NEVER hallucinate, and NEVER invent a question that was not spoken in the audio.
@@ -539,63 +671,64 @@ Format:
 • [Direct key point 1]
 • [Direct key point 2]
 • [Direct key point 3]`
-                }]
-              },
-              contents: [{
-                parts: [
-                  { 
-                    text: `Transcribe the question in this audio verbatim and provide the bullet answer.` 
-                  },
-                  {
-                    inlineData: {
-                      mimeType: 'audio/wav',
-                      data: base64Wav
+                  }]
+                },
+                contents: [{
+                  parts: [
+                    { 
+                      text: `Transcribe the question in this audio verbatim and provide the bullet answer.` 
+                    },
+                    {
+                      inlineData: {
+                        mimeType: mimeType,
+                        data: base64Audio
+                      }
                     }
-                  }
-                ]
-              }],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 500
+                  ]
+                }],
+                generationConfig: {
+                  temperature: 0.1,
+                  maxOutputTokens: 500
+                }
+              })
+            });
+
+            const data = await response.json();
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (response.ok && reply) {
+              addLog(`✅ Gemini Success (${modelId})`);
+              if (reply.includes('NO_CLEAR_SPEECH')) {
+                addLog('Gemini reported: NO_CLEAR_SPEECH');
+                setOutputText("⚠️ No clear speech heard. Please speak closer to your microphone or check volume, then click Voice again.");
+                setIsLoading(false);
+                return;
               }
-            })
-          });
-
-          const data = await response.json();
-          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-          if (response.ok && reply) {
-            addLog(`✅ Gemini Success (${modelId})`);
-            if (reply.includes('NO_CLEAR_SPEECH')) {
-              addLog('Gemini reported: NO_CLEAR_SPEECH');
-              setOutputText("⚠️ No clear speech heard. Please speak closer to your microphone or check volume, then click Voice again.");
-              setIsLoading(false);
-              return;
+              geminiReply = reply;
+              geminiSuccess = true;
+              break;
+            } else {
+              lastErr = data.error?.message || `HTTP ${response.status}`;
+              addLog(`⚠️ Gemini ${modelId} error: ${lastErr}`);
             }
-            geminiReply = reply;
-            geminiSuccess = true;
-            break;
-          } else {
-            lastErr = data.error?.message || `HTTP ${response.status}`;
-            addLog(`⚠️ Gemini ${modelId} error: ${lastErr}`);
+          } catch (err) {
+            lastErr = err.message;
+            addLog(`❌ Fetch error: ${err.message}`);
           }
-        } catch (err) {
-          lastErr = err.message;
-          addLog(`❌ Fetch error: ${err.message}`);
+        }
+
+        if (geminiSuccess && geminiReply) {
+          setOutputText(geminiReply);
+          setInterviewCount(prev => prev + 1);
+          setIsLoading(false);
+          return;
         }
       }
 
-      if (geminiSuccess && geminiReply) {
-        setOutputText(geminiReply);
-        setInterviewCount(prev => prev + 1);
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    setIsLoading(false);
-    addLog('Could not obtain reply from Gemini.');
-    setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
+      setIsLoading(false);
+      addLog('Could not obtain reply from Gemini.');
+      setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
+    };
   };
 
   const handleCopy = () => {
@@ -684,6 +817,65 @@ Format:
                   />
                   <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
+              </div>
+
+              {/* Microphone Device Selector */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5 space-y-2">
+                <div className="flex justify-between text-gray-300 font-semibold">
+                  <span>Microphone Device</span>
+                  <button 
+                    onClick={loadAudioDevices} 
+                    className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold"
+                  >
+                    Refresh
+                  </button>
+                </div>
+                <select
+                  value={selectedDeviceId}
+                  onChange={(e) => setSelectedDeviceId(e.target.value)}
+                  className="w-full bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2 text-xs outline-none focus:border-emerald-500/40"
+                >
+                  <option value="">Default System Microphone</option>
+                  {availableDevices.map((d, i) => (
+                    <option key={d.deviceId || i} value={d.deviceId}>
+                      {d.label || `Microphone ${i + 1}`}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Live Mic Tester inside Settings */}
+                <div className="pt-2">
+                  <button
+                    onClick={toggleTestMic}
+                    className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      isTestingMic 
+                        ? 'bg-amber-500 text-black font-extrabold animate-pulse' 
+                        : 'bg-white/10 hover:bg-white/20 text-gray-200'
+                    }`}
+                  >
+                    <Mic size={12} />
+                    <span>{isTestingMic ? 'Stop Test' : 'Test Microphone (Live Volume)'}</span>
+                  </button>
+                  {isTestingMic && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between text-[10px] text-amber-300 font-mono">
+                        <span>Live Mic Level:</span>
+                        <span>{liveVolume}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-red-500 transition-all duration-75"
+                          style={{ width: `${liveVolume}%` }}
+                        ></div>
+                      </div>
+                      {silenceWarning && (
+                        <p className="text-[10px] text-red-400 font-bold animate-pulse">
+                          ⚠️ No sound detected. Check microphone settings / unmute mic
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Opacity Slider */}
@@ -812,7 +1004,39 @@ Format:
         </div>
       )}
 
+      {/* Live Voice Recording HUD Visualizer Bar */}
+      {isVoiceMode && (
+        <div className="mb-2 p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl flex flex-col gap-1.5 shadow-lg" style={{ WebkitAppRegion: 'no-drag' }}>
+          <div className="flex justify-between items-center text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+              <span className="font-bold text-red-400">🎙️ Recording Spoken Question...</span>
+            </div>
+            <span className="font-mono text-[11px] text-gray-300 font-bold">
+              00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds} / 02:00
+            </span>
+          </div>
+          
+          {/* Real-time 60fps Volume Meter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400 font-mono">Vol:</span>
+            <div className="flex-1 h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
+              <div 
+                className={`h-full transition-all duration-75 ${liveVolume > 50 ? 'bg-red-500' : (liveVolume > 15 ? 'bg-emerald-400' : 'bg-amber-400')}`}
+                style={{ width: `${Math.max(4, liveVolume)}%` }}
+              ></div>
+            </div>
+            <span className="text-[10px] text-gray-300 font-mono w-7 text-right">{liveVolume}%</span>
+          </div>
 
+          {/* 2-Second Silence Warning */}
+          {silenceWarning && (
+            <div className="text-[10px] text-red-400 font-bold flex items-center gap-1 bg-red-950/40 p-1 rounded-md border border-red-500/20">
+              <span>⚠️ No sound detected. Check microphone settings / unmute mic</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Unified Response Viewport (No split double boxes) */}
       <main className="flex-1 flex flex-col min-h-0 relative bg-black/40 rounded-xl overflow-hidden shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
@@ -951,6 +1175,18 @@ Format:
           <span>{isVoiceMode ? 'Listening...' : 'Voice'}</span>
         </button>
         
+        <button 
+          onClick={toggleTestMic}
+          className={`min-w-[60px] flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border active:scale-95 cursor-pointer ${
+            isTestingMic
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+              : 'bg-white/5 hover:bg-white/10 text-gray-400 border-white/5'
+          }`}
+          title="Test Microphone volume without calling AI"
+        >
+          <span>{isTestingMic ? 'Stop Test' : 'Test Mic'}</span>
+        </button>
+
         <button 
           onClick={() => handleAskAI()}
           disabled={isLoading}
