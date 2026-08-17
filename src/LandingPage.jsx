@@ -1201,61 +1201,181 @@ class Solution {
 
 
 
-      {/* Desktop App CTA Banner */}
-      <section className="px-6 sm:px-10 lg:px-16 py-10 w-full max-w-[1480px] mx-auto mt-4">
-        <div className="bg-[#111315] rounded-[32px] overflow-hidden flex flex-col lg:flex-row items-stretch justify-between border border-gray-800 shadow-2xl">
-          
-          {/* Left Content */}
-          <div className="p-10 md:p-14 lg:w-[45%] flex flex-col items-start justify-center text-left space-y-6 z-10 bg-[#111315]">
-            <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Desktop App</span>
-            <h2 className="text-white text-3xl md:text-[38px] font-bold leading-[1.15] tracking-tight">
-              Turn every conversation into your next best answer.
-            </h2>
-            <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-              The desktop app runs quietly in the background, listening to your call and surfacing the best answers in real time. No switching windows.
+      {/* Why Anazk AI Showcase Section */}
+      <section className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1320px] mx-auto space-y-28">
+        
+        {/* Section Heading */}
+        <div className="text-center">
+          <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
+            Why Anazk AI?
+          </h2>
+        </div>
+
+        {/* 1. Job-Winning Interview Answers */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-6 space-y-4 text-left">
+            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
+              WHY ANAZK AI
+            </span>
+            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
+              Job-Winning Interview Answers
+            </h3>
+            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
+              Understand the true intent behind interview questions with advanced AI insights.
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full">
-              <a href="https://github.com/prince-up/cheater-Boy/releases/latest" target="_blank" rel="noreferrer" className="w-full sm:w-auto bg-white text-black px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
-                <Download size={18} />
-                Download for Windows
-              </a>
-              <button className="w-full sm:w-auto bg-[#232529] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#2c2f35] transition-colors border border-gray-700">
-                Browser vs App
-              </button>
-            </div>
           </div>
-          
-          {/* Right product visual: photo inside a styled laptop-frame container */}
-          <div className="w-full lg:w-[55%] min-h-[420px] lg:min-h-full relative overflow-hidden flex items-center justify-center bg-[#0a0a0a] p-8 md:p-10">
-            {/* Subtle radial glow behind */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_50%,rgba(16,185,129,0.12),transparent_65%)] pointer-events-none" />
-            {/* Laptop frame */}
-            <div className="relative w-full max-w-[560px]">
-              {/* Screen bezel */}
-              <div className="bg-[#1a1a1e] rounded-t-2xl pt-3 px-3 pb-0 shadow-[0_0_0_1px_rgba(255,255,255,0.07)]">
-                {/* Notch bar */}
-                <div className="flex items-center gap-1.5 mb-2 px-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-                </div>
-                {/* Screen image */}
-                <div className="overflow-hidden rounded-t-lg">
-                  <img
-                    src="/user-laptop-photo.png"
-                    alt="Person using Anazk AI on laptop during an interview"
-                    className="block w-full object-cover"
-                    style={{ aspectRatio: '16/10', objectPosition: 'center 30%' }}
-                  />
-                </div>
+
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[260px] p-6 rounded-3xl bg-gradient-to-br from-blue-50/40 via-white to-emerald-50/30 border border-gray-100 shadow-sm overflow-hidden">
+            {/* Floating Insight Badges */}
+            <div className="w-full max-w-md relative flex flex-wrap gap-3 items-center justify-center p-4">
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all animate-pulse-glow">
+                <span>💭</span> Word Choices
               </div>
-              {/* Keyboard base */}
-              <div className="h-5 bg-gradient-to-b from-[#2a2a2e] to-[#1e1e22] rounded-b-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
-              {/* Stand notch */}
-              <div className="mx-auto w-24 h-2 bg-[#141416] rounded-b-lg" />
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
+                <span>🗣️</span> Tone
+              </div>
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
+                <span>⏱️</span> Timing
+              </div>
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
+                <span>📄</span> Context
+              </div>
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
+                <span>🌟</span> Keyword
+              </div>
+              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
+                <span>🤵</span> Formality level
+              </div>
             </div>
           </div>
         </div>
+
+        {/* 2. Effortless interaction */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
+            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
+              WHY ANAZK AI
+            </span>
+            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
+              Effortless interaction
+            </h3>
+            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
+              Enjoy a 100% hands-free experience with no awkward pauses that allows you to focus entirely on your interview.
+            </p>
+          </div>
+
+          <div className="lg:col-span-6 relative flex flex-col justify-center min-h-[260px] p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-gray-50/50 via-white to-blue-50/20 border border-gray-100 shadow-sm order-2 lg:order-2 space-y-4 text-left">
+            {/* Listening prompt */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+                <span>Listening to interviewer...</span>
+              </div>
+              <div className="inline-block bg-white border border-gray-100 px-5 py-3 rounded-2xl shadow-sm text-xs sm:text-sm font-bold text-gray-800">
+                What's your biggest strength?
+              </div>
+            </div>
+
+            {/* Generating response */}
+            <div className="space-y-1.5 pl-4 sm:pl-8">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                <span>Generating answer...</span>
+              </div>
+              <div className="bg-white border border-emerald-500/20 px-5 py-4 rounded-2xl shadow-md text-xs sm:text-sm font-medium text-gray-700 leading-relaxed border-l-4 border-l-emerald-500">
+                My biggest strength is data analysis. At ClearView Analytics, I identified a major reporting error, corrected it, and saved the company $50,000 in potential losses.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Robust Privacy */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-6 space-y-4 text-left">
+            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
+              WHY ANAZK AI
+            </span>
+            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
+              Robust Privacy
+            </h3>
+            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
+              Fully undetectable and unnoticeable by interviewers across all types of interviews.
+            </p>
+          </div>
+
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[280px] p-6 rounded-3xl bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/20 border border-gray-100 shadow-sm overflow-hidden">
+            {/* Dual Layered Protected Window Mockup */}
+            <div className="relative w-full max-w-md">
+              {/* Background Window */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3 opacity-60">
+                <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                </div>
+                <div className="h-16 bg-gray-50 rounded-xl" />
+              </div>
+
+              {/* Foreground Protected Overlay Window */}
+              <div className="absolute top-6 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl border border-blue-500/20 shadow-xl p-5 space-y-4">
+                <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                </div>
+                
+                <div className="flex items-center justify-center py-4">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-2xl shadow-inner shadow-indigo-100">
+                    🔒
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 pt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                  <span>listening to interviewer...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Personalized Experience */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
+            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
+              WHY ANAZK AI
+            </span>
+            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
+              Personalized Experience
+            </h3>
+            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
+              Receive answers tailored to your job role, resume, and personal stories for a truly customized interview experience.
+            </p>
+          </div>
+
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[260px] p-6 rounded-3xl bg-gradient-to-br from-emerald-50/30 via-white to-blue-50/20 border border-gray-100 shadow-sm order-2 lg:order-2">
+            {/* Resume Upload Box Mockup */}
+            <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200/80 shadow-lg p-5 space-y-4 relative">
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold text-sm text-gray-900">Upload your resume</span>
+                <span className="text-gray-400 text-xs cursor-pointer">✕</span>
+              </div>
+              <p className="text-[11px] text-gray-500 font-medium leading-tight">
+                We will use your professional background and skills to tailor interview answers specifically for you.
+              </p>
+              
+              <div className="border-2 border-dashed border-blue-400/60 rounded-xl p-6 flex flex-col items-center justify-center bg-blue-50/20">
+                <div className="text-xs text-gray-400 font-semibold">Drop file here or browse</div>
+              </div>
+
+              {/* Floating resume pill */}
+              <div className="absolute -bottom-2 -right-2 bg-white px-3 py-1.5 rounded-full shadow-md border border-gray-200 text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
+                <span>📄</span> Resume_24.pdf <span className="text-xs">👆</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       {/* Features: Everything You Need To Perform Better (Infinite Moving Marquee) */}
