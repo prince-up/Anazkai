@@ -96,6 +96,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [streamStatus, setStreamStatus] = useState('');
+  const outputScrollRef = useRef(null);
   
   // Debug Logs State
   const [debugLogs, setDebugLogs] = useState([]);
