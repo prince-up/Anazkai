@@ -854,9 +854,17 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
-    let voiceSysInstruction = `Direct interview copilot. Answer question verbatim in 2-3 concise spoken bullet points with bold key terms.`;
+    let voiceSysInstruction = `You are a real-time live interview copilot assisting a candidate.
+Deliver a complete, articulate, high-scoring interview response tailored to be spoken naturally.
+Guidelines:
+- Start directly with the core definition/concept in 1 crisp sentence.
+- Provide 3-5 structured, punchy bullet points covering key mechanics, real-world examples, and best practices/trade-offs.
+- Bold essential technical keywords for easy scanning.
+- If it's a coding or design question, include the optimal approach and Time/Space complexity.
+- Never give one-line or truncated fragments. Keep it complete, professional, and directly usable in the interview.`;
+
     if (candidateProfile.trim()) {
-      voiceSysInstruction += ` Profile: ${candidateProfile.trim()}`;
+      voiceSysInstruction += `\n[Candidate Profile: ${candidateProfile.trim()}]`;
     }
 
     let transcript = '';
@@ -917,10 +925,12 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       setStreamStatus('⚡ Streaming Answer...');
       setOutputText('');
 
+      const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
+
       // 2A. FREE TRIAL: STREAM WITH GROQ LLAMA 3.3
       if (isTrial && groqKey) {
         const chatController = new AbortController();
-        const chatTimeout = setTimeout(() => chatController.abort(), 12000);
+        const chatTimeout = setTimeout(() => chatController.abort(), 15000);
 
         try {
           addLog(`[Answer Request] Groq Llama 3.3 70B Streaming...`);
@@ -935,10 +945,10 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               model: 'llama-3.3-70b-versatile',
               messages: [
                 { role: 'system', content: voiceSysInstruction },
-                { role: 'user', content: transcript }
+                { role: 'user', content: promptForAnswer }
               ],
-              temperature: 0.1,
-              max_tokens: 300,
+              temperature: 0.2,
+              max_tokens: 650,
               stream: true
             }),
             signal: chatController.signal
@@ -982,7 +992,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             if (accumulatedText && accumulatedText.trim()) {
               const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
               setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (First word: ${firstTokenLatency}s)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
               setInterviewCount(prev => prev + 1);
               voiceSuccess = true;
             }
@@ -1000,7 +1010,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
         for (const modelId of geminiModels) {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
+          const timeoutId = setTimeout(() => controller.abort(), 15000);
 
           try {
             const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
@@ -1014,11 +1024,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                   parts: [{ text: voiceSysInstruction }]
                 },
                 contents: [{
-                  parts: [{ text: `Question: ${transcript}` }]
+                  parts: [{ text: promptForAnswer }]
                 }],
                 generationConfig: {
-                  temperature: 0.1,
-                  maxOutputTokens: 300
+                  temperature: 0.2,
+                  maxOutputTokens: 650
                 }
               }),
               signal: controller.signal
@@ -1062,7 +1072,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
                 setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (First word: ${firstTokenLatency}s)`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;
                 break;
@@ -1094,7 +1104,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             },
             contents: [{
               parts: [
-                { text: "Transcribe spoken question and give immediate bullet points to say." },
+                { text: "Transcribe spoken interview question and provide the direct, complete spoken interview answer." },
                 {
                   inlineData: {
                     mimeType: 'audio/wav',
@@ -1104,8 +1114,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               ]
             }],
             generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 300
+              temperature: 0.2,
+              maxOutputTokens: 650
             }
           }),
           signal: controller.signal
