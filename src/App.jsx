@@ -74,6 +74,7 @@ function AppContent({ timeRemaining, onLogout }) {
   const [screenshotData, setScreenshotData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [streamStatus, setStreamStatus] = useState('');
   
   // Debug Logs State
   const [debugLogs, setDebugLogs] = useState([]);
@@ -207,24 +208,20 @@ function AppContent({ timeRemaining, onLogout }) {
     }
 
     setIsLoading(true);
-    setOutputText('Analyzing...');
+    setStreamStatus('⚡ Processing...');
+    setOutputText('');
 
-    let promptText = `You are a real-time live interview copilot.
-CRITICAL FORMATTING & ANSWER RULES:
-1. Provide SHORT, DIRECT, and PUNCHY answers designed to be spoken naturally in an interview.
-2. Structure: 2 to 4 concise bullet points maximum. Bold key technical terms.
-3. NO generic intro or outro filler (e.g. "Sure!", "Here is an answer..."). Get straight to the point.
-4. If a coding problem is detected, provide ONLY the clean optimal code block with 1-line Time and Space complexity.`;
+    const promptText = `Direct live interview copilot. Answer in 2-3 punchy bullet points designed to be spoken. Bold key terms. If coding, give optimal code only with Time/Space complexity.
 
-    if (textToSend) {
-      promptText += `\n\n[Interview Question / Prompt]:\n${textToSend}`;
-    }
+[Question / Context]:
+${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
 
     let success = false;
-    let reply = '';
+    let accumulatedReply = '';
     let lastErr = null;
+    const startTime = Date.now();
 
-    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL PAID ENGINE (UNLIMITED)
+    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL STREAMING ENGINE (UNLIMITED)
     if (geminiKey) {
       const geminiModels = [
         'gemini-flash-latest',
@@ -247,7 +244,7 @@ CRITICAL FORMATTING & ANSWER RULES:
 
       for (const modelId of geminiModels) {
         try {
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
+          const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
           const contentParts = [{ text: promptText }];
           if (imageBase64) {
             contentParts.push({
@@ -258,28 +255,65 @@ CRITICAL FORMATTING & ANSWER RULES:
             });
           }
 
-          const response = await fetch(geminiUrl, {
+          const response = await fetch(geminiStreamUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               contents: [{ parts: contentParts }],
               generationConfig: {
-                temperature: 0.2,
+                temperature: 0.1,
                 maxOutputTokens: 500
               }
             })
           });
-          const data = await response.json();
 
-          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            reply = data.candidates[0].content.parts[0].text;
-            success = true;
-            break;
+          if (response.ok && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstTokenTime = null;
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr) {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                      if (chunk) {
+                        if (!firstTokenTime) {
+                          firstTokenTime = Date.now();
+                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ Streaming (${latency}s)`);
+                        }
+                        accumulatedReply += chunk;
+                        setOutputText(accumulatedReply);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedReply) {
+              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${totalSec}s`);
+              setInterviewCount(prev => prev + 1);
+              success = true;
+              break;
+            }
           } else {
-            lastErr = data.error?.message || 'Gemini error';
+            lastErr = `HTTP ${response.status}`;
           }
-        } catch (geminiErr) {
-          lastErr = geminiErr.message;
+        } catch (err) {
+          lastErr = err.message;
         }
       }
     }
@@ -582,7 +616,8 @@ CRITICAL FORMATTING & ANSWER RULES:
   const stopVoiceMode = async () => {
     setIsVoiceMode(false);
     setIsLoading(true);
-    setOutputText("Transcribing & analyzing speech with Gemini AI...");
+    setStreamStatus('⚡ Processing audio...');
+    setOutputText('');
 
     const maxVol = maxVolumeRef.current;
     const duration = recordingSeconds;
@@ -620,6 +655,7 @@ CRITICAL FORMATTING & ANSWER RULES:
 
     if (!audioBlob || audioBlob.size === 0) {
       setIsLoading(false);
+      setStreamStatus('');
       addLog('⚠️ No audio recorded.');
       setOutputText("⚠️ No sound captured. Please check your microphone and click Voice again.");
       return;
@@ -633,6 +669,7 @@ CRITICAL FORMATTING & ANSWER RULES:
       addLog(`Audio ready: ${(base64Audio.length / 1024).toFixed(1)} KB (${mimeType})`);
 
       const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+      const startTime = Date.now();
 
       if (geminiKey) {
         const geminiModels = [
@@ -642,41 +679,27 @@ CRITICAL FORMATTING & ANSWER RULES:
         ];
 
         let geminiSuccess = false;
-        let geminiReply = '';
+        let accumulatedText = '';
         let lastErr = null;
 
         for (const modelId of geminiModels) {
           try {
-            addLog(`Calling Gemini (${modelId})...`);
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
+            addLog(`⚡ Streaming Gemini (${modelId})...`);
+            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
 
-            const response = await fetch(geminiUrl, {
+            const response = await fetch(geminiStreamUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 systemInstruction: {
                   parts: [{
-                    text: `You are an ultra-precise speech recognition and interview copilot.
-STRICT VERBATIM RULES:
-1. Transcribe ONLY the exact words spoken in the audio.
-2. NEVER guess, NEVER hallucinate, and NEVER invent a question that was not spoken in the audio.
-3. If no clear words were spoken or the audio is silence/noise, reply EXACTLY with:
-NO_CLEAR_SPEECH
-4. If words were spoken, provide the exact transcribed question followed by a direct 2-4 bullet point answer.
-
-Format:
-**Question:** [Verbatim transcribed question]
-
-**Answer:**
-• [Direct key point 1]
-• [Direct key point 2]
-• [Direct key point 3]`
+                    text: `Direct interview copilot. Transcribe the audio question verbatim and give 2-3 short, spoken bullet points with bold key terms.`
                   }]
                 },
                 contents: [{
                   parts: [
                     { 
-                      text: `Transcribe the question in this audio verbatim and provide the bullet answer.` 
+                      text: `Transcribe question from audio verbatim and provide immediate spoken bullet points.` 
                     },
                     {
                       inlineData: {
@@ -693,22 +716,51 @@ Format:
               })
             });
 
-            const data = await response.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (response.ok && response.body) {
+              const streamReader = response.body.getReader();
+              const decoder = new TextDecoder();
+              let buffer = '';
+              let firstTokenTime = null;
 
-            if (response.ok && reply) {
-              addLog(`✅ Gemini Success (${modelId})`);
-              if (reply.includes('NO_CLEAR_SPEECH')) {
-                addLog('Gemini reported: NO_CLEAR_SPEECH');
-                setOutputText("⚠️ No clear speech heard. Please speak closer to your microphone or check volume, then click Voice again.");
-                setIsLoading(false);
-                return;
+              while (true) {
+                const { value, done } = await streamReader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const jsonStr = line.slice(6).trim();
+                    if (jsonStr) {
+                      try {
+                        const chunkData = JSON.parse(jsonStr);
+                        const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (chunkText) {
+                          if (!firstTokenTime) {
+                            firstTokenTime = Date.now();
+                            const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                            setStreamStatus(`⚡ First word in ${latency}s (Streaming...)`);
+                          }
+                          accumulatedText += chunkText;
+                          setOutputText(accumulatedText);
+                        }
+                      } catch (e) {}
+                    }
+                  }
+                }
               }
-              geminiReply = reply;
-              geminiSuccess = true;
-              break;
+
+              if (accumulatedText) {
+                const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+                setStreamStatus(`⚡ ${totalSec}s total`);
+                addLog(`✅ Streamed full reply in ${totalSec}s`);
+                setInterviewCount(prev => prev + 1);
+                geminiSuccess = true;
+                break;
+              }
             } else {
-              lastErr = data.error?.message || `HTTP ${response.status}`;
+              lastErr = `HTTP ${response.status}`;
               addLog(`⚠️ Gemini ${modelId} error: ${lastErr}`);
             }
           } catch (err) {
@@ -717,15 +769,14 @@ Format:
           }
         }
 
-        if (geminiSuccess && geminiReply) {
-          setOutputText(geminiReply);
-          setInterviewCount(prev => prev + 1);
+        if (geminiSuccess && accumulatedText) {
           setIsLoading(false);
           return;
         }
       }
 
       setIsLoading(false);
+      setStreamStatus('');
       addLog('Could not obtain reply from Gemini.');
       setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
     };
@@ -1033,6 +1084,11 @@ Format:
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
             <span className="text-[10px] uppercase font-black text-gray-400 tracking-wider">Assistant Response</span>
+            {streamStatus && (
+              <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 animate-pulse">
+                {streamStatus}
+              </span>
+            )}
           </div>
 
           {outputText && (
