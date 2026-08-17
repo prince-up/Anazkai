@@ -457,7 +457,7 @@ function LandingPage() {
   };
 
   // Custom legal & support modals
-  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(() => typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('terms'));
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -2593,78 +2593,63 @@ class Solution {
       {/* 4. Legal Terms Modal */}
       {showTermsModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh] my-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full p-6 sm:p-10 border border-emerald-500/20 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 my-auto max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowTermsModal(false)}
               className="absolute top-5 right-5 sm:top-6 sm:right-6 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all cursor-pointer z-10"
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-1.5 sm:mb-2 pr-8">Agreement to our legal terms</h3>
-            <p className="text-gray-400 text-xs font-semibold mb-3 sm:mb-4">Last Update: March 15, 2026</p>
             
-            <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 no-scrollbar">
-              <p>We operate the website (the “Site”), as well as any other related products and services that refer or link to these legal terms (the “Legal Terms”) (collectively, the “Services”).</p>
-              <p>These Legal Terms constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”), and Anazk AI d.o.o., concerning your access to and use of the Services. You agree that by accessing the Services, you have read, understood, and agreed to be bound by all of these Legal Terms. IF YOU DO NOT AGREE WITH ALL OF THESE LEGAL TERMS, THEN YOU ARE EXPRESSLY PROHIBITED FROM USING THE SERVICES AND YOU MUST DISCONTINUE USE IMMEDIATELY.</p>
-              <p className="font-bold text-red-650 bg-red-50 p-3 rounded-xl border border-red-100">YOU ARE RESPONSIBLE FOR USING THE SERVICES ONLY FOR LEGAL AND ETHICAL PURPOSES. You are solely responsible for ensuring that your use of the Services complies with all applicable laws, regulations, and third-party rules that apply to you, including without limitation laws governing recording, wiretapping, consent, privacy, data protection, intellectual property, confidentiality, employment, education, professional licensing, examinations, and unfair or deceptive practices.</p>
-              <p>You agree that you will not use the Services in any manner that is illegal, deceptive, fraudulent, harmful, harassing, or otherwise unethical, and that you will not use the Services to violate any obligations you owe to a third party (including but not limited to your employer, school, examination provider, certification body, interviewer, counterparty, or any platform whose terms of service or code of conduct apply to your interaction). Where the law, institution, employer, platform, or other person requires notice, disclosure, or consent before recording, processing, or being assisted by AI in a conversation, meeting, interview, examination, or other interaction, it is your sole responsibility to obtain that notice, disclosure, or consent. We provide the Services as a general-purpose tool and do not endorse, encourage, or condone any unlawful or unethical use, and any such use is a material breach of these Legal Terms.</p>
-              <p>Supplemental terms and conditions or documents that may be posted on the Services from time to time are hereby expressly incorporated herein by reference. We reserve the right, in our sole discretion, to make changes or modifications to these Legal Terms from time to time. We will alert you about any changes by updating the “Last updated” date of these Legal Terms, and you waive any right to receive specific notice of each such change.</p>
-              <p>The Services are intended for users who are at least 18 years old. Persons under the age of 18 are not permitted to use or register for the Services.</p>
-              
-              <div className="font-bold text-gray-805 pt-2 text-sm border-t border-gray-100">Table of contents</div>
-              <ul className="list-disc pl-4 space-y-1 text-gray-500">
-                <li>1. Our services</li>
-                <li>2. Intellectual property rights</li>
-                <li>3. User representations</li>
-                <li>4. User registration</li>
-                <li>5. Purchases and payment</li>
-                <li>6. Prohibited activities</li>
-                <li>7. User generated contributions</li>
-                <li>8. Contribution license</li>
-                <li>9. Social media</li>
-                <li>10. Services management</li>
-                <li>11. Privacy policy</li>
-                <li>12. Term and termination</li>
-                <li>13. Modifications and interruptions</li>
-                <li>14. Governing law</li>
-                <li>15. Dispute resolution</li>
-                <li>16. Corrections</li>
-                <li>17. Disclaimer</li>
-                <li>18. Limitations of liability</li>
-                <li>19. Indemnification</li>
-                <li>20. User data</li>
-                <li>21. Electronic communications, transactions, and signatures</li>
-                <li>22. California users and residents</li>
-                <li>23. Miscellaneous</li>
-                <li>24. Contact us</li>
-              </ul>
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
+                  Terms & Conditions
+                </h2>
+                <p className="text-gray-400 text-xs sm:text-sm font-semibold mt-1">
+                  Last updated: March 2026
+                </p>
+              </div>
 
-              <div className="font-bold text-gray-805 pt-2 text-[13px] border-t border-gray-100 uppercase">1. Our services</div>
-              <p>The information provided when using the Services is not intended for distribution to or use by any person or entity in any jurisdiction or country where such distribution or use would be contrary to law or regulation or which would subject us to any registration requirement within such jurisdiction or country. Accordingly, those persons who choose to access the Services from other locations do so on their own initiative and are solely responsible for compliance with local laws, if and to the extent local laws are applicable.</p>
-              
-              <div className="font-bold text-gray-805 pt-2 text-[13px] border-t border-gray-100 uppercase">2. Intellectual property rights</div>
-              <p>We are the owner or the licensee of all intellectual property rights in our Services, including all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics in the Services (collectively, the “Content”), as well as the trademarks, service marks, and logos contained therein (the “Marks”).</p>
-              
-              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">3. User representations</div>
-              <p>By using the Services, you represent and warrant that: (1) all registration information you submit will be true, accurate, current, and complete; (2) you will maintain the accuracy of such information and promptly update such registration information as necessary; (3) you have the legal capacity and you agree to comply with these Legal Terms; (4) you are not a minor in the jurisdiction in which you reside; (5) you will not access the Services through automated or non-human means, whether through a bot, script or otherwise; (6) you will not use the Services for any illegal, unauthorized, or unethical purpose; (7) your use of the Services will not violate any applicable law or regulation...</p>
+              <div className="space-y-4 text-sm sm:text-base text-gray-700 font-medium leading-relaxed">
+                <p className="font-semibold text-gray-900">
+                  By using Anazk AI, you agree to the following terms:
+                </p>
 
-              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">5. Purchases and payment</div>
-              <p>We accept Visa, Mastercard, American Express, and Discover. You agree to provide current, complete, and accurate purchase and account information for all purchases made via the Services.</p>
+                <ul className="space-y-3.5 pl-2">
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
+                    <span>You will not reverse engineer, decompile, or disassemble the software.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
+                    <span>You will not share, distribute, or resell your license keys.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
+                    <span>You will not use the tool for illegal activities or to violate any laws or regulations.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
+                    <span>You are responsible for maintaining the confidentiality of your account credentials.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
+                    <span>Anazk AI reserves the right to suspend or terminate accounts that violate these terms.</span>
+                  </li>
+                </ul>
 
-              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">6. Prohibited activities</div>
-              <p>You agree not to systematically retrieve data, trick or defraud other users, circumvent security features, decompile software, or reverse engineer any of the code comprising the Services.</p>
-              <p className="font-bold text-[#15803d]">Automated account-sharing protection (new sessions paused). To enforce the one-person-per-account rule above, we monitor account activity for signals of account sharing and reserve the right to analyze this activity using any methods we see fit. If we determine that an account is being shared, we may temporarily pause activating new sessions (free or paid) and extending or restarting existing ones.</p>
+                <p className="pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.
+                </p>
 
-              <div className="font-bold text-gray-850 pt-2 text-[13px] border-t border-gray-100 uppercase">24. Contact us</div>
-              <p>In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:</p>
-              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 font-mono text-[11px] leading-relaxed text-gray-500">
-                Anazk AI d.o.o.<br />
-                Slovenska cesta 55b<br />
-                Ljubljana, Notranjska 1000<br />
-                Slovenia<br />
-                Email: support@Anazk AI-ai.com
+                <div className="pt-4 border-t border-gray-100 text-xs text-gray-500 font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span>Questions about these terms? Reach us at <a href="mailto:supportanazkai@gmail.com" className="text-emerald-700 font-bold hover:underline">supportanazkai@gmail.com</a></span>
+                  <span className="text-gray-400 font-bold">Helpline: +91 7986614646</span>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       )}
