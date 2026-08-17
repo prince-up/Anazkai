@@ -590,8 +590,8 @@ function AppContent({ timeRemaining, onLogout }) {
   const attachVolumeMeter = (stream, audioContext) => {
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.3;
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.4;
     source.connect(analyser);
     analyserRef.current = analyser;
 
@@ -607,18 +607,20 @@ function AppContent({ timeRemaining, onLogout }) {
         sum += dataArray[i];
       }
       const avg = sum / dataArray.length;
-      const normalizedVol = Math.min(100, Math.round((avg / 128) * 100));
+      // Sensitive volume scaling (0 - 100%)
+      const normalizedVol = Math.min(100, Math.round((avg / 90) * 100));
       setLiveVolume(normalizedVol);
 
       if (normalizedVol > maxVolumeRef.current) {
         maxVolumeRef.current = normalizedVol;
       }
 
-      if (normalizedVol > 2) {
+      // Sensitive threshold: treat even low audio (>0.5) as active speech
+      if (normalizedVol > 0.5) {
         silenceStartTimeRef.current = Date.now();
         setSilenceWarning(false);
       } else {
-        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 2000)) {
+        if (silenceStartTimeRef.current && (Date.now() - silenceStartTimeRef.current > 4000)) {
           setSilenceWarning(true);
         }
       }
@@ -675,7 +677,7 @@ function AppContent({ timeRemaining, onLogout }) {
       maxVolumeRef.current = 0;
       setRecordingSeconds(0);
       setSilenceWarning(false);
-      addLog('🎙️ Requesting microphone stream...');
+      addLog('🎙️ Initializing microphone...');
 
       await loadAudioDevices();
 
@@ -690,7 +692,7 @@ function AppContent({ timeRemaining, onLogout }) {
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       audioStreamRef.current = stream;
-      addLog(`Mic acquired (${stream.getAudioTracks()[0]?.label || 'Default'}).`);
+      addLog(`Microphone ready (${stream.getAudioTracks()[0]?.label || 'Default'}).`);
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioCtx({ sampleRate: 16000 });
@@ -704,11 +706,14 @@ function AppContent({ timeRemaining, onLogout }) {
       attachVolumeMeter(stream, audioContext);
 
       recordedChunksRef.current = [];
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg');
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/ogg') ? 'audio/ogg' : '');
+      }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
+      const mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 })
+        : new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (e) => {
@@ -717,7 +722,8 @@ function AppContent({ timeRemaining, onLogout }) {
         }
       };
 
-      mediaRecorder.start(250); 
+      // 100ms slice interval to prevent losing any audio buffers
+      mediaRecorder.start(100);
 
       let sec = 0;
       recordingTimerRef.current = setInterval(() => {
@@ -729,11 +735,12 @@ function AppContent({ timeRemaining, onLogout }) {
       }, 1000);
 
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Click 'Voice' again when finished)");
-      addLog('Recording live audio...');
+      setStreamStatus('Listening...');
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Click 'Voice' or button below when finished)");
+      addLog('Listening for speech...');
     } catch (err) {
-      addLog(`❌ Mic error: ${err.message}`);
-      setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);
+      addLog(`❌ Microphone error: ${err.message}`);
+      setOutputText(`Microphone access error: ${err.message}. Please check microphone permissions in Settings.`);
       cleanupVoiceResources();
     }
   };
@@ -741,12 +748,12 @@ function AppContent({ timeRemaining, onLogout }) {
   const stopVoiceMode = async () => {
     setIsVoiceMode(false);
     setIsLoading(true);
-    setStreamStatus('⚡ Processing audio...');
+    setStreamStatus('Processing...');
     setOutputText('');
 
     const maxVol = maxVolumeRef.current;
     const duration = recordingSeconds;
-    addLog(`Stopped recording (${duration}s). Peak Vol: ${maxVol}%`);
+    addLog(`Speech ended (${duration}s). Peak Vol: ${maxVol}%. Processing...`);
 
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
@@ -764,9 +771,20 @@ function AppContent({ timeRemaining, onLogout }) {
           resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
           return;
         }
+
+        // Request final data chunk before stopping to capture trailing words
+        try {
+          if (mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.requestData();
+          }
+        } catch (e) {}
+
         mediaRecorderRef.current.onstop = () => {
-          resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
+          setTimeout(() => {
+            resolve(new Blob(recordedChunksRef.current, { type: 'audio/webm' }));
+          }, 100);
         };
+
         try {
           mediaRecorderRef.current.stop();
         } catch (e) {
@@ -778,11 +796,11 @@ function AppContent({ timeRemaining, onLogout }) {
     const audioBlob = await getAudioBlob();
     cleanupVoiceResources();
 
-    if (!audioBlob || audioBlob.size === 0) {
+    if (!audioBlob || audioBlob.size < 500) {
       setIsLoading(false);
       setStreamStatus('');
-      addLog('⚠️ No audio recorded.');
-      setOutputText("⚠️ No sound captured. Please check your microphone and click Voice again.");
+      addLog('⚠️ No audio data captured.');
+      setOutputText("⚠️ No speech detected. Please speak clearly into your microphone and click Voice again.");
       return;
     }
 
@@ -791,32 +809,34 @@ function AppContent({ timeRemaining, onLogout }) {
     reader.onloadend = async () => {
       const base64Audio = reader.result.split(',')[1];
       const mimeType = audioBlob.type || 'audio/webm';
-      addLog(`Audio ready: ${(base64Audio.length / 1024).toFixed(1)} KB (${mimeType})`);
+      addLog(`Audio payload ready: ${(base64Audio.length / 1024).toFixed(1)} KB`);
 
       const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
       const startTime = Date.now();
 
       if (geminiKey) {
+        // Fastest Gemini Flash models for instant streaming
         const geminiModels = [
-          'gemini-flash-latest',
-          'gemini-3.5-flash',
-          'gemini-3.7-flash'
+          'gemini-2.0-flash',
+          'gemini-1.5-flash',
+          'gemini-flash-latest'
         ];
 
         let geminiSuccess = false;
         let accumulatedText = '';
         let lastErr = null;
 
+        // Ultra-compact system prompt for low-latency direct responses
+        let voiceSysInstruction = `Direct spoken interview copilot. Transcribe the audio question verbatim and provide 2-3 concise spoken bullet points with bold key terms.`;
+        const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 200) : '');
+        if (candidateProfile.trim()) {
+          voiceSysInstruction += ` Candidate Profile: ${candidateProfile.trim()}. Personalize points to this background.`;
+        }
+
         for (const modelId of geminiModels) {
           try {
             const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-            addLog(`⚡ Streaming Gemini (${modelId})...`);
-
-            let voiceSysInstruction = `Direct live interview copilot. Transcribe audio question verbatim and provide 2-3 short, spoken bullet points with bold key terms.`;
-            const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 250) : '');
-            if (candidateProfile.trim()) {
-              voiceSysInstruction += ` Candidate Profile: ${candidateProfile.trim()}. Personalize points to this background.`;
-            }
+            addLog(`⚡ Streaming Gemini Flash (${modelId})...`);
 
             const response = await fetch(geminiStreamUrl, {
               method: 'POST',
@@ -842,7 +862,7 @@ function AppContent({ timeRemaining, onLogout }) {
                 }],
                 generationConfig: {
                   temperature: 0.1,
-                  maxOutputTokens: 500
+                  maxOutputTokens: 350
                 }
               })
             });
@@ -870,8 +890,7 @@ function AppContent({ timeRemaining, onLogout }) {
                         if (chunkText) {
                           if (!firstTokenTime) {
                             firstTokenTime = Date.now();
-                            const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                            setStreamStatus(`⚡ First word in ${latency}s (Streaming...)`);
+                            setStreamStatus('Streaming answer...');
                           }
                           accumulatedText += chunkText;
                           setOutputText(accumulatedText);
@@ -883,8 +902,8 @@ function AppContent({ timeRemaining, onLogout }) {
               }
 
               if (accumulatedText) {
-                const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${totalSec}s total`);
+                const totalSec = ((Date.now() - startTime) / 1000).toFixed(1);
+                setStreamStatus(`⚡ ${totalSec}s`);
                 addLog(`✅ Streamed full reply in ${totalSec}s`);
                 setInterviewCount(prev => prev + 1);
                 geminiSuccess = true;
@@ -892,11 +911,11 @@ function AppContent({ timeRemaining, onLogout }) {
               }
             } else {
               lastErr = `HTTP ${response.status}`;
-              addLog(`⚠️ Gemini ${modelId} error: ${lastErr}`);
+              addLog(`⚠️ Gemini ${modelId} notice: ${lastErr}`);
             }
           } catch (err) {
             lastErr = err.message;
-            addLog(`❌ Fetch error: ${err.message}`);
+            addLog(`❌ Fetch notice: ${err.message}`);
           }
         }
 
@@ -908,8 +927,8 @@ function AppContent({ timeRemaining, onLogout }) {
 
       setIsLoading(false);
       setStreamStatus('');
-      addLog(`Could not obtain reply from Gemini. Last error: ${lastErr || 'Unknown'}`);
-      setOutputText(lastErr ? `⚠️ AI Error (${lastErr}). Please verify microphone input in Settings and click Voice again!` : "⚠️ No speech detected. Please speak closer to your microphone or check microphone volume in Settings.");
+      addLog(`Voice processing ended. Last note: ${lastErr || 'No speech detected'}`);
+      setOutputText(lastErr ? `⚠️ Voice AI note (${lastErr}). Please speak closer to your microphone and click Voice again!` : "⚠️ No speech detected. Please speak closer to your microphone and click Voice again.");
     };
   };
 
@@ -1273,7 +1292,7 @@ function AppContent({ timeRemaining, onLogout }) {
           <div className="flex justify-between items-center text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-              <span className="font-bold text-red-400">🎙️ Recording Spoken Question...</span>
+              <span className="font-bold text-red-400">🎙️ Listening... (Speak your question)</span>
             </div>
             <span className="font-mono text-[11px] text-gray-300 font-bold">
               00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds} / 02:00
@@ -1292,7 +1311,7 @@ function AppContent({ timeRemaining, onLogout }) {
             <span className="text-[10px] text-gray-300 font-mono w-7 text-right">{liveVolume}%</span>
           </div>
 
-          {/* 2-Second Silence Warning */}
+          {/* 4-Second Silence Warning */}
           {silenceWarning && (
             <div className="text-[10px] text-red-400 font-bold flex items-center gap-1 bg-red-950/40 p-1 rounded-md border border-red-500/20">
               <span>⚠️ No sound detected. Check microphone settings / unmute mic</span>
@@ -1440,7 +1459,7 @@ function AppContent({ timeRemaining, onLogout }) {
           }`}
         >
           {isVoiceMode ? <MicOff size={11} className="animate-bounce" /> : <Mic size={11} />}
-          <span>{isVoiceMode ? 'Listening...' : 'Voice'}</span>
+          <span>{isVoiceMode ? `Listening (${liveVolume}%)` : 'Voice'}</span>
         </button>
         
         <button 
