@@ -2169,8 +2169,8 @@ class Solution {
             </p>
           </div>
 
-          {/* 5 Column Navigation Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-left pt-4 border-t border-emerald-500/10">
+          {/* 4 Column Navigation Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8 text-left pt-4 border-t border-emerald-500/10">
             
             {/* Col 1: AI Interview Assistant */}
             <div className="space-y-3">
@@ -2185,20 +2185,7 @@ class Solution {
               </ul>
             </div>
 
-            {/* Col 2: Compare */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Compare</h4>
-              <ul className="space-y-2 text-xs font-semibold text-gray-600">
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">Compare Tools</a></li>
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs LockedIn AI</a></li>
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Final Round AI</a></li>
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Parakeet AI</a></li>
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Cluely</a></li>
-                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Sensei AI</a></li>
-              </ul>
-            </div>
-
-            {/* Col 3: Get Started */}
+            {/* Col 2: Get Started */}
             <div className="space-y-3">
               <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Get Started</h4>
               <ul className="space-y-2 text-xs font-semibold text-gray-600">
@@ -2211,7 +2198,7 @@ class Solution {
               </ul>
             </div>
 
-            {/* Col 4: Resources */}
+            {/* Col 3: Resources */}
             <div className="space-y-3">
               <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Resources</h4>
               <ul className="space-y-2 text-xs font-semibold text-gray-600">
@@ -2223,7 +2210,7 @@ class Solution {
               </ul>
             </div>
 
-            {/* Col 5: Legal */}
+            {/* Col 4: Legal */}
             <div className="space-y-3">
               <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Legal</h4>
               <ul className="space-y-2 text-xs font-semibold text-gray-600">
@@ -2236,25 +2223,14 @@ class Solution {
 
           </div>
 
-          {/* Social Icons Bar */}
+          {/* Social Icons Bar (Instagram, LinkedIn, Gmail only) */}
           <div className="flex items-center justify-center gap-6 pt-6 border-t border-emerald-500/10">
-            {/* WhatsApp */}
-            <a 
-              href="https://wa.me/917986614646" 
-              target="_blank" 
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-xs"
-              title="Chat on WhatsApp"
-            >
-              💬
-            </a>
-            
             {/* Instagram */}
             <a 
               href="https://www.instagram.com/anazk.ai?igsh=amg0bTJ3Y2M0ZGhq&igsi=amg0bTJ3Y2M0ZGhq&utm_source=qr" 
               target="_blank" 
               rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-pink-500 hover:bg-pink-50 text-gray-600 hover:text-pink-600 flex items-center justify-center transition-all shadow-xs"
+              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-pink-500 hover:bg-pink-50 text-gray-700 hover:text-pink-600 flex items-center justify-center transition-all shadow-sm text-lg"
               title="Follow on Instagram"
             >
               📷
@@ -2265,17 +2241,17 @@ class Solution {
               href="https://www.linkedin.com/in/anazk-ai-3p/" 
               target="_blank" 
               rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all shadow-xs"
+              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600 flex items-center justify-center transition-all shadow-sm text-lg"
               title="Connect on LinkedIn"
             >
               💼
             </a>
 
-            {/* Email */}
+            {/* Gmail / Email */}
             <a 
               href="mailto:supportanazkai@gmail.com" 
-              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-xs"
-              title="Email Support"
+              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-700 hover:text-emerald-600 flex items-center justify-center transition-all shadow-sm text-lg"
+              title="Email supportanazkai@gmail.com"
             >
               ✉️
             </a>
@@ -3041,13 +3017,14 @@ class Solution {
                 </div>
 
                 {/* Chat Messages Body */}
-                <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-white text-xs no-scrollbar">
+                {/* Chat Messages Body with Visible Smooth Scroller */}
+                <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-white text-xs pr-2">
                   
                   {/* Email & Usual Reply Time Notice Box */}
                   <div className="bg-[#f2f4f8] p-3.5 rounded-2xl text-gray-700 space-y-1.5 text-[11px]">
                     <p className="font-medium text-gray-600">You'll get replies here and in your email:</p>
                     <p className="font-bold text-gray-900 flex items-center gap-1.5">
-                      <span>✉️</span> {user?.email || 'supportanazkai@gmail.com'}
+                      <span>✉️</span> supportanazkai@gmail.com
                     </p>
                     <div className="pt-1.5 border-t border-gray-200/60 flex items-center gap-1.5 text-gray-500 font-semibold">
                       <span>⏱️ Our usual reply time:</span>
