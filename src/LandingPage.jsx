@@ -1258,51 +1258,67 @@ class Solution {
         </div>
       </section>
 
-      {/* Compatibility Green Banner */}
-      <section id="features" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto">
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      {/* Features: Everything You Need To Perform Better */}
+      <section id="features" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-7xl mx-auto text-center space-y-12">
+        <div className="space-y-4">
+          <div>
+            <span className="inline-block bg-[#15803d] text-white font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm">
+              Features
+            </span>
+          </div>
+
+          <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
+            Everything <span className="text-[#15803d]">You Need</span> To Perform Better.
+          </h2>
+        </div>
+
+        {/* 4 Feature Items Row / Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 pt-4 text-center">
           
-          {/* Decorative backdrop graphics */}
-          <div className="absolute right-0 top-0 w-80 h-80 bg-white/10 rounded-full blur-[80px]"></div>
-
-          <div className="lg:col-span-7 space-y-6">
-            <h2 className="font-display font-extrabold text-3xl sm:text-4xl leading-tight">
-              Works with any interview platform
-            </h2>
-            <p className="text-emerald-100 text-base sm:text-lg leading-relaxed">
-              You can use Anazk AI with any video, web-based, or coding platform including Zoom, Google Meet, Microsoft Teams, Webex, HackerRank, and LeetCode. Works completely independent of the application, running directly on your OS.
+          {/* Feature 1: Personalized Answers */}
+          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
+            <div className="text-3xl">🎯</div>
+            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
+              Personalized Answers
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+              Tailors answers based on your resume and experience for authentic, high-scoring responses.
             </p>
-            <div className="pt-4">
-              <a 
-                href="#sandbox"
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-white text-emerald-800 hover:bg-emerald-50 font-black rounded-full text-sm transition-all shadow-md cursor-pointer"
-              >
-                <Play size={14} fill="currentColor" />
-                Try Interactive Demo
-              </a>
-            </div>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col items-center relative">
-            {/* Laptop screen photo in circle */}
-            <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-white/10 border-2 border-white/25 overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.3)] relative">
-              <img
-                src="/user-desktop-section.png"
-                alt="Anazk AI running on laptop"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                }}
-              />
-            </div>
-            
-            {/* Floating Logo Badges */}
-            <div className="absolute -top-4 -left-4 bg-white p-2.5 rounded-2xl shadow-lg border border-gray-100 w-12 h-12 flex items-center justify-center text-blue-600 font-bold">Z</div>
-            <div className="absolute -bottom-4 right-10 bg-white p-2.5 rounded-2xl shadow-lg border border-gray-100 w-12 h-12 flex items-center justify-center text-orange-600 font-bold">M</div>
-            <div className="absolute top-1/2 -right-6 bg-white p-2.5 rounded-2xl shadow-lg border border-gray-100 w-12 h-12 flex items-center justify-center text-teal-600 font-bold">T</div>
+          {/* Feature 2: Undetectable Overlay */}
+          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
+            <div className="text-3xl">👻</div>
+            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
+              Undetectable Overlay
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+              A discreet overlay that sits on top of your meeting window, visible only to you.
+            </p>
           </div>
+
+          {/* Feature 3: Real Time Answers */}
+          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
+            <div className="text-3xl">🎙️</div>
+            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
+              Real Time Answers
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+              Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages.
+            </p>
+          </div>
+
+          {/* Feature 4: Coding Assistance */}
+          <div className="p-6 rounded-2xl bg-white/60 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center">
+            <div className="text-3xl">💻</div>
+            <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
+              Coding Assistance
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed">
+              Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more.
+            </p>
+          </div>
+
         </div>
       </section>
 
