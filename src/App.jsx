@@ -385,7 +385,7 @@ CRITICAL FORMATTING & ANSWER RULES:
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
+          noiseSuppression: false, // Don't aggressively suppress speaker sound
           autoGainControl: true
         } 
       });
@@ -399,6 +399,11 @@ CRITICAL FORMATTING & ANSWER RULES:
       const source = audioContext.createMediaStreamSource(stream);
       audioInputRef.current = source;
 
+      // 2.2x High sensitivity gain node so speaker sound / quiet mic is crystal clear
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 2.2;
+      source.connect(gainNode);
+
       // ScriptProcessor buffer size 4096 gives real-time raw PCM
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
       audioProcessorRef.current = processor;
@@ -409,7 +414,7 @@ CRITICAL FORMATTING & ANSWER RULES:
         audioBuffersRef.current.push(new Float32Array(channel));
       };
 
-      source.connect(processor);
+      gainNode.connect(processor);
       processor.connect(audioContext.destination);
 
       setIsVoiceMode(true);
@@ -424,7 +429,7 @@ CRITICAL FORMATTING & ANSWER RULES:
   const stopVoiceMode = async () => {
     setIsVoiceMode(false);
     setIsLoading(true);
-    setOutputText("Processing speech with AI...");
+    setOutputText("Transcribing & analyzing speech with AI...");
 
     const capturedBuffers = [...audioBuffersRef.current];
     const originalSampleRate = audioSampleRateRef.current;
@@ -460,7 +465,6 @@ CRITICAL FORMATTING & ANSWER RULES:
     const base64Wav = btoa(binary);
 
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    const groqKey = getEffectiveApiKey();
 
     if (geminiKey) {
       const geminiModels = [
@@ -481,22 +485,29 @@ CRITICAL FORMATTING & ANSWER RULES:
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              systemInstruction: {
+                parts: [{
+                  text: `You are an ultra-precise speech recognition and interview copilot.
+STRICT VERBATIM RULES:
+1. Transcribe ONLY the exact words spoken in the audio.
+2. NEVER guess, NEVER hallucinate, and NEVER invent a question that was not spoken in the audio.
+3. If no clear words were spoken or the audio is silence/noise, reply EXACTLY with:
+NO_CLEAR_SPEECH
+4. If words were spoken, provide the exact transcribed question followed by a direct 2-4 bullet point answer.
+
+Format:
+**Question:** [Verbatim transcribed question]
+
+**Answer:**
+• [Direct key point 1]
+• [Direct key point 2]
+• [Direct key point 3]`
+                }]
+              },
               contents: [{
                 parts: [
                   { 
-                    text: `You are a real-time live interview copilot listening to the candidate's audio.
-CRITICAL INSTRUCTIONS:
-1. Listen carefully and transcribe the question asked in the audio accurately.
-2. Provide a short, direct, and punchy spoken answer in 2 to 4 bullet points maximum. Bold key technical terms.
-3. No generic intro or outro filler.
-
-Format:
-**Question:** [Transcribed question]
-
-**Answer:**
-• [Direct, punchy key point 1]
-• [Direct, punchy key point 2]
-• [Direct, punchy key point 3]` 
+                    text: `Transcribe the question in this audio verbatim and provide the bullet answer.` 
                   },
                   {
                     inlineData: {
@@ -507,7 +518,7 @@ Format:
                 ]
               }],
               generationConfig: {
-                temperature: 0.2,
+                temperature: 0.1,
                 maxOutputTokens: 500
               }
             })
@@ -517,6 +528,11 @@ Format:
           const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
           if (response.ok && reply) {
+            if (reply.includes('NO_CLEAR_SPEECH')) {
+              setOutputText("⚠️ No clear speech heard. Please speak closer to your microphone or check volume, then click Voice again.");
+              setIsLoading(false);
+              return;
+            }
             geminiReply = reply;
             geminiSuccess = true;
             break;
@@ -536,9 +552,8 @@ Format:
       }
     }
 
-    // Fallback if needed
     setIsLoading(false);
-    setOutputText("⚠️ Could not recognize speech. Please speak clearly into your mic and try clicking Voice again!");
+    setOutputText("⚠️ Could not process speech. Please speak clearly into your mic and try clicking Voice again!");
   };
 
   const handleCopy = () => {
