@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import * as pdfjsLib from 'pdfjs-dist';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
+
+// Configure pdfjs worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '3.11.174'}/pdf.worker.min.js`;
 
 // Audio WAV Encoder & Downsampler Helper Utilities
 function encodeWAV(samples, sampleRate) {
@@ -94,10 +98,71 @@ function AppContent({ timeRemaining, onLogout }) {
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
 
-  // Auto cleanup legacy stored resume to prevent irrelevant answers
-  useEffect(() => {
-    localStorage.removeItem('resume_text');
-  }, []);
+  // Resume State (Persistent)
+  const [resumeText, setResumeText] = useState(() => localStorage.getItem('user_resume_text') || '');
+  const [resumeFileName, setResumeFileName] = useState(() => localStorage.getItem('user_resume_filename') || '');
+  const [isLoadingResume, setIsLoadingResume] = useState(false);
+  const resumeFileInputRef = useRef(null);
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsLoadingResume(true);
+    setResumeFileName(file.name);
+    addLog(`📄 Processing resume: ${file.name}...`);
+
+    try {
+      if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+        const pdf = await loadingTask.promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(' ');
+          text += pageText + '\n';
+        }
+        const cleaned = text.trim();
+        setResumeText(cleaned);
+        localStorage.setItem('user_resume_text', cleaned);
+        localStorage.setItem('user_resume_filename', file.name);
+        addLog(`✅ Resume PDF extracted (${cleaned.length} chars).`);
+      } else {
+        const text = await file.text();
+        const cleaned = text.trim();
+        setResumeText(cleaned);
+        localStorage.setItem('user_resume_text', cleaned);
+        localStorage.setItem('user_resume_filename', file.name);
+        addLog(`✅ Resume text loaded (${cleaned.length} chars).`);
+      }
+    } catch (err) {
+      console.error('Resume upload error:', err);
+      addLog(`⚠️ PDF parse warning: ${err.message}. Trying text fallback...`);
+      try {
+        const text = await file.text();
+        const cleaned = text.trim();
+        setResumeText(cleaned);
+        localStorage.setItem('user_resume_text', cleaned);
+        localStorage.setItem('user_resume_filename', file.name);
+      } catch (e) {
+        addLog(`❌ Failed to read file: ${e.message}`);
+      }
+    } finally {
+      setIsLoadingResume(false);
+    }
+  };
+
+  const handleClearResume = () => {
+    setResumeText('');
+    setResumeFileName('');
+    localStorage.removeItem('user_resume_text');
+    localStorage.removeItem('user_resume_filename');
+    if (resumeFileInputRef.current) {
+      resumeFileInputRef.current.value = '';
+    }
+    addLog('Resume cleared.');
+  };
 
   // Save settings
   useEffect(() => {
@@ -105,7 +170,12 @@ function AppContent({ timeRemaining, onLogout }) {
     localStorage.setItem('auto_ask', autoAsk);
     localStorage.setItem('overlay_opacity', opacity);
     localStorage.setItem('interview_count', interviewCount);
-  }, [apiKey, autoAsk, opacity, interviewCount]);
+    if (resumeText) {
+      localStorage.setItem('user_resume_text', resumeText);
+    } else {
+      localStorage.removeItem('user_resume_text');
+    }
+  }, [apiKey, autoAsk, opacity, interviewCount, resumeText]);
 
   useEffect(() => {
     if (window.require) {
@@ -211,10 +281,13 @@ function AppContent({ timeRemaining, onLogout }) {
     setStreamStatus('⚡ Processing...');
     setOutputText('');
 
-    const promptText = `Direct live interview copilot. Answer in 2-3 punchy bullet points designed to be spoken. Bold key terms. If coding, give optimal code only with Time/Space complexity.
+    let promptText = `Direct live interview copilot. Answer in 2-3 punchy bullet points designed to be spoken. Bold key terms. If coding, give optimal code only with Time/Space complexity.`;
 
-[Question / Context]:
-${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
+    if (resumeText && resumeText.trim()) {
+      promptText += `\n\nCandidate's Resume:\n${resumeText.trim()}\n\nAnswer all interview questions based on this resume. Be specific to the candidate's experience and background.`;
+    }
+
+    promptText += `\n\n[Question / Context]:\n${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
 
     let success = false;
     let accumulatedReply = '';
@@ -684,8 +757,10 @@ ${textToSend || 'Analyze the provided screen capture and provide the direct inte
 
         for (const modelId of geminiModels) {
           try {
-            addLog(`⚡ Streaming Gemini (${modelId})...`);
-            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+            let voiceSysInstruction = `Direct interview copilot. Transcribe the audio question verbatim and give 2-3 short, spoken bullet points with bold key terms.`;
+            if (resumeText && resumeText.trim()) {
+              voiceSysInstruction += `\n\nCandidate's Resume:\n${resumeText.trim()}\n\nAnswer all interview questions based on this resume. Be specific to the candidate's experience.`;
+            }
 
             const response = await fetch(geminiStreamUrl, {
               method: 'POST',
@@ -693,7 +768,7 @@ ${textToSend || 'Analyze the provided screen capture and provide the direct inte
               body: JSON.stringify({
                 systemInstruction: {
                   parts: [{
-                    text: `Direct interview copilot. Transcribe the audio question verbatim and give 2-3 short, spoken bullet points with bold key terms.`
+                    text: voiceSysInstruction
                   }]
                 },
                 contents: [{
@@ -929,6 +1004,78 @@ ${textToSend || 'Analyze the provided screen capture and provide the direct inte
                 </div>
               </div>
 
+              {/* My Resume Section (Personalized AI Interview Copilot) */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5 space-y-2.5">
+                <div className="flex justify-between items-center text-gray-300 font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <FileText size={14} className="text-emerald-400" />
+                    <span>My Resume</span>
+                  </div>
+                  {resumeText.trim() ? (
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                      <Check size={10} /> Resume Loaded ✓
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-gray-500 font-bold">
+                      No Resume Uploaded
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-gray-400">
+                  AI will automatically personalize all interview answers based on your background, skills, and projects.
+                </p>
+
+                {/* File Upload Controls */}
+                <div className="flex gap-2 items-center">
+                  <input
+                    ref={resumeFileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={handleResumeUpload}
+                    className="hidden"
+                    id="resume-file-input"
+                  />
+                  <label
+                    htmlFor="resume-file-input"
+                    className="flex-1 py-1.5 px-3 bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/5"
+                  >
+                    <Upload size={12} className="text-emerald-400" />
+                    <span>{isLoadingResume ? 'Extracting Text...' : (resumeFileName ? `Change (${resumeFileName.slice(0, 14)}...)` : 'Upload PDF Resume')}</span>
+                  </label>
+
+                  {resumeText.trim() && (
+                    <button
+                      onClick={handleClearResume}
+                      className="py-1.5 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-xs font-bold rounded-lg transition-all border border-red-500/20 active:scale-95 cursor-pointer flex items-center gap-1"
+                      title="Clear Resume"
+                    >
+                      <Trash2 size={12} />
+                      <span>Clear</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Paste / Edit Resume Text */}
+                <textarea
+                  value={resumeText}
+                  onChange={(e) => {
+                    setResumeText(e.target.value);
+                    localStorage.setItem('user_resume_text', e.target.value);
+                  }}
+                  placeholder="Or paste your resume text here (experience, skills, projects)..."
+                  rows={4}
+                  className="w-full bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2.5 text-[11px] outline-none focus:border-emerald-500/40 font-mono no-scrollbar resize-none placeholder-gray-600"
+                />
+                
+                {resumeText.trim() && (
+                  <div className="flex justify-between text-[9px] text-gray-500 font-mono">
+                    <span>{resumeFileName ? `File: ${resumeFileName}` : 'Pasted text'}</span>
+                    <span>{resumeText.length.toLocaleString()} characters</span>
+                  </div>
+                )}
+              </div>
+
               {/* Opacity Slider */}
               <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
                 <div className="flex justify-between text-gray-300 mb-1.5 font-semibold">
@@ -962,27 +1109,49 @@ ${textToSend || 'Analyze the provided screen capture and provide the direct inte
           <div className="w-8 h-1 rounded-full bg-white/20 hover:bg-white/30 transition-all"></div>
         </div>
 
-        {/* Center: Discreet Timer / Status Badge */}
-        {timeRemaining !== undefined && timeRemaining !== null && (
-          <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-2 py-0.5 rounded-full text-xs" style={{ WebkitAppRegion: 'no-drag' }}>
-            <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
-            <span className={`text-[9px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
-              {timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`}
-            </span>
-            {onLogout && (
-              <>
-                <span className="text-white/20 text-[9px]">|</span>
-                <button 
-                  onClick={onLogout} 
-                  className="text-[8px] text-gray-400 hover:text-red-400 uppercase font-bold transition-colors cursor-pointer"
-                  title="Quit Session"
-                >
-                  Quit
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        {/* Center: Discreet Timer & Resume Status Badge */}
+        <div className="flex items-center gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
+          {resumeText.trim() ? (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer"
+              title={`Resume loaded (${resumeFileName || 'Pasted'}) - AI is personalizing answers to your experience`}
+            >
+              <FileText size={9} />
+              <span>Resume Loaded ✓</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center gap-1 bg-white/5 border border-white/5 text-gray-500 hover:text-gray-400 px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all cursor-pointer"
+              title="Click to upload/paste your resume for personalized AI answers"
+            >
+              <FileText size={9} />
+              <span>+ Resume</span>
+            </button>
+          )}
+
+          {timeRemaining !== undefined && timeRemaining !== null && (
+            <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-2 py-0.5 rounded-full text-xs">
+              <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
+              <span className={`text-[9px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
+                {timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`}
+              </span>
+              {onLogout && (
+                <>
+                  <span className="text-white/20 text-[9px]">|</span>
+                  <button 
+                    onClick={onLogout} 
+                    className="text-[8px] text-gray-400 hover:text-red-400 uppercase font-bold transition-colors cursor-pointer"
+                    title="Quit Session"
+                  >
+                    Quit
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Minimal Window Controls */}
         <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>

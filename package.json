@@ -14,6 +14,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^1.25.0",
+    "pdfjs-dist": "^3.11.174",
     "razorpay": "^2.9.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
