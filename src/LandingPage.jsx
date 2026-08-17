@@ -482,6 +482,15 @@ function LandingPage() {
   const [isBotTyping, setIsBotTyping] = useState(false);
   const chatMessagesEndRef = useRef(null);
 
+  // Auto-scroll chat when messages update
+  useEffect(() => {
+    if (chatOpen && chatTab === 'messages') {
+      setTimeout(() => {
+        chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    }
+  }, [chatMessages, chatOpen, chatTab]);
+
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -577,6 +586,21 @@ Format answers cleanly with short bullet points.`
 
   const generateBotAnswer = (userText) => {
     const query = userText.toLowerCase().trim();
+
+    // 0. Personal Mentor Guidance & Booking
+    if (
+      query.includes('mentor') || query.includes('guidance') || query.includes('book') || 
+      query.includes('coaching') || query.includes('expert') || query.includes('1-on-1') || 
+      query.includes('resume') || query.includes('7986614646') || query.includes('500')
+    ) {
+      return {
+        text: "👤 **1-on-1 Personal Guidance with Mentor (₹500):**\n\n• **Direct 1-on-1 Session:** Tailored mock interviews, resume review, and job portal optimization.\n• **Dedicated Mentor Helpline:** +91 7986614646\n• **Instant WhatsApp Support:** Get dedicated mentorship before your actual interview calls!",
+        actions: [
+          { label: '👉 Book Mentor Session (₹500)', onClick: () => { setMentorStep(1); setMentorError(''); setShowMentorModal(true); setChatOpen(false); } },
+          { label: '💬 WhatsApp Helpline', onClick: () => { window.open('https://wa.me/917986614646', '_blank'); } }
+        ]
+      };
+    }
 
     // 1. Payment & Buying Credits
     if (
