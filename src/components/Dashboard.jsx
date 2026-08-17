@@ -878,10 +878,15 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   Download the native Windows client (.exe). It automatically engages hardware-level window protection so screen-sharing tools like Zoom, Microsoft Teams, and Google Meet cannot detect it.
                 </p>
                 <div className="sm:pl-12 pt-1">
-                  <button onClick={onOpenDownload} className="w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20">
+                  <a 
+                    href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20"
+                  >
                     <Download size={16} />
                     <span>Download Windows Client (.exe)</span>
-                  </button>
+                  </a>
                 </div>
               </div>
 

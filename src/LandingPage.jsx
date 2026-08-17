@@ -637,7 +637,7 @@ class Solution {
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 150);
         }}
-        onOpenDownload={() => setShowDownloadModal(true)}
+        onOpenDownload={() => window.open("https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing", "_blank")}
         onBackToHome={() => setCurrentView('landing')}
       />
     );
