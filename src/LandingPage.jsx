@@ -2155,7 +2155,7 @@ class Solution {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-emerald-500/10 bg-gradient-to-b from-[#f0fbf5]/50 via-[#f8fafc] to-[#eef9f3]/60 px-6 sm:px-12 py-16 text-center">
+      <footer className="border-t border-emerald-500/20 bg-[#edf9f3] px-6 sm:px-12 py-16 text-center">
         <div className="mx-auto max-w-[1320px] space-y-12">
           
           {/* Top Brand Logo & Tagline */}
@@ -2223,17 +2223,21 @@ class Solution {
 
           </div>
 
-          {/* Social Icons Bar (Instagram, LinkedIn, Gmail only) */}
+          {/* Social Icons Bar (Instagram, LinkedIn, Gmail SVG icons) */}
           <div className="flex items-center justify-center gap-6 pt-6 border-t border-emerald-500/10">
             {/* Instagram */}
             <a 
               href="https://www.instagram.com/anazk.ai?igsh=amg0bTJ3Y2M0ZGhq&igsi=amg0bTJ3Y2M0ZGhq&utm_source=qr" 
               target="_blank" 
               rel="noreferrer"
-              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-pink-500 hover:bg-pink-50 text-gray-700 hover:text-pink-600 flex items-center justify-center transition-all shadow-sm text-lg"
+              className="w-12 h-12 rounded-full bg-white border border-emerald-200/60 hover:border-pink-500 hover:bg-pink-50 text-pink-600 flex items-center justify-center transition-all shadow-sm hover:scale-110 active:scale-95"
               title="Follow on Instagram"
             >
-              📷
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+              </svg>
             </a>
 
             {/* LinkedIn */}
@@ -2241,19 +2245,26 @@ class Solution {
               href="https://www.linkedin.com/in/anazk-ai-3p/" 
               target="_blank" 
               rel="noreferrer"
-              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600 flex items-center justify-center transition-all shadow-sm text-lg"
+              className="w-12 h-12 rounded-full bg-white border border-emerald-200/60 hover:border-blue-600 hover:bg-blue-50 text-blue-600 flex items-center justify-center transition-all shadow-sm hover:scale-110 active:scale-95"
               title="Connect on LinkedIn"
             >
-              💼
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect width="4" height="12" x="2" y="9"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
             </a>
 
             {/* Gmail / Email */}
             <a 
               href="mailto:supportanazkai@gmail.com" 
-              className="w-11 h-11 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-700 hover:text-emerald-600 flex items-center justify-center transition-all shadow-sm text-lg"
+              className="w-12 h-12 rounded-full bg-white border border-emerald-200/60 hover:border-red-500 hover:bg-red-50 text-red-500 flex items-center justify-center transition-all shadow-sm hover:scale-110 active:scale-95"
               title="Email supportanazkai@gmail.com"
             >
-              ✉️
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
             </a>
           </div>
 
@@ -3018,7 +3029,7 @@ class Solution {
 
                 {/* Chat Messages Body */}
                 {/* Chat Messages Body with Visible Smooth Scroller */}
-                <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-white text-xs pr-2">
+                <div className="flex-1 p-3.5 overflow-y-auto chat-scrollbar space-y-3 bg-white text-xs pr-2">
                   
                   {/* Email & Usual Reply Time Notice Box */}
                   <div className="bg-[#f2f4f8] p-3.5 rounded-2xl text-gray-700 space-y-1.5 text-[11px]">
