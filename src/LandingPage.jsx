@@ -462,17 +462,19 @@ function LandingPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
 
-  // Corner Floating AI Support Chatbot State
+  // Corner Floating AI Support Chatbot State (Intercom / Fin Style)
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatTab, setChatTab] = useState('home'); // 'home' or 'messages'
   const [chatMessages, setChatMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: "👋 Hi! I'm the Anazk AI Website Assistant. Ask me anything about how Anazk AI works, how to make payment & buy credits, or where to go on this website!",
+      text: "Hi there 👋 How can I help you today? Ask me about stealth mode, Windows app download, credits pricing, or 1-on-1 mentor guidance!",
       actions: [
         { label: '💳 How to buy credits?', query: 'how to buy credits' },
-        { label: '🧭 Guide me around', query: 'where to go on website' },
-        { label: '🛡️ Is it undetectable?', query: 'is it undetectable on zoom meet' }
+        { label: '📥 Download Windows App', query: 'how to download app' },
+        { label: '🛡️ Is it undetectable on Zoom?', query: 'is it undetectable on zoom meet' },
+        { label: '👤 1-on-1 Personal Guidance', query: 'how to book personal mentor' }
       ]
     }
   ]);
@@ -487,9 +489,12 @@ function LandingPage() {
     }
   };
 
-  const handleSendChatMessage = (rawQuery) => {
+  const handleSendChatMessage = async (rawQuery) => {
     const queryText = (typeof rawQuery === 'string' ? rawQuery : chatInput).trim();
     if (!queryText) return;
+
+    // Switch to messages tab when user sends query
+    setChatTab('messages');
 
     // Add user message
     const userMsgId = Date.now();
@@ -500,6 +505,61 @@ function LandingPage() {
     setChatInput('');
     setIsBotTyping(true);
 
+    try {
+      // Check if Groq API key is available for dynamic live AI answers
+      const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (groqKey && groqKey !== 'your_groq_api_key_here') {
+        const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              {
+                role: 'system',
+                content: `You are Fin, the official AI support assistant for Anazk AI (anazk.online). You are helpful, friendly, and concise.
+Knowledge Base for Anazk AI:
+- Anazk AI is a real-time AI interview copilot with an undetectable invisible desktop overlay that listens to interviewers via Whisper AI and displays instant, high-scoring answers without switching windows.
+- Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
+- Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
+- 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Helpline: +91 7986614646.
+- Desktop App: Windows 10/11 64-bit installer (.exe) available on Google Drive: https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing
+- Hotkeys: F1 (trigger/answer), F3 (switch audio input), F4 (copy solution), F8 (re-anchor).
+- Contact Support: supportanazkai@gmail.com.
+Format answers cleanly with short bullet points.`
+              },
+              { role: 'user', content: queryText }
+            ],
+            max_tokens: 300,
+            temperature: 0.5
+          })
+        });
+
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          const reply = aiData.choices?.[0]?.message?.content;
+          if (reply) {
+            setChatMessages((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 1,
+                sender: 'bot',
+                text: reply
+              }
+            ]);
+            setIsBotTyping(false);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      // Fallback to local intelligent assistant engine
+    }
+
+    // Instant local intelligent response fallback
     setTimeout(() => {
       const botResponse = generateBotAnswer(queryText);
       setChatMessages((prev) => [
@@ -512,7 +572,7 @@ function LandingPage() {
         }
       ]);
       setIsBotTyping(false);
-    }, 450);
+    }, 400);
   };
 
   const generateBotAnswer = (userText) => {
@@ -2094,50 +2154,139 @@ class Solution {
         </div>
       </section>
 
-      {/* Premium Footer */}
-      <footer className="border-t border-gray-200 bg-[#f8fafc] px-6 py-16 text-left">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-10">
-          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-            <div className="max-w-xl space-y-3">
-              <div className="flex items-center gap-3">
-                <img src="/penguin.jpg" alt="Anazk AI Logo" className="w-11 h-11 rounded-2xl border-2 border-emerald-500/30 object-cover shadow-sm" />
-                <span className="font-display text-2xl font-black tracking-tight text-[#0d2e27]">Anazk AI</span>
-              </div>
-              <h3 className="font-display text-3xl sm:text-4xl font-black leading-tight tracking-tight text-[#0d2e27]">
-                Think clearly. Respond confidently.
-              </h3>
-              <p className="text-base sm:text-lg font-bold leading-relaxed text-gray-700">
-                A focused AI copilot for the moments where preparation matters most.
-              </p>
-            </div>
-            
-            {/* Quick Links & Buttons */}
-            <div className="flex flex-wrap gap-2.5 text-sm font-extrabold text-gray-800">
-              <a href="mailto:supportanazkai@gmail.com" className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs">
-                Email support
-              </a>
-              <a href="https://www.linkedin.com/in/anazk-ai-422894429" target="_blank" rel="noreferrer" className="rounded-full border-2 border-sky-300 bg-sky-50 px-5 py-2.5 text-sky-800 transition hover:border-sky-500 hover:bg-sky-100 shadow-xs">
-                Connect on LinkedIn
-              </a>
-              <button onClick={() => setChatOpen(true)} className="rounded-full border-2 border-emerald-300 bg-emerald-50 px-5 py-2.5 text-emerald-800 transition hover:border-emerald-500 hover:bg-emerald-100 shadow-xs cursor-pointer">
-                AI Guide & Support
-              </button>
-              <button onClick={() => setShowTermsModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
-                Terms
-              </button>
-              <button onClick={() => setShowPrivacyModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
-                Privacy
-              </button>
-              <button onClick={() => setShowRefundModal(true)} className="rounded-full border-2 border-gray-200 bg-white px-5 py-2.5 transition hover:border-emerald-500 hover:text-emerald-700 shadow-xs cursor-pointer">
-                Refunds
-              </button>
-            </div>
-          </div>
+      {/* Footer */}
+      <footer className="border-t border-emerald-500/10 bg-gradient-to-b from-[#f0fbf5]/50 via-[#f8fafc] to-[#eef9f3]/60 px-6 sm:px-12 py-16 text-center">
+        <div className="mx-auto max-w-[1320px] space-y-12">
           
-          <div className="flex flex-col gap-2 border-t border-gray-200 pt-6 text-sm font-bold text-gray-600 sm:flex-row sm:items-center sm:justify-between">
-            <span className="font-extrabold text-gray-800">© 2026 Anazk AI. All rights reserved.</span>
-            <span className="text-emerald-700 font-black">Built for better conversations.</span>
+          {/* Top Brand Logo & Tagline */}
+          <div className="space-y-3 flex flex-col items-center">
+            <div className="flex items-center gap-2.5">
+              <img src="/penguin.jpg" alt="Anazk AI Logo" className="w-10 h-10 rounded-2xl border-2 border-emerald-500/30 object-cover shadow-sm" />
+              <span className="font-display text-2xl font-black tracking-tight text-[#0d2e27]">Anazk AI</span>
+            </div>
+            <p className="text-gray-600 font-semibold text-xs sm:text-sm max-w-xl mx-auto">
+              Real-time AI interview copilot with an invisible overlay. Pay only for the minutes you use.
+            </p>
           </div>
+
+          {/* 5 Column Navigation Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-left pt-4 border-t border-emerald-500/10">
+            
+            {/* Col 1: AI Interview Assistant */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">AI Interview Assistant</h4>
+              <ul className="space-y-2 text-xs font-semibold text-gray-600">
+                <li><a href="#top" className="hover:text-emerald-600 transition-colors">Overview</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">Features</a></li>
+                <li><a href="#privacy" className="hover:text-emerald-600 transition-colors">Invisible Overlay</a></li>
+                <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">How It Works</a></li>
+                <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">How To Use</a></li>
+                <li><a href="#privacy" className="hover:text-emerald-600 transition-colors">Security & Privacy</a></li>
+              </ul>
+            </div>
+
+            {/* Col 2: Compare */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Compare</h4>
+              <ul className="space-y-2 text-xs font-semibold text-gray-600">
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">Compare Tools</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs LockedIn AI</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Final Round AI</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Parakeet AI</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Cluely</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">vs Sensei AI</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Get Started */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Get Started</h4>
+              <ul className="space-y-2 text-xs font-semibold text-gray-600">
+                <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
+                <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
+                <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
+                <li><a href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (.exe)</a></li>
+                <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Resources */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Resources</h4>
+              <ul className="space-y-2 text-xs font-semibold text-gray-600">
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">Blog</a></li>
+                <li><a href="#reviews" className="hover:text-emerald-600 transition-colors">Authors</a></li>
+                <li><a href="#faq" className="hover:text-emerald-600 transition-colors">FAQs</a></li>
+                <li><a href="#features" className="hover:text-emerald-600 transition-colors">About</a></li>
+                <li><a href="mailto:supportanazkai@gmail.com" className="hover:text-emerald-600 transition-colors">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Col 5: Legal */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900">Legal</h4>
+              <ul className="space-y-2 text-xs font-semibold text-gray-600">
+                <li><button onClick={() => setShowTermsModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Terms & Conditions</button></li>
+                <li><button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Privacy Policy</button></li>
+                <li><button onClick={() => setShowRefundModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Refund Policy</button></li>
+                <li><button onClick={() => setShowTermsModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Shipping & Delivery</button></li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Social Icons Bar */}
+          <div className="flex items-center justify-center gap-6 pt-6 border-t border-emerald-500/10">
+            {/* WhatsApp */}
+            <a 
+              href="https://wa.me/917986614646" 
+              target="_blank" 
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-xs"
+              title="Chat on WhatsApp"
+            >
+              💬
+            </a>
+            
+            {/* Instagram */}
+            <a 
+              href="https://www.instagram.com/anazk.ai?igsh=amg0bTJ3Y2M0ZGhq&igsi=amg0bTJ3Y2M0ZGhq&utm_source=qr" 
+              target="_blank" 
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-pink-500 hover:bg-pink-50 text-gray-600 hover:text-pink-600 flex items-center justify-center transition-all shadow-xs"
+              title="Follow on Instagram"
+            >
+              📷
+            </a>
+
+            {/* LinkedIn */}
+            <a 
+              href="https://www.linkedin.com/in/anazk-ai-3p/" 
+              target="_blank" 
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all shadow-xs"
+              title="Connect on LinkedIn"
+            >
+              💼
+            </a>
+
+            {/* Email */}
+            <a 
+              href="mailto:supportanazkai@gmail.com" 
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-xs"
+              title="Email Support"
+            >
+              ✉️
+            </a>
+          </div>
+
+          {/* Copyright & Made in India */}
+          <div className="space-y-1 text-xs font-bold text-gray-500">
+            <p>© 2026 Anazk AI · All rights reserved</p>
+            <p className="text-emerald-700 font-extrabold">Made In India 🇮🇳</p>
+          </div>
+
         </div>
       </footer>
 
@@ -2760,163 +2909,286 @@ class Solution {
         </div>
       )}
 
-      {/* 6. Corner Floating AI Support Chatbot Widget */}
+      {/* 6. Corner Floating AI Support Chatbot Widget (Intercom / Fin Style) */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
         {/* Floating Chat Window */}
         {chatOpen && (
-          <div className="mb-3 w-[calc(100vw-2rem)] sm:w-[410px] h-[490px] max-h-[75vh] bg-white rounded-3xl border border-gray-200 shadow-[0_20px_60px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200 text-left">
-            {/* Chat Header */}
-            <div className="px-4 sm:px-5 py-3.5 sm:py-4 bg-gradient-to-r from-[#0d2e27] to-[#123e35] text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <div className="relative">
-                  <img 
-                    src="/penguin.jpg" 
-                    alt="Anazk AI Logo" 
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
-                  />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 sm:w-3 h-2.5 sm:h-3 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
+          <div className="mb-3 w-[calc(100vw-2rem)] sm:w-[390px] h-[540px] max-h-[82vh] bg-white rounded-3xl border border-gray-200 shadow-[0_25px_70px_rgba(0,0,0,0.22)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+            
+            {/* VIEW 1: HOME SCREEN */}
+            {chatTab === 'home' && (
+              <div className="flex-1 flex flex-col justify-between bg-gradient-to-b from-[#4b52b2] via-[#5c64c7] to-white relative text-white">
+                {/* Header */}
+                <div className="p-6 pb-2 flex justify-between items-center">
+                  <div className="w-10 h-10 rounded-full bg-[#353b8f] flex items-center justify-center font-bold text-lg text-white shadow-inner">
+                    A
+                  </div>
+                  <button
+                    onClick={() => setChatOpen(false)}
+                    className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-xs sm:text-sm text-white flex items-center gap-1.5">
-                    Anazk AI Guide
-                    <span className="text-[9px] bg-emerald-500/25 text-emerald-300 font-bold px-1.5 py-0.5 rounded border border-emerald-500/40">ONLINE</span>
-                  </h4>
-                  <p className="text-[9px] sm:text-[10px] text-emerald-200/80 font-medium">Ask about pricing, navigation & stealth</p>
+
+                {/* Body / Big Greeting */}
+                <div className="px-6 py-4 space-y-6">
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-black tracking-tight text-white leading-tight">
+                      Hi there 👋
+                    </h3>
+                    <h4 className="text-2xl font-black text-white/90">
+                      How can we help?
+                    </h4>
+                  </div>
+
+                  {/* Send us a message Action Card */}
+                  <button
+                    onClick={() => setChatTab('messages')}
+                    className="w-full bg-white text-gray-900 font-bold px-5 py-4 rounded-2xl shadow-xl flex items-center justify-between hover:bg-gray-50 transition-all active:scale-[0.98] cursor-pointer group"
+                  >
+                    <span className="text-sm font-extrabold text-gray-800">Send us a message</span>
+                    <span className="text-indigo-600 font-black text-base group-hover:translate-x-1 transition-transform">➤</span>
+                  </button>
+                </div>
+
+                {/* Quick Shortcuts */}
+                <div className="px-6 space-y-2 pb-4">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Quick help topics:</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleSendChatMessage('how to buy credits')}
+                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                    >
+                      💳 Buy Credits
+                    </button>
+                    <button
+                      onClick={() => handleSendChatMessage('how to download app')}
+                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                    >
+                      📥 Download .exe
+                    </button>
+                    <button
+                      onClick={() => handleSendChatMessage('is it undetectable on zoom meet')}
+                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                    >
+                      🛡️ Stealth Mode
+                    </button>
+                    <button
+                      onClick={() => handleSendChatMessage('how to book personal mentor')}
+                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                    >
+                      👤 Mentor ₹500
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bottom Navigation Bar */}
+                <div className="bg-white border-t border-gray-150 p-2 flex items-center justify-around text-xs font-bold text-gray-500">
+                  <button
+                    onClick={() => setChatTab('home')}
+                    className="flex flex-col items-center gap-1 text-indigo-600 cursor-pointer"
+                  >
+                    <span className="text-lg">🏠</span>
+                    <span className="text-[11px]">Home</span>
+                  </button>
+                  <button
+                    onClick={() => setChatTab('messages')}
+                    className="flex flex-col items-center gap-1 hover:text-indigo-600 transition-colors cursor-pointer"
+                  >
+                    <span className="text-lg">💬</span>
+                    <span className="text-[11px]">Messages</span>
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setChatOpen(false)}
-                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-all cursor-pointer"
-                title="Close chat"
-              >
-                <X size={16} />
-              </button>
-            </div>
+            )}
 
-            {/* Chat Messages Body */}
-            <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3 bg-gray-50/60 text-xs no-scrollbar">
-              {chatMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-                >
-                  <div className={`flex gap-2 max-w-[88%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    {msg.sender === 'bot' && (
-                      <img 
-                        src="/penguin.jpg" 
-                        alt="Anazk Bot" 
-                        className="w-7 h-7 rounded-full object-cover border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.3)] shrink-0 mt-0.5"
-                      />
-                    )}
-                    <div
-                      className={`p-3.5 rounded-2xl leading-relaxed whitespace-pre-line font-medium ${
-                        msg.sender === 'user'
-                          ? 'bg-[#0d2e27] text-white rounded-tr-none shadow-sm'
-                          : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
-                      }`}
+            {/* VIEW 2: MESSAGES SCREEN */}
+            {chatTab === 'messages' && (
+              <div className="flex-1 flex flex-col bg-white text-left">
+                {/* Header */}
+                <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setChatTab('home')}
+                      className="text-gray-400 hover:text-gray-700 p-1 rounded-full text-base font-bold cursor-pointer"
                     >
-                      {msg.text}
+                      ←
+                    </button>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#4b52b2] to-[#6d75dd] text-white flex items-center justify-center font-bold text-sm">
+                      Fin
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-xs text-gray-900 flex items-center gap-1.5">
+                        Fin
+                      </h4>
+                      <p className="text-[10px] text-gray-400 font-medium">The team can also help</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setChatOpen(false)}
+                      className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full transition-all cursor-pointer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subheader */}
+                <div className="text-center py-2 bg-gray-50 border-b border-gray-100 text-[11px] font-semibold text-gray-400">
+                  Ask us anything, or share your feedback.
+                </div>
+
+                {/* Chat Messages Body */}
+                <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-white text-xs no-scrollbar">
+                  
+                  {/* Email & Usual Reply Time Notice Box */}
+                  <div className="bg-[#f2f4f8] p-3.5 rounded-2xl text-gray-700 space-y-1.5 text-[11px]">
+                    <p className="font-medium text-gray-600">You'll get replies here and in your email:</p>
+                    <p className="font-bold text-gray-900 flex items-center gap-1.5">
+                      <span>✉️</span> {user?.email || 'supportanazkai@gmail.com'}
+                    </p>
+                    <div className="pt-1.5 border-t border-gray-200/60 flex items-center gap-1.5 text-gray-500 font-semibold">
+                      <span>⏱️ Our usual reply time:</span>
+                      <span className="font-bold text-emerald-600">⚡ Instant with AI</span>
                     </div>
                   </div>
 
-                  {/* Interactive Action Chips */}
-                  {msg.actions && msg.actions.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5 max-w-[95%] pl-9">
-                      {msg.actions.map((act, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            if (act.onClick) {
-                              act.onClick();
-                            } else if (act.query) {
-                              handleSendChatMessage(act.query);
-                            }
-                          }}
-                          className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 hover:text-emerald-900 border border-emerald-200 hover:border-emerald-400 rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                    >
+                      <div className={`flex gap-2 max-w-[88%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div
+                          className={`p-3.5 rounded-2xl leading-relaxed whitespace-pre-line font-medium ${
+                            msg.sender === 'user'
+                              ? 'bg-[#4b52b2] text-white rounded-tr-none shadow-sm'
+                              : 'bg-gray-100 text-gray-800 rounded-tl-none shadow-xs'
+                          }`}
                         >
-                          {act.label}
-                        </button>
-                      ))}
+                          {msg.text}
+                        </div>
+                      </div>
+
+                      {/* Action Chips */}
+                      {msg.actions && msg.actions.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5 max-w-[95%]">
+                          {msg.actions.map((act, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                if (act.onClick) {
+                                  act.onClick();
+                                } else if (act.query) {
+                                  handleSendChatMessage(act.query);
+                                }
+                              }}
+                              className="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 hover:border-indigo-400 rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              {act.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {isBotTyping && (
+                    <div className="flex gap-2 items-center text-gray-400 pl-1">
+                      <div className="bg-gray-100 px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-xs flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-[#4b52b2] rounded-full animate-bounce"></span>
+                        <span className="w-1.5 h-1.5 bg-[#4b52b2] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1.5 h-1.5 bg-[#4b52b2] rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
                     </div>
                   )}
-                </div>
-              ))}
 
-              {isBotTyping && (
-                <div className="flex gap-2 items-center text-gray-400 pl-1">
-                  <img 
-                    src="/penguin.jpg" 
-                    alt="Anazk Bot" 
-                    className="w-7 h-7 rounded-full object-cover border border-emerald-400/60 shadow-[0_0_8px_rgba(16,185,129,0.3)] shrink-0"
-                  />
-                  <div className="bg-white border border-gray-200 px-3 py-2 rounded-2xl rounded-tl-none shadow-xs flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  <div className="text-center py-2">
+                    <span className="text-[10px] font-bold text-gray-400 flex items-center justify-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      AI Assistant active • Waiting for a teammate
+                    </span>
                   </div>
-                </div>
-              )}
-              <div ref={chatMessagesEndRef} />
-            </div>
 
-            {/* Chat Input Bar */}
-            <div className="p-3 bg-white border-t border-gray-150 flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Ask where to go or how to buy credits..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSendChatMessage(chatInput);
-                  }
-                }}
-                className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-xl outline-none text-xs font-semibold text-gray-800 placeholder-gray-400 transition-colors"
-              />
-              <button
-                onClick={() => handleSendChatMessage(chatInput)}
-                disabled={!chatInput.trim()}
-                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-sm shrink-0 ${
-                  chatInput.trim()
-                    ? 'bg-[#0d2e27] hover:bg-emerald-900 text-white cursor-pointer active:scale-95'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-                title="Send message"
-              >
-                <Send size={15} />
-              </button>
-            </div>
+                  <div ref={chatMessagesEndRef} />
+                </div>
+
+                {/* Input Bar */}
+                <div className="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Message..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSendChatMessage(chatInput);
+                      }
+                    }}
+                    className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 focus:border-indigo-500 rounded-xl outline-none text-xs font-semibold text-gray-800 placeholder-gray-400 transition-colors"
+                  />
+                  <button
+                    onClick={() => handleSendChatMessage(chatInput)}
+                    disabled={!chatInput.trim()}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-sm shrink-0 ${
+                      chatInput.trim()
+                        ? 'bg-[#4b52b2] hover:bg-[#3d4399] text-white cursor-pointer active:scale-95'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Send size={15} />
+                  </button>
+                </div>
+
+                {/* Bottom Navigation */}
+                <div className="bg-white border-t border-gray-150 p-2 flex items-center justify-around text-xs font-bold text-gray-500">
+                  <button
+                    onClick={() => setChatTab('home')}
+                    className="flex flex-col items-center gap-1 hover:text-indigo-600 transition-colors cursor-pointer"
+                  >
+                    <span className="text-lg">🏠</span>
+                    <span className="text-[11px]">Home</span>
+                  </button>
+                  <button
+                    onClick={() => setChatTab('messages')}
+                    className="flex flex-col items-center gap-1 text-indigo-600 cursor-pointer"
+                  >
+                    <span className="text-lg">💬</span>
+                    <span className="text-[11px]">Messages</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 
         {/* Floating Trigger Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className="pl-2.5 pr-5 py-2.5 bg-gradient-to-r from-[#0d2e27] to-[#123e35] hover:from-[#061713] hover:to-[#0d2e27] text-white rounded-full shadow-[0_12px_35px_rgba(13,46,39,0.38)] hover:shadow-[0_16px_45px_rgba(16,185,129,0.4)] border border-emerald-500/30 flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
+          className="pl-2.5 pr-5 py-2.5 bg-gradient-to-r from-[#4b52b2] to-[#5c64c7] hover:from-[#3d4399] hover:to-[#4b52b2] text-white rounded-full shadow-[0_12px_35px_rgba(75,82,178,0.38)] hover:shadow-[0_16px_45px_rgba(75,82,178,0.5)] border border-indigo-300/30 flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
           aria-label="Open AI Support Chatbot"
         >
           <div className="relative flex items-center justify-center">
-            <img 
-              src="/penguin.jpg" 
-              alt="Anazk Penguin" 
-              className="w-8 h-8 rounded-full object-cover border-2 border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.5)] group-hover:rotate-12 transition-transform duration-300"
-            />
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm text-white">
+              💬
+            </div>
             <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0d2e27]"></span>
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#4b52b2]"></span>
           </div>
           <div className="text-left">
             <span className="font-extrabold text-xs tracking-tight block text-white">
-              {chatOpen ? 'Close Guide' : 'AI Guide & Support'}
+              {chatOpen ? 'Close Chat' : 'Chat with AI'}
             </span>
-            <span className="text-[10px] text-emerald-300 font-semibold block leading-none">
-              {chatOpen ? 'Click to hide' : 'Ask Anazk AI'}
+            <span className="text-[10px] text-indigo-100 font-semibold block leading-none">
+              {chatOpen ? 'Click to hide' : 'Online · Ask anything'}
             </span>
           </div>
         </button>
       </div>
-
-      {/* Floating Right Scroll Navigator Removed */}
 
     </div>
   );
