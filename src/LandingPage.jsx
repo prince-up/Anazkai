@@ -114,9 +114,16 @@ function LandingPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
-
   // Key Generation State
   const [generatedKey, setGeneratedKey] = useState('');
+
+  // Personal Mentor Guidance State
+  const [showMentorModal, setShowMentorModal] = useState(false);
+  const [mentorStep, setMentorStep] = useState(1); // 1 = overview, 2 = details form, 3 = success
+  const [mentorForm, setMentorForm] = useState({ name: '', email: '', phone: '' });
+  const [mentorBooking, setMentorBooking] = useState(null);
+  const [mentorLoading, setMentorLoading] = useState(false);
+  const [mentorError, setMentorError] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -124,6 +131,13 @@ function LandingPage() {
       setUser(activeUser);
       if (activeUser && currentView === 'auth') {
         setCurrentView('dashboard');
+      }
+      if (activeUser) {
+        setMentorForm(prev => ({
+          ...prev,
+          email: activeUser.email || prev.email,
+          name: activeUser.user_metadata?.full_name || prev.name
+        }));
       }
     });
 
@@ -141,9 +155,115 @@ function LandingPage() {
   }, [currentView]);
 
   useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get('payment');
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('payment');
     if (status) setPaymentStatus(status);
   }, []);
+
+  const handleMentorPayAndBook = async (e) => {
+    if (e) e.preventDefault();
+    if (!mentorForm.name.trim() || !mentorForm.email.trim() || !mentorForm.phone.trim()) {
+      setMentorError('Please fill in all details (Full Name, Email, and Phone number).');
+      return;
+    }
+    setMentorLoading(true);
+    setMentorError('');
+
+    try {
+      const res = await loadRazorpay();
+      if (!res || !window.Razorpay) {
+        throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+      }
+
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          planId: 'personal-mentor',
+          amount: 500 * 100,
+          currency: 'INR'
+        }),
+      });
+      const data = await response.json();
+      const orderId = data.order_id || data.orderId;
+      if (!response.ok || !orderId) {
+        throw new Error(data.error || 'Failed to initiate order. Please try again.');
+      }
+
+      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+      const options = {
+        key: keyId,
+        amount: data.amount,
+        currency: data.currency || 'INR',
+        name: 'Anazk AI',
+        description: '1-on-1 Personal Guidance Session with Mentor',
+        order_id: orderId,
+        handler: async function (paymentResponse) {
+          try {
+            setMentorLoading(true);
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+                planId: 'personal-mentor',
+                email: mentorForm.email,
+                name: mentorForm.name,
+                phone: mentorForm.phone
+              }),
+            });
+
+            try {
+              await supabase.from('mentor_bookings').insert([{
+                full_name: mentorForm.name,
+                email: mentorForm.email,
+                phone: mentorForm.phone,
+                amount_paid: 500,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                mentor_phone: '7986614646',
+                created_at: new Date().toISOString()
+              }]);
+            } catch (supaErr) {}
+
+            setMentorBooking({
+              name: mentorForm.name,
+              email: mentorForm.email,
+              phone: mentorForm.phone,
+              paymentId: paymentResponse.razorpay_payment_id,
+              date: new Date().toLocaleDateString()
+            });
+            setMentorStep(3); // Success step
+          } catch (err) {
+            setMentorError(err.message || 'Payment verification failed.');
+          } finally {
+            setMentorLoading(false);
+          }
+        },
+        prefill: {
+          email: mentorForm.email,
+          name: mentorForm.name,
+          contact: mentorForm.phone
+        },
+        theme: {
+          color: '#10b981',
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        setMentorError(resp.error?.description || 'Payment was cancelled or failed.');
+        setMentorLoading(false);
+      });
+      rzp.open();
+    } catch (err) {
+      setMentorError(err.message || 'Booking initiation failed.');
+    } finally {
+      setMentorLoading(false);
+    }
+  };
 
   const startCheckout = async (planId) => {
     if (!user) {
@@ -1770,6 +1890,74 @@ class Solution {
         </div>
       </section>
 
+      {/* Other Services: Your Complete Interview Success Toolkit */}
+      <section className="py-24 px-4 sm:px-6 bg-gradient-to-b from-[#f0fbf5]/40 via-white to-[#f0fbf5]/30 border-t border-emerald-500/10 text-center">
+        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+          {/* Top Pill Badge */}
+          <div>
+            <span className="inline-block bg-[#064e3b] text-white font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm">
+              Other Services
+            </span>
+          </div>
+
+          {/* Heading & Subtitle */}
+          <div className="space-y-3">
+            <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
+              Your Complete Interview Success <span className="text-[#10b981]">Toolkit</span>
+            </h2>
+            <p className="text-gray-500 font-semibold text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
+              From AI interview assistance to expert career guidance, Anazk AI helps you succeed at every stage of the hiring process.
+            </p>
+          </div>
+
+          {/* Center Personal Guidance Card */}
+          <div className="pt-4 max-w-xl mx-auto">
+            <div className="bg-white/90 backdrop-blur-sm p-8 sm:p-10 rounded-3xl border border-emerald-500/20 shadow-xl space-y-6 text-center hover:border-emerald-500/40 transition-all">
+              <div className="flex items-center justify-center gap-2 text-emerald-800 font-display font-black text-lg sm:text-xl">
+                <User size={20} className="text-emerald-600" />
+                <span>Personal Guidance</span>
+              </div>
+
+              <p className="text-gray-600 font-semibold text-xs sm:text-sm max-w-md mx-auto">
+                Get one-on-one career guidance from an expert mentor.
+              </p>
+
+              <ul className="space-y-2.5 text-xs sm:text-sm font-semibold text-gray-700 max-w-xs mx-auto text-left py-2">
+                <li className="flex items-center gap-2.5">
+                  <Check size={16} className="text-emerald-500 shrink-0" />
+                  <span>Resume Reviews</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check size={16} className="text-emerald-500 shrink-0" />
+                  <span>Job Portal Optimization</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check size={16} className="text-emerald-500 shrink-0" />
+                  <span>Interview Strategy</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check size={16} className="text-emerald-500 shrink-0" />
+                  <span>More Interview Opportunities</span>
+                </li>
+              </ul>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setMentorStep(1);
+                    setMentorError('');
+                    setShowMentorModal(true);
+                  }}
+                  className="w-full sm:w-auto px-8 py-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-black text-sm shadow-xs transition-all cursor-pointer hover:shadow-md active:scale-[0.98]"
+                >
+                  Talk to an expert
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQs */}
       <section className="py-24 bg-gradient-to-tr from-[#edf9f3] to-white border-t border-emerald-500/5 px-6">
         <div className="max-w-4xl mx-auto space-y-12 text-left">
@@ -2111,7 +2299,244 @@ class Solution {
         </div>
       )}
 
-      {/* 3. Legal Terms Modal */}
+      {/* 3. Personal Mentor Guidance Modal */}
+      {showMentorModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
+          <div className="bg-[#0b120e] border border-emerald-500/30 text-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left my-auto">
+            
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowMentorModal(false);
+                setMentorStep(1);
+                setMentorError('');
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            {/* STEP 1: Overview & Bullets */}
+            {mentorStep === 1 && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="font-display font-black text-2xl text-white mb-2">
+                    Personal Guidance
+                  </h3>
+                  <p className="text-gray-400 text-xs sm:text-sm font-medium leading-relaxed">
+                    A one-on-one session with an expert to sharpen every part of your job search. Here's what we'll cover:
+                  </p>
+                </div>
+
+                <div className="space-y-3 py-1">
+                  <div className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#22c55e] shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-200 font-medium leading-tight">
+                      Personalized resume review with actionable fixes
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#22c55e] shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-200 font-medium leading-tight">
+                      Job portal optimization (LinkedIn, Naukri) for more recruiter reach
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#22c55e] shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-200 font-medium leading-tight">
+                      Tailored interview strategy for your target roles
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#22c55e] shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-200 font-medium leading-tight">
+                      Guidance to unlock more interview opportunities
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Check size={16} className="text-[#22c55e] shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-gray-200 font-medium leading-tight">
+                      One-on-one session with an experienced mentor
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-emerald-950/80 flex items-center justify-between">
+                  <span className="text-gray-400 text-sm font-medium">Session fee</span>
+                  <span className="font-display font-black text-2xl text-[#22c55e]">₹500</span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setMentorError('');
+                    setMentorStep(2);
+                  }}
+                  className="w-full py-3.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/70 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-950/40 transition-all cursor-pointer text-center"
+                >
+                  Book your slot
+                </button>
+              </div>
+            )}
+
+            {/* STEP 2: Candidate Details Form */}
+            {mentorStep === 2 && (
+              <form onSubmit={handleMentorPayAndBook} className="space-y-5">
+                <div>
+                  <h3 className="font-display font-black text-2xl text-white mb-1.5">
+                    Your details
+                  </h3>
+                  <p className="text-gray-400 text-xs sm:text-sm font-medium">
+                    We'll use these to schedule your session and send the confirmation.
+                  </p>
+                </div>
+
+                {mentorError && (
+                  <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-red-300 text-xs font-semibold">
+                    {mentorError}
+                  </div>
+                )}
+
+                <div className="space-y-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Full name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Aarav Sharma"
+                      value={mentorForm.name}
+                      onChange={(e) => setMentorForm({ ...mentorForm, name: e.target.value })}
+                      className="w-full bg-transparent border-b border-gray-700 focus:border-emerald-500 py-2 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={mentorForm.email}
+                      onChange={(e) => setMentorForm({ ...mentorForm, email: e.target.value })}
+                      className="w-full bg-transparent border-b border-gray-700 focus:border-emerald-500 py-2 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1">
+                      Phone
+                    </label>
+                    <div className="flex items-center gap-2 border-b border-gray-700 focus-within:border-emerald-500 py-2 transition-colors">
+                      <span className="text-xs font-bold text-gray-400 shrink-0">IN +91</span>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="98765 43210"
+                        value={mentorForm.phone}
+                        onChange={(e) => setMentorForm({ ...mentorForm, phone: e.target.value })}
+                        className="w-full bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMentorError('');
+                      setMentorStep(1);
+                    }}
+                    className="text-gray-400 hover:text-white text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    ← Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={mentorLoading}
+                    className="px-6 py-3 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500 text-emerald-300 hover:text-white rounded-xl text-sm font-bold shadow-lg transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {mentorLoading ? 'Processing...' : 'Pay ₹500 & book'}
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-gray-500 text-center font-medium pt-1">
+                  Secured by Razorpay
+                </p>
+              </form>
+            )}
+
+            {/* STEP 3: Payment Success & Direct Mentor Contact */}
+            {mentorStep === 3 && (
+              <div className="space-y-5 text-center py-2">
+                <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-[#22c55e] flex items-center justify-center mx-auto text-2xl border border-emerald-500/30">
+                  ✓
+                </div>
+
+                <div>
+                  <h3 className="font-display font-black text-2xl text-white mb-1.5">
+                    Session Booked! 🎉
+                  </h3>
+                  <p className="text-gray-300 text-xs sm:text-sm font-medium">
+                    Your 1-on-1 Personal Guidance session is confirmed.
+                  </p>
+                </div>
+
+                <div className="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-2xl text-left space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Candidate:</span>
+                    <span className="text-white font-bold">{mentorBooking?.name}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Email:</span>
+                    <span className="text-white font-bold">{mentorBooking?.email}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Session Fee:</span>
+                    <span className="text-[#22c55e] font-bold">₹500 (Paid)</span>
+                  </div>
+                  <div className="flex justify-between text-xs border-t border-emerald-900/50 pt-2">
+                    <span className="text-gray-400">Mentor Helpline:</span>
+                    <span className="text-emerald-300 font-bold">+91 7986614646</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 pt-2">
+                  <a
+                    href={`https://wa.me/917986614646?text=${encodeURIComponent(`Hi Mentor, I have booked a 1-on-1 Personal Guidance Session on Anazk AI.\nName: ${mentorBooking?.name || ''}\nEmail: ${mentorBooking?.email || ''}\nPhone: ${mentorBooking?.phone || ''}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>💬 Chat with Mentor on WhatsApp (+91 7986614646)</span>
+                  </a>
+
+                  <a
+                    href="tel:+917986614646"
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>📞 Call Mentor (+91 7986614646)</span>
+                  </a>
+                </div>
+
+                <button
+                  onClick={() => setShowMentorModal(false)}
+                  className="text-gray-400 hover:text-white text-xs font-semibold mt-2 cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* 4. Legal Terms Modal */}
       {showTermsModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-3.5 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full p-5 sm:p-8 border border-emerald-500/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 text-left text-gray-800 flex flex-col max-h-[85vh] my-auto">

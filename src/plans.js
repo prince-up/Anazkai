@@ -28,6 +28,15 @@ export const SUBSCRIPTION_PLANS = [
     durationMinutes: 1200,
   },
   {
+    id: 'personal-mentor',
+    name: '1-on-1 Personal Guidance Session',
+    priceInr: 500,
+    interval: 'one-time',
+    displayPrice: '₹500',
+    detail: 'Personal 1-on-1 Session',
+    durationMinutes: 60,
+  },
+  {
     id: 'weekly',
     name: 'Weekly',
     priceInr: 1500,
