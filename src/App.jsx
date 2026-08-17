@@ -936,19 +936,6 @@ Format:
         {/* Minimal Window Controls */}
         <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
-            onClick={() => {
-              if (window.require) {
-                const { ipcRenderer } = window.require('electron');
-                ipcRenderer.send('open-devtools');
-              }
-              setShowLogs(prev => !prev);
-            }}
-            className="text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-            title="Open Console / Live Logs"
-          >
-            <span>🐞 Logs</span>
-          </button>
-          <button 
             onClick={() => setShowSettings(true)}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Settings"

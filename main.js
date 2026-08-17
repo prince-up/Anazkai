@@ -21,7 +21,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false, // For simplicity in this example to allow IPC from React
-      devTools: true // Enable Developer Tools for live console inspection
+      devTools: process.argv.includes('--dev') // Enabled Developer Tools only in dev mode
     }
   });
 
@@ -29,12 +29,10 @@ function createWindow() {
   
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
   }
-
-  // Open detached DevTools automatically on launch so user can see full live console
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
 
   // Prevent window from being captured in screen shares, screenshots, or recordings
   mainWindow.setContentProtection(true);
