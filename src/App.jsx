@@ -378,14 +378,17 @@ CRITICAL FORMATTING & ANSWER RULES:
     setIsVoiceMode(false);
   };
 
+  const maxVolumeRef = useRef(0);
+
   const startVoiceMode = async () => {
     try {
       cleanupVoiceResources();
+      maxVolumeRef.current = 0;
 
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
-          noiseSuppression: false, // Don't aggressively suppress speaker sound
+          noiseSuppression: false,
           autoGainControl: true
         } 
       });
@@ -396,12 +399,16 @@ CRITICAL FORMATTING & ANSWER RULES:
       audioContextRef.current = audioContext;
       audioSampleRateRef.current = audioContext.sampleRate;
 
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
       const source = audioContext.createMediaStreamSource(stream);
       audioInputRef.current = source;
 
-      // 2.2x High sensitivity gain node so speaker sound / quiet mic is crystal clear
+      // 3.0x High sensitivity gain node so quiet mic or laptop speakers are clearly heard
       const gainNode = audioContext.createGain();
-      gainNode.gain.value = 2.2;
+      gainNode.gain.value = 3.0;
       source.connect(gainNode);
 
       // ScriptProcessor buffer size 4096 gives real-time raw PCM
@@ -412,13 +419,23 @@ CRITICAL FORMATTING & ANSWER RULES:
       processor.onaudioprocess = (e) => {
         const channel = e.inputBuffer.getChannelData(0);
         audioBuffersRef.current.push(new Float32Array(channel));
+
+        // Calculate live RMS volume
+        let sum = 0;
+        for (let i = 0; i < channel.length; i++) {
+          sum += channel[i] * channel[i];
+        }
+        const rms = Math.sqrt(sum / channel.length);
+        if (rms > maxVolumeRef.current) {
+          maxVolumeRef.current = rms;
+        }
       };
 
       gainNode.connect(processor);
       processor.connect(audioContext.destination);
 
       setIsVoiceMode(true);
-      setOutputText("🎙️ Listening... Speak your interview question now!\n\nClick 'Voice' again when finished speaking.");
+      setOutputText("🎙️ Listening... Speak your interview question now!\n\n(Mic active — click 'Voice' again when finished)");
     } catch (err) {
       console.error("Mic error:", err);
       setOutputText(`Microphone error: ${err.message}. Please check microphone permissions.`);

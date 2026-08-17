@@ -1,6 +1,11 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session } = require('electron');
 const path = require('path');
 
+// Ensure unrestricted audio device access and no user-gesture requirement for audio in Electron
+app.commandLine.appendSwitch('use-fake-ui-for-media-stream');
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('enable-features', 'PulseaudioLoopbackForCast,WebRTCPipeWireCapturer');
+
 let mainWindow;
 
 function createWindow() {
