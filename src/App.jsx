@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -77,11 +77,11 @@ function arrayBufferToBase64(buffer) {
   return window.btoa(binary);
 }
 
-// Fallback / default built-in AI keys for subscribed users
+// AI Engine API Keys: Gemini for Paid Users, Groq for Free Trial Users
 const SYSTEM_DEFAULT_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA';
-const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+const SYSTEM_DEFAULT_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || 'gsk_v1FreeTrialGroqKey2026_llama70b';
 
-function AppContent({ timeRemaining, onLogout }) {
+function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false }) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
@@ -324,8 +324,13 @@ function AppContent({ timeRemaining, onLogout }) {
     
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
     const groqKey = getEffectiveApiKey();
+    const isTrial = isFreeTrial || planType === 'free_trial';
 
-    if (!geminiKey && !groqKey) {
+    if (isTrial && !groqKey) {
+      setOutputText('Groq AI Key is not configured for Free Trial.');
+      return;
+    }
+    if (!isTrial && !geminiKey && !groqKey) {
       setOutputText('AI Engine is not configured.');
       return;
     }
@@ -356,12 +361,100 @@ function AppContent({ timeRemaining, onLogout }) {
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. PRIMARY: GOOGLE GEMINI OFFICIAL STREAMING ENGINE (UNLIMITED)
-    if (geminiKey) {
+    // 1. FREE TRIAL PLAN: GROQ LLAMA 3.3 70B & VISION ENGINE
+    if (isTrial && groqKey) {
+      try {
+        const url = `https://api.groq.com/openai/v1/chat/completions`;
+        const content = [{ type: 'text', text: promptText }];
+
+        if (imageToSend) {
+          content.push({
+            type: 'image_url',
+            image_url: { url: imageToSend }
+          });
+        }
+
+        const groqModels = imageToSend ? [
+          'llama-3.2-11b-vision-preview',
+          'llama-3.2-90b-vision-preview',
+          'qwen-2.5-vl-72b-instruct'
+        ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+
+        for (const modelId of groqModels) {
+          try {
+            const requestBody = { 
+              model: modelId, 
+              messages: [{ role: 'user', content }],
+              temperature: 0.2,
+              max_tokens: 450,
+              stream: true
+            };
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+              body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok && response.body) {
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder();
+              let buffer = '';
+              let firstTokenTime = null;
+
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const jsonStr = line.slice(6).trim();
+                    if (jsonStr && jsonStr !== '[DONE]') {
+                      try {
+                        const data = JSON.parse(jsonStr);
+                        const chunk = data.choices?.[0]?.delta?.content;
+                        if (chunk) {
+                          if (!firstTokenTime) {
+                            firstTokenTime = Date.now();
+                            const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                            setStreamStatus(`⚡ Trial Stream (${latency}s)`);
+                          }
+                          accumulatedReply += chunk;
+                          setOutputText(accumulatedReply);
+                        }
+                      } catch (e) {}
+                    }
+                  }
+                }
+              }
+
+              if (accumulatedReply) {
+                const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+                setStreamStatus(`⚡ ${totalSec}s (Free Trial)`);
+                setInterviewCount(prev => prev + 1);
+                success = true;
+                break;
+              }
+            } else {
+              lastErr = `HTTP ${response.status}`;
+            }
+          } catch (fetchErr) {
+            lastErr = fetchErr.message;
+          }
+        }
+      } catch (groqErr) {
+        lastErr = groqErr.message;
+      }
+    }
+
+    // 2. PAID / VIP PLAN: GOOGLE GEMINI OFFICIAL FLASH STREAMING ENGINE
+    if (!isTrial && geminiKey) {
       const geminiModels = [
+        'gemini-2.0-flash',
         'gemini-flash-latest',
-        'gemini-3.5-flash',
-        'gemini-3.7-flash'
+        'gemini-3.5-flash'
       ];
       
       let imageBase64 = null;
@@ -453,62 +546,7 @@ function AppContent({ timeRemaining, onLogout }) {
       }
     }
 
-    // 2. SECONDARY / FALLBACK: GROQ LLAMA ENGINE
-    if (!success && groqKey) {
-      try {
-        const url = `https://api.groq.com/openai/v1/chat/completions`;
-        const content = [{ type: 'text', text: promptText }];
-
-        if (imageToSend) {
-          content.push({
-            type: 'image_url',
-            image_url: { url: imageToSend }
-          });
-        }
-
-        const groqModels = imageToSend ? [
-          'llama-3.2-11b-vision-preview',
-          'llama-3.2-90b-vision-preview',
-          'qwen-2.5-vl-72b-instruct'
-        ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
-
-        for (const modelId of groqModels) {
-          try {
-            const requestBody = { 
-              model: modelId, 
-              messages: [{ role: 'user', content }],
-              temperature: 0.2,
-              max_tokens: 450
-            };
-            const response = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
-              body: JSON.stringify(requestBody)
-            });
-            const data = await response.json();
-            
-            if (response.ok && data.choices?.[0]?.message?.content) {
-               reply = data.choices[0].message.content;
-               success = true;
-               break;
-            } else {
-               lastErr = data.error?.message || 'Groq error';
-               if (response.status === 401) break;
-            }
-          } catch (fetchErr) {
-            lastErr = fetchErr.message;
-          }
-        }
-      } catch (groqErr) {
-        lastErr = groqErr.message;
-      }
-    }
-
-    if (success && reply) {
-      setOutputText(reply);
-      setInterviewCount(prev => prev + 1);
-      setInputText('');
-    } else {
+    if (!success && !accumulatedReply) {
       setOutputText(`Error: ${lastErr || 'Failed to connect to AI engine. Please check internet connection.'}`);
     }
 
@@ -816,122 +854,215 @@ function AppContent({ timeRemaining, onLogout }) {
     const downsampled = downsampleBuffer(merged, currentSampleRate, 16000);
     const wavBuffer = encodeWAV(downsampled, 16000);
     const base64Wav = arrayBufferToBase64(wavBuffer);
-    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Streaming to Gemini Flash...`);
+    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Processing Voice QA...`);
 
+    const isTrial = isFreeTrial || planType === 'free_trial';
     const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    if (!geminiKey) {
-      setIsLoading(false);
-      setStreamStatus('');
-      setOutputText("⚠️ Gemini API key is missing. Please check your configuration.");
-      return;
-    }
+    const groqKey = getEffectiveApiKey();
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
-    let voiceSysInstruction = `Direct interview copilot. Transcribe question verbatim and provide 2-3 concise spoken bullet points with bold key terms.`;
+    let voiceSysInstruction = `Direct interview copilot. Answer question verbatim in 2-3 concise spoken bullet points with bold key terms.`;
     if (candidateProfile.trim()) {
       voiceSysInstruction += ` Profile: ${candidateProfile.trim()}`;
     }
 
-    const geminiModels = [
-      'gemini-2.0-flash',
-      'gemini-flash-latest',
-      'gemini-1.5-flash'
-    ];
-
-    let geminiSuccess = false;
+    let voiceSuccess = false;
     let accumulatedText = '';
     let lastErr = null;
     let firstTokenLatency = null;
 
-    const executeGeminiCall = async (modelId, isRetry = false) => {
-      const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-      addLog(`[${new Date().toLocaleTimeString()}] ⚡ ${isRetry ? 'Retrying with' : 'Streaming from'} ${modelId}...`);
+    // 1. FREE TRIAL VOICE ENGINE: GROQ WHISPER + GROQ LLAMA 3.3 STREAMING
+    if (isTrial && groqKey) {
+      try {
+        addLog(`[${new Date().toLocaleTimeString()}] ⚡ Transcribing with Groq Whisper...`);
+        const formData = new FormData();
+        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+        formData.append('file', wavBlob, 'audio.wav');
+        formData.append('model', 'whisper-large-v3-turbo');
+        formData.append('response_format', 'json');
 
-      const response = await fetch(geminiStreamUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: voiceSysInstruction }]
+        const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${groqKey}` },
+          body: formData
+        });
+
+        if (!whisperRes.ok) {
+          throw new Error(`Groq Whisper HTTP ${whisperRes.status}`);
+        }
+
+        const whisperData = await whisperRes.json();
+        const transcript = whisperData.text?.trim();
+
+        if (!transcript) {
+          throw new Error('No words recognized by Whisper');
+        }
+
+        addLog(`[${new Date().toLocaleTimeString()}] Question: "${transcript.slice(0, 50)}...". Streaming Groq Llama 3.3...`);
+
+        const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
           },
-          contents: [{
-            parts: [
-              { text: "Transcribe spoken question and give immediate bullet points to say." },
-              {
-                inlineData: {
-                  mimeType: 'audio/wav',
-                  data: base64Wav
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: voiceSysInstruction },
+              { role: 'user', content: transcript }
+            ],
+            temperature: 0.1,
+            max_tokens: 300,
+            stream: true
+          })
+        });
+
+        if (chatRes.ok && chatRes.body) {
+          const reader = chatRes.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr && jsonStr !== '[DONE]') {
+                  try {
+                    const data = JSON.parse(jsonStr);
+                    const chunk = data.choices?.[0]?.delta?.content;
+                    if (chunk) {
+                      if (firstTokenLatency === null) {
+                        firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                        setStreamStatus(`⚡ Trial First word: ${firstTokenLatency}s (Streaming...)`);
+                        setOutputText('');
+                      }
+                      accumulatedText += chunk;
+                      setOutputText(accumulatedText);
+                    }
+                  } catch (e) {}
                 }
               }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 300
-          }
-        })
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error(`HTTP ${response.status} from ${modelId}`);
-      }
-
-      const streamReader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { value, done } = await streamReader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr) {
-              try {
-                const chunkData = JSON.parse(jsonStr);
-                const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (chunkText) {
-                  if (firstTokenLatency === null) {
-                    firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                    setStreamStatus(`⚡ First word: ${firstTokenLatency}s (Streaming...)`);
-                    setOutputText('');
-                  }
-                  accumulatedText += chunkText;
-                  setOutputText(accumulatedText);
-                }
-              } catch (e) {}
             }
           }
-        }
-      }
 
-      return accumulatedText;
-    };
-
-    // Primary call + 1 silent automatic retry
-    for (let i = 0; i < geminiModels.length; i++) {
-      const modelId = geminiModels[i];
-      try {
-        const resText = await executeGeminiCall(modelId, i > 0);
-        if (resText && resText.trim()) {
-          const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-          setStreamStatus(`⚡ First word: ${firstTokenLatency || totalSec}s | Total: ${totalSec}s`);
-          addLog(`[${new Date().toLocaleTimeString()}] ✅ Done in ${totalSec}s (First token: ${firstTokenLatency}s)`);
-          setInterviewCount(prev => prev + 1);
-          geminiSuccess = true;
-          break;
+          if (accumulatedText) {
+            const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+            setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
+            addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Streamed in ${totalSec}s`);
+            setInterviewCount(prev => prev + 1);
+            voiceSuccess = true;
+          }
         }
       } catch (err) {
         lastErr = err.message;
-        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Notice from ${modelId}: ${err.message}`);
+        addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Groq Voice Notice: ${err.message}`);
       }
     }
 
-    if (!geminiSuccess || !accumulatedText) {
+    // 2. PAID / VIP VOICE ENGINE: GOOGLE GEMINI 2.0 FLASH OFFICIAL WAV STREAMING
+    if (!isTrial && geminiKey) {
+      const geminiModels = [
+        'gemini-2.0-flash',
+        'gemini-flash-latest',
+        'gemini-1.5-flash'
+      ];
+
+      const executeGeminiCall = async (modelId, isRetry = false) => {
+        const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+        addLog(`[${new Date().toLocaleTimeString()}] ⚡ ${isRetry ? 'Retrying with' : 'Streaming from'} ${modelId}...`);
+
+        const response = await fetch(geminiStreamUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: voiceSysInstruction }]
+            },
+            contents: [{
+              parts: [
+                { text: "Transcribe spoken question and give immediate bullet points to say." },
+                {
+                  inlineData: {
+                    mimeType: 'audio/wav',
+                    data: base64Wav
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 300
+            }
+          })
+        });
+
+        if (!response.ok || !response.body) {
+          throw new Error(`HTTP ${response.status} from ${modelId}`);
+        }
+
+        const streamReader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await streamReader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr) {
+                try {
+                  const chunkData = JSON.parse(jsonStr);
+                  const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (chunkText) {
+                    if (firstTokenLatency === null) {
+                      firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                      setStreamStatus(`⚡ First word: ${firstTokenLatency}s (Streaming...)`);
+                      setOutputText('');
+                    }
+                    accumulatedText += chunkText;
+                    setOutputText(accumulatedText);
+                  }
+                } catch (e) {}
+              }
+            }
+          }
+        }
+
+        return accumulatedText;
+      };
+
+      for (let i = 0; i < geminiModels.length; i++) {
+        const modelId = geminiModels[i];
+        try {
+          const resText = await executeGeminiCall(modelId, i > 0);
+          if (resText && resText.trim()) {
+            const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+            setStreamStatus(`⚡ First word: ${firstTokenLatency || totalSec}s | Total: ${totalSec}s`);
+            addLog(`[${new Date().toLocaleTimeString()}] ✅ Done in ${totalSec}s (First token: ${firstTokenLatency}s)`);
+            setInterviewCount(prev => prev + 1);
+            voiceSuccess = true;
+            break;
+          }
+        } catch (err) {
+          lastErr = err.message;
+          addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Notice from ${modelId}: ${err.message}`);
+        }
+      }
+    }
+
+    if (!voiceSuccess || !accumulatedText) {
       setIsLoading(false);
       setStreamStatus('');
       addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
@@ -1177,7 +1308,7 @@ function AppContent({ timeRemaining, onLogout }) {
             </div>
             
             <button 
-              onClick={() => setShowSettings(false)}
+              onClick={() => setShowSettings(false)} 
               className="mt-5 w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
             >
               Done
@@ -1216,10 +1347,22 @@ function AppContent({ timeRemaining, onLogout }) {
           )}
 
           {timeRemaining !== undefined && timeRemaining !== null && (
-            <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-2 py-0.5 rounded-full text-xs">
-              <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
-              <span className={`text-[9px] font-extrabold font-mono uppercase ${typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300")}`}>
-                {timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`}
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs border ${
+              isFreeTrial || planType === 'free_trial'
+                ? 'bg-amber-500/10 border-amber-500/30' 
+                : 'bg-black/40 border-white/10'
+            }`}>
+              {isFreeTrial || planType === 'free_trial' ? (
+                <Gift size={10} className="text-amber-400 animate-pulse" />
+              ) : (
+                <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
+              )}
+              <span className={`text-[9px] font-extrabold font-mono uppercase ${
+                isFreeTrial || planType === 'free_trial'
+                  ? 'text-amber-300 font-black' 
+                  : (typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300"))
+              }`}>
+                {isFreeTrial || planType === 'free_trial' ? `TRIAL: ${timeRemaining}m` : (timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`)}
               </span>
               {onLogout && (
                 <>
