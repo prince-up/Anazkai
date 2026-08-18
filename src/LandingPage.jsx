@@ -223,7 +223,6 @@ function LandingPage() {
                 phone: mentorForm.phone,
                 amount_paid: 500,
                 razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                mentor_phone: '7986614646',
                 created_at: new Date().toISOString()
               }]);
             } catch (supaErr) {}
@@ -497,11 +496,71 @@ function LandingPage() {
     }
   }, [chatMessages, chatOpen, chatTab]);
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  // Active Industry for Works For All Industries Section
+  const [selectedIndustry, setSelectedIndustry] = useState('Tech');
+
+  const industryProfiles = {
+    Tech: {
+      label: 'Tech',
+      icon: '💻',
+      question: "Can you explain how you would design a scalable distributed rate limiter?",
+      answer: "• Algorithm: Token Bucket backed by Redis.\n• Concurrency: Atomic Redis Lua scripts with TTL to avoid race conditions.\n• Resiliency: Sliding-window local fallback caches.\n• Observability: Track rejected spikes and p99 latency."
+    },
+    Consulting: {
+      label: 'Consulting',
+      icon: '💼',
+      question: "How would you assess market entry for an EV charging startup entering Southeast Asia?",
+      answer: "• Market Sizing: Calculate EV adoption curves and grid readiness.\n• Unit Economics: CAPEX per DC fast charger vs utilization rate.\n• Strategic Moats: Partner with utility providers & real estate fleets.\n• Risk: Mitigate grid volatility with local battery buffer storage."
+    },
+    Marketing: {
+      label: 'Marketing',
+      icon: '📢',
+      question: "What strategies would you deploy to reduce Customer Acquisition Cost (CAC) by 30%?",
+      answer: "• Channels: Scale high-intent programmatic SEO and targeted creator collabs.\n• Funnel: A/B test personalized onboarding to lift trial conversion by 22%.\n• Compounding: Tiered user referral loops for viral acquisition."
+    },
+    Finance: {
+      label: 'Finance',
+      icon: '💳',
+      question: "Walk me through the key drivers in a Discounted Cash Flow (DCF) valuation.",
+      answer: "• Cash Flows: 5-year forecast of Unlevered Free Cash Flow (UFCF).\n• Cost of Capital: WACC derived from CAPM cost of equity + debt.\n• Terminal Value: Gordon Growth model backed by exit multiples.\n• Sensitivity: Matrix testing against WACC and long-term margin."
+    },
+    Sales: {
+      label: 'Sales',
+      icon: '🎯',
+      question: "How do you handle an enterprise client objection regarding price?",
+      answer: "• Isolate: Determine if budget or ROI certainty is the true friction point.\n• Anchor: Quantify cost against annual operational inefficiency.\n• Phased PoC: Milestone-gated pilot with guaranteed SLA milestones.\n• Multi-Thread: Align technical champions with the economic buyer."
+    },
+    Healthcare: {
+      label: 'Healthcare',
+      icon: '🩺',
+      question: "How do you ensure data integrity and compliance in digital patient workflows?",
+      answer: "• Compliance: Strict HIPAA adherence, BAA agreements, end-to-end encryption.\n• Audit: Tamper-proof immutable access logging on all EHR queries.\n• Interoperability: FHIR/HL7 API standards for cross-system clinical exchange."
+    },
+    Operations: {
+      label: 'Operations',
+      icon: '📊',
+      question: "How do you diagnose and eliminate supply chain inventory bottlenecks?",
+      answer: "• Value Stream: Map cycle times across supplier nodes & customs clearance.\n• Safety Stock: Dynamic reorder points adjusted for lead-time variance.\n• Root Cause: 5-Whys framework to eliminate freight handling delays."
+    },
+    More: {
+      label: '+ More',
+      icon: '➕',
+      question: "Tell me about a time you led a cross-functional initiative with conflicting priorities.",
+      answer: "• Situation: Engineering and Product had divergent release roadmaps.\n• Action: Built transparent OKR impact scoring and weekly alignment syncs.\n• Result: Delivered core feature 2 weeks ahead of schedule with 98% team buy-in."
     }
+  };
+
+  const scrollToSection = (id) => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const yOffset = -75;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 40);
   };
 
   const handleSendChatMessage = async (rawQuery) => {
@@ -540,7 +599,7 @@ Knowledge Base for Anazk AI:
 - Anazk AI is a real-time AI interview copilot with an undetectable invisible desktop overlay that listens to interviewers via Whisper AI and displays instant, high-scoring answers without switching windows.
 - Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
 - Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
-- 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Helpline: +91 7986614646.
+- 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Support Email: supportanazkai@gmail.com.
 - Desktop App: Windows 10/11 64-bit installer (.exe) available on Google Drive: https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing
 - Hotkeys: F1 (trigger/answer), F3 (switch audio input), F4 (copy solution), F8 (re-anchor).
 - Contact Support: supportanazkai@gmail.com.
@@ -597,13 +656,13 @@ Format answers cleanly with short bullet points.`
     if (
       query.includes('mentor') || query.includes('guidance') || query.includes('book') || 
       query.includes('coaching') || query.includes('expert') || query.includes('1-on-1') || 
-      query.includes('resume') || query.includes('7986614646') || query.includes('500')
+      query.includes('resume') || query.includes('500')
     ) {
       return {
-        text: "👤 **1-on-1 Personal Guidance with Mentor (₹500):**\n\n• **Direct 1-on-1 Session:** Tailored mock interviews, resume review, and job portal optimization.\n• **Dedicated Mentor Helpline:** +91 7986614646\n• **Instant WhatsApp Support:** Get dedicated mentorship before your actual interview calls!",
+        text: "👤 **1-on-1 Personal Guidance with Mentor (₹500):**\n\n• **Direct 1-on-1 Session:** Tailored mock interviews, resume review, and job portal strategy.\n• **Dedicated Mentor Email:** supportanazkai@gmail.com\n• **Online Booking:** Complete your booking to receive an instant Google Meet interview schedule!",
         actions: [
           { label: '👉 Book Mentor Session (₹500)', onClick: () => { setMentorStep(1); setMentorError(''); setShowMentorModal(true); setChatOpen(false); } },
-          { label: '💬 WhatsApp Helpline', onClick: () => { window.open('https://wa.me/917986614646', '_blank'); } }
+          { label: '✉️ Email Support', onClick: () => { window.location.href = 'mailto:supportanazkai@gmail.com'; } }
         ]
       };
     }
@@ -1024,14 +1083,13 @@ class Solution {
                         </p>
                       </div>
 
-                      <a 
-                        href="#sandbox" 
-                        onClick={() => setActiveDropdown(null)}
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                      <button 
+                        onClick={() => scrollToSection('sandbox')}
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group cursor-pointer"
                       >
                         <span>Try Live Sandbox</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </a>
+                      </button>
                     </div>
 
                     {/* Right Columns with Divider */}
@@ -1042,24 +1100,24 @@ class Solution {
                         </h4>
                         <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
                           <li>
-                            <a href="#top" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('top')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               ⚡ Overview & Demo
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#features" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('features')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               🚀 Core Features
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#coding-demo" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
-                              💻 Coding & OCR Solve
-                            </a>
+                            <button onClick={() => scrollToSection('industries')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                              💼 All Industries
+                            </button>
                           </li>
                           <li>
-                            <a href="#why-anazk" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               💡 Why Anazk AI
-                            </a>
+                            </button>
                           </li>
                         </ul>
                       </div>
@@ -1070,14 +1128,14 @@ class Solution {
                         </h4>
                         <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
                           <li>
-                            <a href="#privacy" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('privacy')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               🛡️ Invisible Overlay
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#how-it-works" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               ⚙️ System Hotkeys
-                            </a>
+                            </button>
                           </li>
                           <li>
                             <a 
@@ -1093,7 +1151,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left"
+                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
                               🔒 Privacy Protocol
                             </button>
@@ -1137,14 +1195,13 @@ class Solution {
                         </p>
                       </div>
 
-                      <a 
-                        href="#pricing" 
-                        onClick={() => setActiveDropdown(null)}
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                      <button 
+                        onClick={() => scrollToSection('pricing')}
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group cursor-pointer"
                       >
                         <span>View Full Pricing</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </a>
+                      </button>
                     </div>
 
                     {/* Right Columns with Divider */}
@@ -1155,22 +1212,22 @@ class Solution {
                         </h4>
                         <ul className="space-y-3 text-xs font-bold text-[#134237]">
                           <li>
-                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
                               <span className="font-black text-[#0d2e27]">Starter Session</span> — <span className="text-emerald-800 font-black">₹259</span>
                               <span className="block text-[11px] text-[#134237]/75 font-medium">150 Minutes Validity</span>
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
                               <span className="font-black text-[#0d2e27]">Standard Pack</span> — <span className="text-emerald-800 font-black">₹500</span>
                               <span className="block text-[11px] text-[#134237]/75 font-medium">350 Minutes • Popular</span>
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
                               <span className="font-black text-[#0d2e27]">Power Pack</span> — <span className="text-emerald-800 font-black">₹2,500</span>
                               <span className="block text-[11px] text-[#134237]/75 font-medium">2,000 Minutes Full Access</span>
-                            </a>
+                            </button>
                           </li>
                         </ul>
                       </div>
@@ -1250,31 +1307,29 @@ class Solution {
                                 setMentorError('');
                                 setShowMentorModal(true);
                               }}
-                              className="hover:text-emerald-800 hover:underline block text-left"
+                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
                               About & Mentorship
                             </button>
                           </li>
                           <li>
                             <a 
-                              href="https://wa.me/917986614646" 
-                              target="_blank"
-                              rel="noreferrer"
+                              href="mailto:supportanazkai@gmail.com" 
                               onClick={() => setActiveDropdown(null)}
                               className="hover:text-emerald-800 hover:underline block"
                             >
-                              Contact & Helpline
+                              Contact Support
                             </a>
                           </li>
                           <li>
-                            <a href="#faq" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('faq')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               FAQs
-                            </a>
+                            </button>
                           </li>
                           <li>
-                            <a href="#reviews" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                            <button onClick={() => scrollToSection('reviews')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
                               Reviews & Testimonials
-                            </a>
+                            </button>
                           </li>
                         </ul>
                       </div>
@@ -1288,7 +1343,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowTermsModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left"
+                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
                               Terms & Condition
                             </button>
@@ -1296,7 +1351,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left"
+                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
                               Privacy Policy
                             </button>
@@ -1304,7 +1359,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowRefundModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left"
+                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
                               Refund Policy
                             </button>
@@ -1426,11 +1481,11 @@ class Solution {
             </button>
             {navMobileAssistant && (
               <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <a href="#top" onClick={() => setMobileMenuOpen(false)} className="block py-1">⚡ Overview & Demo</a>
-                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-1">🚀 Features</a>
-                <a href="#privacy" onClick={() => setMobileMenuOpen(false)} className="block py-1">🛡️ Invisible Overlay</a>
-                <a href="#why-anazk" onClick={() => setMobileMenuOpen(false)} className="block py-1">💡 Why Anazk AI</a>
-                <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block py-1">⚙️ How It Works</a>
+                <button onClick={() => scrollToSection('top')} className="block py-1 text-left w-full">⚡ Overview & Demo</button>
+                <button onClick={() => scrollToSection('features')} className="block py-1 text-left w-full">🚀 Features</button>
+                <button onClick={() => scrollToSection('industries')} className="block py-1 text-left w-full">💼 All Industries</button>
+                <button onClick={() => scrollToSection('privacy')} className="block py-1 text-left w-full">🛡️ Invisible Overlay</button>
+                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">💡 Why Anazk AI</button>
               </div>
             )}
           </div>
@@ -1446,15 +1501,15 @@ class Solution {
             </button>
             {navMobilePricing && (
               <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
                   Starter Session (₹259 • 150 Mins)
-                </a>
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                </button>
+                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
                   Standard Pack (₹500 • 350 Mins)
-                </a>
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                </button>
+                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
                   Power Pack (₹2,500 • 2000 Mins)
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -1477,16 +1532,16 @@ class Solution {
                     setMentorError('');
                     setShowMentorModal(true);
                   }}
-                  className="block py-1 text-emerald-700 font-bold text-left"
+                  className="block py-1 text-emerald-700 font-bold text-left w-full cursor-pointer"
                 >
                   👤 1-on-1 Personal Guidance (₹500)
                 </button>
-                <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="block py-1">⭐ Reviews & Testimonials</a>
-                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-1">❓ FAQs</a>
-                <a href="https://wa.me/917986614646" target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">💬 WhatsApp Helpline (+91 7986614646)</a>
-                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left">📜 Terms & Conditions</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left">🔒 Privacy Policy</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left">💳 Refund Policy</button>
+                <button onClick={() => scrollToSection('reviews')} className="block py-1 text-left w-full">⭐ Reviews & Testimonials</button>
+                <button onClick={() => scrollToSection('faq')} className="block py-1 text-left w-full">❓ FAQs</button>
+                <a href="mailto:supportanazkai@gmail.com" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">✉️ Support (supportanazkai@gmail.com)</a>
+                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left w-full">📜 Terms & Conditions</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left w-full">🔒 Privacy Policy</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left w-full">💳 Refund Policy</button>
               </div>
             )}
           </div>
@@ -1504,7 +1559,7 @@ class Solution {
             {user ? (
               <button 
                 onClick={() => { setMobileMenuOpen(false); setCurrentView('dashboard'); }}
-                className="w-full py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LayoutDashboard size={14} />
                 <span>Go to Dashboard</span>
@@ -1512,7 +1567,7 @@ class Solution {
             ) : (
               <button 
                 onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
-                className="w-full py-2.5 bg-[#0d2e27] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-[#0d2e27] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Sign in</span>
                 <ArrowRight size={14} />
@@ -1524,7 +1579,7 @@ class Solution {
       )}
 
       {/* Hero Section */}
-      <header className="min-h-screen pt-24 sm:pt-28 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
+      <header id="top" className="min-h-screen pt-24 sm:pt-28 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
          {/* Hero Left Content */}
         <div className="lg:col-span-5 space-y-5 sm:space-y-7 text-left pl-0 pr-0 sm:pr-2">
@@ -1726,7 +1781,7 @@ class Solution {
 
 
       {/* Why Anazk AI Showcase Section */}
-      <section className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1320px] mx-auto space-y-28">
+      <section id="why-anazk" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1320px] mx-auto space-y-28">
         
         {/* Section Heading */}
         <div className="text-center">
@@ -2124,160 +2179,166 @@ class Solution {
         </div>
       </section>
 
-      {/* Privacy Demo Videos Grid */}
-      <section className="py-20 bg-white border-y border-emerald-500/5 px-6">
-        <div className="max-w-5xl mx-auto space-y-12 text-left">
+      {/* ─── WORKS FOR ALL INDUSTRIES (IMAGE 2 REPLACEMENT) ─── */}
+      <section id="industries" className="py-20 sm:py-24 bg-[#0a1210] text-white px-4 sm:px-8 border-y border-emerald-500/20 relative overflow-hidden">
+        {/* Glow ambient backdrops */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-10 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto space-y-12 relative z-10 text-left">
           
-          <div className="text-center space-y-4">
-            <h2 className="font-display font-black text-3xl text-[#0d2e27] tracking-tight">
-              Privacy Demo Videos
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             
-            {/* 1. Zoom */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#0b5cff] text-white font-extrabold flex items-center justify-center rounded-xl text-[10px] uppercase shadow-sm">
-                  zoom
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Zoom</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
-                  </div>
-                </div>
+            {/* Left Column: Heading, Industry Pills, & Link */}
+            <div className="lg:col-span-5 space-y-7">
+              <div className="space-y-3.5">
+                <span className="text-emerald-400 font-extrabold text-xs uppercase tracking-widest block">
+                  Tailored Copilot
+                </span>
+                <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
+                  Works For All Industries
+                </h2>
+                <p className="text-gray-300 font-medium text-sm sm:text-base leading-relaxed">
+                  From first application to final offer, <span className="text-emerald-400 font-bold">Anazk AI</span> empowers job seekers to succeed, faster, smarter, and with confidence.
+                </p>
               </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
+
+              {/* 8 Industry Selector Pills (2 Columns) */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {Object.keys(industryProfiles).map((indKey) => {
+                  const ind = industryProfiles[indKey];
+                  const isSelected = selectedIndustry === indKey;
+                  return (
+                    <button
+                      key={indKey}
+                      onClick={() => setSelectedIndustry(indKey)}
+                      className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer text-left ${
+                        isSelected
+                          ? 'bg-emerald-950/90 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-[1.02]'
+                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-base">{ind.icon}</span>
+                      <span>{ind.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2">
+                <button 
+                  onClick={() => scrollToSection('pricing')}
+                  className="text-xs sm:text-sm font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition-colors cursor-pointer group"
+                >
+                  <span>View interview guides for every role</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
             </div>
 
-            {/* 2. Microsoft Teams */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#4656c2] text-white font-black flex items-center justify-center rounded-xl text-sm shadow-sm">
-                  T
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Microsoft Teams</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
+            {/* Right Column: High-Res Interactive Laptop / Video Call Mockup */}
+            <div className="lg:col-span-7 relative">
+              
+              {/* Laptop Shell Container */}
+              <div className="bg-[#111c18] rounded-3xl border border-emerald-500/25 p-3 sm:p-4 shadow-2xl space-y-3 relative overflow-hidden backdrop-blur-xl">
+                
+                {/* Top Google Meet Browser Header */}
+                <div className="flex items-center justify-between px-3 py-2 bg-black/60 rounded-xl border border-white/10 text-[11px] text-gray-400 font-mono">
+                  <div className="flex items-center gap-2">
+                    <div className="flex space-x-1.5">
+                      <span className="w-2.5 h-2.5 bg-red-500/80 rounded-full inline-block"></span>
+                      <span className="w-2.5 h-2.5 bg-yellow-500/80 rounded-full inline-block"></span>
+                      <span className="w-2.5 h-2.5 bg-green-500/80 rounded-full inline-block"></span>
+                    </div>
+                    <span className="text-gray-300 font-semibold truncate ml-1">meet.google.com/anazk-interview</span>
                   </div>
+                  <span className="text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px]">
+                    100% STEALTH ACTIVE
+                  </span>
                 </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
 
-            {/* 3. Google Meet */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#00863f] text-white font-bold flex items-center justify-center rounded-xl text-[10px] uppercase shadow-sm">
-                  meet
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Google Meet</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
-                  </div>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
+                {/* Main Video Call Area (Split Grid) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[220px] sm:min-h-[250px]">
+                  
+                  {/* Interviewer Video Feed */}
+                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/10 p-3 flex flex-col justify-between relative overflow-hidden group">
+                    <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <div className="flex justify-between items-start z-10">
+                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Interviewer (Hiring Team)
+                      </span>
+                    </div>
 
-            {/* 4. Webex */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#002f5c] text-white font-bold flex items-center justify-center rounded-xl text-[10px] uppercase shadow-sm">
-                  webex
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Webex</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
-                  </div>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
+                    <div className="my-auto text-center py-4 z-10">
+                      <div className="w-14 h-14 rounded-full bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 mx-auto flex items-center justify-center font-black text-lg mb-2 shadow-inner">
+                        HR
+                      </div>
+                      <p className="text-xs text-gray-300 italic max-w-[200px] mx-auto font-medium">
+                        "{industryProfiles[selectedIndustry]?.question}"
+                      </p>
+                    </div>
 
-            {/* 5. Lark/Feishu */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#00b5e2] text-white font-bold flex items-center justify-center rounded-xl text-[10px] uppercase shadow-sm">
-                  lark
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Lark/Feishu</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
+                    <div className="text-[10px] text-gray-400 z-10 flex items-center justify-between">
+                      <span>Live Audio Stream</span>
+                      <span className="text-emerald-400 font-mono font-bold">Whisper AI ⚡ 180ms</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
 
-            {/* 6. Amazon Chime */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#00a896] text-white font-bold flex items-center justify-center rounded-xl text-[10px] uppercase shadow-sm">
-                  chime
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Amazon Chime</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
-                  </div>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
+                  {/* Candidate Feed (You) */}
+                  <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-[#071d18] rounded-2xl border border-emerald-500/30 p-3 flex flex-col justify-between relative overflow-hidden">
+                    <div className="flex justify-between items-start z-10">
+                      <span className="bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        You ({selectedIndustry} Candidate)
+                      </span>
+                    </div>
 
-            {/* 7. Coderpad.io */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#c8102e] text-white font-mono font-bold flex items-center justify-center rounded-xl text-[10px] shadow-sm">
-                  &lt;/&gt;
-                </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">Coderpad.io</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
-                  </div>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </div>
+                    {/* Quiet Anazk AI Overlay Assistant Card */}
+                    <div className="bg-black/85 backdrop-blur-md border border-emerald-400/40 p-3 rounded-xl shadow-lg my-auto z-10 text-left space-y-1.5 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center justify-between pb-1 border-b border-emerald-500/20">
+                        <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
+                          <Sparkles size={11} />
+                          Anazk AI Speaking Points ({selectedIndustry})
+                        </span>
+                        <span className="text-[9px] text-gray-400 font-mono">Invisible Overlay</span>
+                      </div>
+                      <p className="text-[11px] text-gray-200 leading-relaxed font-medium whitespace-pre-line">
+                        {industryProfiles[selectedIndustry]?.answer}
+                      </p>
+                    </div>
 
-            {/* 8. HackerRank */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-emerald-500/30 hover:shadow-md transition-all flex items-center justify-between shadow-sm cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#2ec866] text-white font-extrabold flex items-center justify-center rounded-xl text-[10px] shadow-sm">
-                  H
+                    <div className="text-[10px] text-emerald-300/80 z-10 flex items-center justify-between">
+                      <span>Screen share active</span>
+                      <span className="text-emerald-400 font-bold">Overlay: Hidden to Team 🔒</span>
+                    </div>
+                  </div>
+
                 </div>
-                <div>
-                  <span className="block font-bold text-sm text-[#0d2e27]">HackerRank</span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] text-gray-500 font-semibold">Undetectable, checked 21h ago.</span>
+
+                {/* Bottom Call Controls Strip */}
+                <div className="px-4 py-2.5 bg-black/70 rounded-xl border border-white/10 flex items-center justify-between text-xs text-gray-400">
+                  <div className="font-mono text-[11px] text-gray-300 font-semibold">
+                    1:35 PM | Anazk AI Protected Session
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs">🎤</span>
+                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs">📹</span>
+                    <span className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center text-xs">📞</span>
                   </div>
                 </div>
+
               </div>
-              <ArrowRight size={16} className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
+
             </div>
 
           </div>
+
         </div>
       </section>
 
       {/* Real Stories From Real Interviews Section */}
-      <section className="py-24 px-4 sm:px-6 bg-[#f0fbf5]/60 border-t border-emerald-500/10 overflow-hidden relative text-center">
+      <section id="reviews" className="py-24 px-4 sm:px-6 bg-[#f0fbf5]/60 border-t border-emerald-500/10 overflow-hidden relative text-center">
         <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
           
           {/* Top Pill Badge */}
@@ -2518,7 +2579,7 @@ class Solution {
       </section>
 
       {/* Other Services: Your Complete Interview Success Toolkit */}
-      <section className="py-24 px-4 sm:px-6 bg-gradient-to-b from-[#f0fbf5]/40 via-white to-[#f0fbf5]/30 border-t border-emerald-500/10 text-center">
+      <section id="mentor" className="py-24 px-4 sm:px-6 bg-gradient-to-b from-[#f0fbf5]/40 via-white to-[#f0fbf5]/30 border-t border-emerald-500/10 text-center">
         <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
           {/* Top Pill Badge */}
           <div>
@@ -2586,7 +2647,7 @@ class Solution {
       </section>
 
       {/* FAQs */}
-      <section className="py-24 bg-gradient-to-tr from-[#edf9f3] to-white border-t border-emerald-500/5 px-6">
+      <section id="faq" className="py-24 bg-gradient-to-tr from-[#edf9f3] to-white border-t border-emerald-500/5 px-6">
         <div className="max-w-4xl mx-auto space-y-12 text-left">
           <div className="text-center space-y-4">
             <span className="inline-block bg-teal-100 text-teal-800 border border-teal-200 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
@@ -3203,26 +3264,26 @@ class Solution {
                     <span className="text-[#22c55e] font-bold">₹500 (Paid)</span>
                   </div>
                   <div className="flex justify-between text-xs border-t border-emerald-900/50 pt-2">
-                    <span className="text-gray-400">Mentor Helpline:</span>
-                    <span className="text-emerald-300 font-bold">+91 7986614646</span>
+                    <span className="text-gray-400">Support Email:</span>
+                    <span className="text-emerald-300 font-bold">supportanazkai@gmail.com</span>
                   </div>
+                </div>
+
+                <div className="p-3.5 bg-emerald-950/60 border border-emerald-500/30 rounded-2xl text-left text-xs text-gray-300 space-y-1.5">
+                  <p className="font-bold text-white flex items-center gap-1.5">
+                    <span>✉️</span> What happens next?
+                  </p>
+                  <p className="text-[11px] text-gray-300 leading-relaxed">
+                    Our expert mentor will send your personalized Google Meet invite and interview prep checklist directly to <strong className="text-emerald-400">{mentorBooking?.email}</strong> within 2-4 hours.
+                  </p>
                 </div>
 
                 <div className="space-y-2.5 pt-2">
                   <a
-                    href={`https://wa.me/917986614646?text=${encodeURIComponent(`Hi Mentor, I have booked a 1-on-1 Personal Guidance Session on Anazk AI.\nName: ${mentorBooking?.name || ''}\nEmail: ${mentorBooking?.email || ''}\nPhone: ${mentorBooking?.phone || ''}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    href="mailto:supportanazkai@gmail.com"
+                    className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
-                    <span>💬 Chat with Mentor on WhatsApp (+91 7986614646)</span>
-                  </a>
-
-                  <a
-                    href="tel:+917986614646"
-                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>📞 Call Mentor (+91 7986614646)</span>
+                    <span>✉️ Contact Support (supportanazkai@gmail.com)</span>
                   </a>
                 </div>
 
