@@ -462,11 +462,11 @@ function LandingPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
 
-  // Top Navbar Dropdown States (GirGit AI Style)
-  const [navAssistantOpen, setNavAssistantOpen] = useState(false);
-  const [navServicesOpen, setNavServicesOpen] = useState(false);
+  // Top Navbar Mega Menu Dropdown States (GirGit AI Style)
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'assistant' | 'pricing' | 'others' | null
   const [navMobileAssistant, setNavMobileAssistant] = useState(false);
-  const [navMobileServices, setNavMobileServices] = useState(false);
+  const [navMobilePricing, setNavMobilePricing] = useState(false);
+  const [navMobileOthers, setNavMobileOthers] = useState(false);
 
   // Corner Floating AI Support Chatbot State (Intercom / Fin Style)
   const [chatOpen, setChatOpen] = useState(false);
@@ -972,9 +972,9 @@ class Solution {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-sky-200/25 via-blue-100/15 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
-      {/* ─── TOP NAVBAR (GIRGIT AI STYLE) ─── */}
+      {/* ─── TOP NAVBAR (GIRGIT AI MEGA-MENU STYLE) ─── */}
       <header className="fixed top-0 inset-x-0 z-50 bg-[#eef8f3]/95 backdrop-blur-md border-b border-emerald-500/15 transition-all duration-300">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between relative">
           
           {/* Left: Brand Logo & Title */}
           <div 
@@ -991,153 +991,344 @@ class Solution {
             </span>
           </div>
 
-          {/* Center: Navigation Links with Dropdowns */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-black text-[#0d2e27]">
+          {/* Center: Mega Menu Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black text-[#0d2e27]">
             
-            {/* 1. AI Interview Assistant Dropdown */}
+            {/* 1. AI Interview Assistant Mega Menu */}
             <div 
-              className="relative"
-              onMouseEnter={() => setNavAssistantOpen(true)}
-              onMouseLeave={() => setNavAssistantOpen(false)}
+              className="relative py-4"
+              onMouseEnter={() => setActiveDropdown('assistant')}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
               <button 
-                onClick={() => setNavAssistantOpen(!navAssistantOpen)}
-                className="flex items-center gap-1 hover:text-emerald-700 py-2 transition-colors cursor-pointer"
+                onClick={() => setActiveDropdown(activeDropdown === 'assistant' ? null : 'assistant')}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'assistant' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
               >
                 <span>AI Interview Assistant</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${navAssistantOpen ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'assistant' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
               </button>
 
-              {/* Dropdown Menu */}
-              {navAssistantOpen && (
-                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl border border-emerald-500/15 shadow-xl p-2.5 space-y-1 animate-in fade-in zoom-in-95 duration-150 text-left">
-                  <a 
-                    href="#top" 
-                    onClick={() => setNavAssistantOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">⚡</span>
-                    <div>
-                      <span className="block text-xs font-bold">Overview & Live Demo</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">Real-time copilot preview</span>
+              {/* Mega Dropdown Box */}
+              {activeDropdown === 'assistant' && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                  <div className="grid grid-cols-12 gap-8 items-start">
+                    
+                    {/* Left Promo Area */}
+                    <div className="col-span-5 pr-2 space-y-3.5">
+                      <div className="space-y-1.5">
+                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                          Anazk AI Copilot
+                        </h3>
+                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                          Real-time AI assistance, invisible screen-share overlay, and intelligent live problem solving.
+                        </p>
+                      </div>
+
+                      <a 
+                        href="#sandbox" 
+                        onClick={() => setActiveDropdown(null)}
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                      >
+                        <span>Try Live Sandbox</span>
+                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </a>
                     </div>
-                  </a>
-                  <a 
-                    href="#features" 
-                    onClick={() => setNavAssistantOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">🚀</span>
-                    <div>
-                      <span className="block text-xs font-bold">Features</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">Everything you need to perform</span>
+
+                    {/* Right Columns with Divider */}
+                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Capabilities
+                        </h4>
+                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                          <li>
+                            <a href="#top" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              ⚡ Overview & Demo
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#features" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              🚀 Core Features
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#coding-demo" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              💻 Coding & OCR Solve
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#why-anazk" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              💡 Why Anazk AI
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Stealth & App
+                        </h4>
+                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                          <li>
+                            <a href="#privacy" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              🛡️ Invisible Overlay
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#how-it-works" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              ⚙️ System Hotkeys
+                            </a>
+                          </li>
+                          <li>
+                            <a 
+                              href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+                              target="_blank" 
+                              rel="noreferrer"
+                              onClick={() => setActiveDropdown(null)} 
+                              className="hover:text-emerald-800 hover:underline block"
+                            >
+                              📥 Windows App (.exe)
+                            </a>
+                          </li>
+                          <li>
+                            <button 
+                              onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
+                              className="hover:text-emerald-800 hover:underline block text-left"
+                            >
+                              🔒 Privacy Protocol
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
-                  </a>
-                  <a 
-                    href="#privacy" 
-                    onClick={() => setNavAssistantOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">🛡️</span>
-                    <div>
-                      <span className="block text-xs font-bold">Invisible Overlay</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">Zoom, Teams, Meet undetectable</span>
-                    </div>
-                  </a>
-                  <a 
-                    href="#why-anazk" 
-                    onClick={() => setNavAssistantOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">💡</span>
-                    <div>
-                      <span className="block text-xs font-bold">Why Anazk AI</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">High-scoring interview answers</span>
-                    </div>
-                  </a>
-                  <a 
-                    href="#how-it-works" 
-                    onClick={() => setNavAssistantOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">⚙️</span>
-                    <div>
-                      <span className="block text-xs font-bold">How It Works</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">Whisper speech & global hotkeys</span>
-                    </div>
-                  </a>
+
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* 2. Other Services Dropdown */}
+            {/* 2. Pricing Mega Menu */}
             <div 
-              className="relative"
-              onMouseEnter={() => setNavServicesOpen(true)}
-              onMouseLeave={() => setNavServicesOpen(false)}
+              className="relative py-4"
+              onMouseEnter={() => setActiveDropdown('pricing')}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
               <button 
-                onClick={() => setNavServicesOpen(!navServicesOpen)}
-                className="flex items-center gap-1 hover:text-emerald-700 py-2 transition-colors cursor-pointer"
+                onClick={() => setActiveDropdown(activeDropdown === 'pricing' ? null : 'pricing')}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'pricing' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
               >
-                <span>Other Services</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${navServicesOpen ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+                <span>Pricing</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'pricing' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
               </button>
 
-              {/* Dropdown Menu */}
-              {navServicesOpen && (
-                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl border border-emerald-500/15 shadow-xl p-2.5 space-y-1 animate-in fade-in zoom-in-95 duration-150 text-left">
-                  <button 
-                    onClick={() => {
-                      setNavServicesOpen(false);
-                      setMentorStep(1);
-                      setMentorError('');
-                      setShowMentorModal(true);
-                    }}
-                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors text-left cursor-pointer"
-                  >
-                    <span className="text-base">👤</span>
-                    <div>
-                      <span className="block text-xs font-bold">1-on-1 Personal Guidance</span>
-                      <span className="block text-[10px] text-emerald-600 font-bold">₹500 / Session Booking</span>
+              {/* Mega Dropdown Box */}
+              {activeDropdown === 'pricing' && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                  <div className="grid grid-cols-12 gap-8 items-start">
+                    
+                    {/* Left Promo Area */}
+                    <div className="col-span-5 pr-2 space-y-3.5">
+                      <div className="space-y-1.5">
+                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                          Anazk AI Pricing
+                        </h3>
+                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                          Pay only for what you use. Instant license key generation & lifetime credit validity.
+                        </p>
+                      </div>
+
+                      <a 
+                        href="#pricing" 
+                        onClick={() => setActiveDropdown(null)}
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                      >
+                        <span>View Full Pricing</span>
+                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </a>
                     </div>
-                  </button>
-                  <a 
-                    href="#mentor" 
-                    onClick={() => setNavServicesOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">📄</span>
-                    <div>
-                      <span className="block text-xs font-bold">Resume Review & Optimization</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">ATS & Job Portal Strategy</span>
+
+                    {/* Right Columns with Divider */}
+                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Credit Packages
+                        </h4>
+                        <ul className="space-y-3 text-xs font-bold text-[#134237]">
+                          <li>
+                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                              <span className="font-black text-[#0d2e27]">Starter Session</span> — <span className="text-emerald-800 font-black">₹259</span>
+                              <span className="block text-[11px] text-[#134237]/75 font-medium">150 Minutes Validity</span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                              <span className="font-black text-[#0d2e27]">Standard Pack</span> — <span className="text-emerald-800 font-black">₹500</span>
+                              <span className="block text-[11px] text-[#134237]/75 font-medium">350 Minutes • Popular</span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#pricing" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 block">
+                              <span className="font-black text-[#0d2e27]">Power Pack</span> — <span className="text-emerald-800 font-black">₹2,500</span>
+                              <span className="block text-[11px] text-[#134237]/75 font-medium">2,000 Minutes Full Access</span>
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Included Benefits
+                        </h4>
+                        <ul className="space-y-2 text-xs font-bold text-[#134237]">
+                          <li>🛡️ 100% Screen Share Invisible</li>
+                          <li>🎙️ Whisper Speech Transcription</li>
+                          <li>⚡ OCR Code Problem Solve</li>
+                          <li>🔑 Instant Key On Screen</li>
+                          <li>♾️ Unused Minutes Never Expire</li>
+                        </ul>
+                      </div>
                     </div>
-                  </a>
-                  <a 
-                    href="https://wa.me/917986614646" 
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => setNavServicesOpen(false)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
-                  >
-                    <span className="text-base">💬</span>
-                    <div>
-                      <span className="block text-xs font-bold">WhatsApp Helpline</span>
-                      <span className="block text-[10px] text-gray-500 font-normal">+91 7986614646</span>
-                    </div>
-                  </a>
+
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* 3. Pricing */}
-            <a href="#pricing" className="hover:text-emerald-700 transition-colors">Pricing</a>
+            {/* 3. Others Mega Menu */}
+            <div 
+              className="relative py-4"
+              onMouseEnter={() => setActiveDropdown('others')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button 
+                onClick={() => setActiveDropdown(activeDropdown === 'others' ? null : 'others')}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'others' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
+              >
+                <span>Others</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'others' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+              </button>
 
-            {/* 4. Reviews */}
-            <a href="#reviews" className="hover:text-emerald-700 transition-colors">Reviews</a>
+              {/* Mega Dropdown Box (Exact GirGit AI Screenshot Style) */}
+              {activeDropdown === 'others' && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                  <div className="grid grid-cols-12 gap-8 items-start">
+                    
+                    {/* Left Promo Area */}
+                    <div className="col-span-5 pr-2 space-y-3.5">
+                      <div className="space-y-1.5">
+                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                          More from Anazk AI
+                        </h3>
+                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                          Company info, contact, FAQs, and the legal details — everything else in one place.
+                        </p>
+                      </div>
 
-            {/* 5. FAQ */}
-            <a href="#faq" className="hover:text-emerald-700 transition-colors">FAQs</a>
+                      <a 
+                        href="mailto:supportanazkai@gmail.com" 
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                      >
+                        <span>Know More</span>
+                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    </div>
+
+                    {/* Right Columns with Divider */}
+                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                      
+                      {/* Column 1: Company */}
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Company
+                        </h4>
+                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                          <li>
+                            <button 
+                              onClick={() => {
+                                setActiveDropdown(null);
+                                setMentorStep(1);
+                                setMentorError('');
+                                setShowMentorModal(true);
+                              }}
+                              className="hover:text-emerald-800 hover:underline block text-left"
+                            >
+                              About & Mentorship
+                            </button>
+                          </li>
+                          <li>
+                            <a 
+                              href="https://wa.me/917986614646" 
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => setActiveDropdown(null)}
+                              className="hover:text-emerald-800 hover:underline block"
+                            >
+                              Contact & Helpline
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#faq" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              FAQs
+                            </a>
+                          </li>
+                          <li>
+                            <a href="#reviews" onClick={() => setActiveDropdown(null)} className="hover:text-emerald-800 hover:underline block">
+                              Reviews & Testimonials
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Column 2: Legal & Download */}
+                      <div>
+                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                          Legal & Download
+                        </h4>
+                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                          <li>
+                            <button 
+                              onClick={() => { setActiveDropdown(null); setShowTermsModal(true); }}
+                              className="hover:text-emerald-800 hover:underline block text-left"
+                            >
+                              Terms & Condition
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
+                              className="hover:text-emerald-800 hover:underline block text-left"
+                            >
+                              Privacy Policy
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              onClick={() => { setActiveDropdown(null); setShowRefundModal(true); }}
+                              className="hover:text-emerald-800 hover:underline block text-left"
+                            >
+                              Refund Policy
+                            </button>
+                          </li>
+                          <li>
+                            <a 
+                              href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+                              target="_blank" 
+                              rel="noreferrer"
+                              onClick={() => setActiveDropdown(null)} 
+                              className="hover:text-emerald-800 hover:underline block"
+                            >
+                              Download Desktop App
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+              )}
+            </div>
 
           </nav>
 
@@ -1244,16 +1435,40 @@ class Solution {
             )}
           </div>
 
-          {/* Other Services Accordion */}
+          {/* Pricing Accordion */}
           <div className="border-b border-gray-100 pb-2">
             <button 
-              onClick={() => setNavMobileServices(!navMobileServices)}
+              onClick={() => setNavMobilePricing(!navMobilePricing)}
               className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
             >
-              <span>Other Services</span>
-              <ChevronDown size={16} className={`transition-transform ${navMobileServices ? 'rotate-180' : ''}`} />
+              <span>Pricing & Plans</span>
+              <ChevronDown size={16} className={`transition-transform ${navMobilePricing ? 'rotate-180' : ''}`} />
             </button>
-            {navMobileServices && (
+            {navMobilePricing && (
+              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
+                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                  Starter Session (₹259 • 150 Mins)
+                </a>
+                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                  Standard Pack (₹500 • 350 Mins)
+                </a>
+                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-800 font-bold">
+                  Power Pack (₹2,500 • 2000 Mins)
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Others Accordion */}
+          <div className="border-b border-gray-100 pb-2">
+            <button 
+              onClick={() => setNavMobileOthers(!navMobileOthers)}
+              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
+            >
+              <span>Others</span>
+              <ChevronDown size={16} className={`transition-transform ${navMobileOthers ? 'rotate-180' : ''}`} />
+            </button>
+            {navMobileOthers && (
               <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
                 <button 
                   onClick={() => {
@@ -1266,16 +1481,15 @@ class Solution {
                 >
                   👤 1-on-1 Personal Guidance (₹500)
                 </button>
-                <a href="#mentor" onClick={() => setMobileMenuOpen(false)} className="block py-1">📄 Resume Review & Optimization</a>
+                <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="block py-1">⭐ Reviews & Testimonials</a>
+                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-1">❓ FAQs</a>
                 <a href="https://wa.me/917986614646" target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">💬 WhatsApp Helpline (+91 7986614646)</a>
+                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left">📜 Terms & Conditions</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left">🔒 Privacy Policy</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left">💳 Refund Policy</button>
               </div>
             )}
           </div>
-
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">Pricing</a>
-          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">Reviews</a>
-          <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">FAQs</a>
-          <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="text-left py-2 border-b border-gray-100">Terms & Conditions</button>
 
           <div className="pt-2 flex flex-col space-y-2">
             <a 
