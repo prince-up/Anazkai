@@ -1807,7 +1807,7 @@ class Solution {
                 <span>Generating answer...</span>
               </div>
               <div className="bg-white border border-emerald-500/20 px-5 py-4 rounded-2xl shadow-md text-xs sm:text-sm font-medium text-gray-700 leading-relaxed border-l-4 border-l-emerald-500">
-                My biggest strength is data analysis. At ClearView Analytics, I identified a major reporting error, corrected it, and saved the company $50,000 in potential losses.
+                My biggest strength is architecting scalable backend systems and debugging high-throughput microservices. In my previous role, I identified an N+1 database bottleneck in our core API, optimized it with Redis caching and asynchronous queues, which reduced p99 latency by 70% and handled 10x traffic spikes with zero downtime.
               </div>
             </div>
           </div>
