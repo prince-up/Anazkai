@@ -1889,38 +1889,66 @@ class Solution {
             </p>
           </div>
 
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[280px] p-6 rounded-3xl bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/20 border border-gray-100 shadow-sm overflow-hidden">
-            {/* Dual Layered Protected Window Mockup */}
-            <div className="relative w-full max-w-md">
-              {/* Background Window */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3 opacity-60">
-                <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[300px] p-4 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-gray-900 to-[#071d18] border border-emerald-500/20 shadow-xl overflow-hidden text-left">
+            {/* Realistic Screen-Share Stealth Mockup */}
+            <div className="w-full max-w-lg bg-[#0b1411] rounded-2xl border border-emerald-500/30 p-4 space-y-3.5 shadow-2xl">
+              
+              {/* Screen Share Status Bar */}
+              <div className="flex items-center justify-between pb-2.5 border-b border-white/10 text-[11px] font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="text-gray-200 font-bold">Screen Sharing on Zoom / Meet</span>
                 </div>
-                <div className="h-16 bg-gray-50 rounded-xl" />
+                <span className="bg-red-500/20 border border-red-500/40 text-red-300 text-[10px] font-bold px-2 py-0.5 rounded">
+                  Live Feed
+                </span>
               </div>
 
-              {/* Foreground Protected Overlay Window */}
-              <div className="absolute top-6 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl border border-blue-500/20 shadow-xl p-5 space-y-4">
-                <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                </div>
+              {/* Two Screen Comparison (Interviewer vs You) */}
+              <div className="grid grid-cols-2 gap-3">
                 
-                <div className="flex items-center justify-center py-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 border border-indigo-400/30">
-                    <ShieldCheck size={32} className="text-white" />
+                {/* 1. What Interviewer Sees */}
+                <div className="bg-black/60 rounded-xl border border-white/10 p-3 space-y-2">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-gray-400 font-bold">Interviewer Screen</span>
+                    <span className="text-emerald-400 font-bold text-[9px]">Clean 100%</span>
                   </div>
+                  <div className="bg-gray-900/90 rounded-lg p-2 space-y-1 font-mono text-[9px] text-gray-400">
+                    <div className="w-16 h-1.5 bg-gray-700 rounded"></div>
+                    <div className="w-24 h-1.5 bg-gray-800 rounded"></div>
+                    <div className="w-20 h-1.5 bg-gray-800 rounded"></div>
+                  </div>
+                  <span className="block text-[9px] text-gray-400 font-medium text-center">
+                    No overlay visible
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 pt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                  <span>listening to interviewer...</span>
+                {/* 2. What Candidate Sees */}
+                <div className="bg-emerald-950/40 rounded-xl border border-emerald-500/40 p-3 space-y-2 relative overflow-hidden">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-emerald-300 font-bold">Your Screen</span>
+                    <span className="text-emerald-400 font-bold text-[9px]">Active</span>
+                  </div>
+                  <div className="bg-black/80 rounded-lg p-2 border border-emerald-500/30 space-y-1 text-[9px] text-emerald-300 font-mono">
+                    <span className="text-[8px] text-emerald-400 font-bold block">⚡ Instant Solution</span>
+                    <span className="text-gray-300 block text-[9px] truncate">Use Token Bucket algorithm</span>
+                  </div>
+                  <span className="block text-[9px] text-emerald-400 font-bold text-center">
+                    Invisible Overlay Active
+                  </span>
                 </div>
+
               </div>
+
+              {/* Bottom Hardware Layer Protection Badge */}
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-gray-300">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <ShieldCheck size={13} className="text-emerald-400" />
+                  Hardware-Level Capture Bypass
+                </span>
+                <span className="text-gray-400 font-mono">100% Undetectable</span>
+              </div>
+
             </div>
           </div>
         </div>
