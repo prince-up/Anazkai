@@ -1638,61 +1638,31 @@ class Solution {
               {activeTab === 'non-coding' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch font-sans">
                   
-                  {/* Left Column: Live Interview Video Demo Player */}
-                  <div className="lg:col-span-7 bg-[#0b0f19] rounded-xl sm:rounded-2xl border border-gray-200/80 shadow-md flex flex-col justify-between overflow-hidden relative group min-h-[260px] sm:min-h-[380px] lg:min-h-[440px]">
-                    {/* Video Top Bar */}
-                    <div className="flex justify-between items-center px-3 sm:px-4 py-2.5 sm:py-3 bg-black/60 backdrop-blur-md border-b border-white/10 z-10">
-                      <div className="flex items-center gap-1.5 sm:gap-2 truncate mr-2">
-                        <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block shrink-0"></span>
-                        <span className="text-[11px] sm:text-[12px] text-white font-bold tracking-wide truncate">Anazk AI — Live Demo</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                        <span className="text-[9px] sm:text-[10px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span> LIVE
-                        </span>
-                        <span className="text-[10px] sm:text-[11px] text-gray-300 font-mono">54 mins</span>
-                      </div>
-                    </div>
-
-                    {/* Main Video Stream Player with Autoplay */}
-                    <div className="relative w-full flex-1 bg-black flex items-center justify-center min-h-[180px] sm:min-h-[260px]">
-                      <video
-                        src="/hero-video.mp4"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        controls
-                        className="w-full h-auto aspect-video object-contain bg-black max-h-[320px] sm:max-h-[400px]"
-                        poster="/anazk-hero-generated.png"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          const iframe = document.getElementById('hero-drive-fallback');
-                          if (iframe) iframe.style.display = 'block';
-                        }}
-                      />
-                      <iframe
-                        id="hero-drive-fallback"
-                        src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
-                        className="w-full h-full min-h-[240px] border-0 hidden"
-                        allow="autoplay"
-                        allowFullScreen
-                        title="Anazk AI Live Demo"
-                      ></iframe>
-                    </div>
-
-                    {/* Bottom Live Transcript Strip */}
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-[#111827] border-t border-white/10 flex items-center justify-between text-left">
-                      <div className="flex items-center gap-1.5 overflow-hidden mr-2">
-                        <span className="text-[10px] sm:text-[11px] text-emerald-400 font-black shrink-0">🎤 TRANSCRIPT:</span>
-                        <p className="text-gray-200 italic text-[11px] sm:text-[12px] truncate font-medium">
-                          &quot;Can you explain how Anazk AI assists in real-time?&quot;
-                        </p>
-                      </div>
-                      <span className="text-[9px] sm:text-[10px] text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold shrink-0">
-                        Listening...
-                      </span>
-                    </div>
+                  {/* Left Column: Clean Video Player */}
+                  <div className="lg:col-span-7 bg-black rounded-xl sm:rounded-2xl border border-gray-200/80 shadow-md flex items-center justify-center overflow-hidden relative group min-h-[260px] sm:min-h-[380px] lg:min-h-[440px]">
+                    <video
+                      src="/hero-video.mp4"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls
+                      className="w-full h-full object-cover rounded-xl sm:rounded-2xl bg-black"
+                      poster="/anazk-hero-generated.png"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const iframe = document.getElementById('hero-drive-fallback');
+                        if (iframe) iframe.style.display = 'block';
+                      }}
+                    />
+                    <iframe
+                      id="hero-drive-fallback"
+                      src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
+                      className="w-full h-full min-h-[240px] border-0 hidden"
+                      allow="autoplay"
+                      allowFullScreen
+                      title="Anazk AI Live Demo"
+                    ></iframe>
                   </div>
 
                   {/* Right Column: Real-time AI Assistant Response Panel */}
