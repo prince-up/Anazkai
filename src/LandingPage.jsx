@@ -462,6 +462,12 @@ function LandingPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
 
+  // Top Navbar Dropdown States (GirGit AI Style)
+  const [navAssistantOpen, setNavAssistantOpen] = useState(false);
+  const [navServicesOpen, setNavServicesOpen] = useState(false);
+  const [navMobileAssistant, setNavMobileAssistant] = useState(false);
+  const [navMobileServices, setNavMobileServices] = useState(false);
+
   // Corner Floating AI Support Chatbot State (Intercom / Fin Style)
   const [chatOpen, setChatOpen] = useState(false);
   const [chatTab, setChatTab] = useState('home'); // 'home' or 'messages'
@@ -966,120 +972,340 @@ class Solution {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-sky-200/25 via-blue-100/15 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
-      {/* Floating Header */}
-      <nav className={`fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[calc(100%-1.25rem)] sm:w-[calc(100%-3rem)] max-w-[1480px] z-50 backdrop-blur-xl border px-3.5 sm:px-8 py-2.5 sm:py-4 rounded-full flex justify-between items-center transition-all duration-700 shadow-[0_10px_30px_rgba(16,185,129,0.08)] ${activeTab === 'coding' ? 'bg-[#0f172a]/85 border-emerald-500/25 text-white' : 'bg-white/90 border-emerald-500/15 text-[#0d2e27]'}`}>
-        <div className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer">
-          <img 
-            src="/penguin.jpg" 
-            alt="AnazkAI Logo" 
-            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-emerald-500/30 object-cover shadow-[0_4px_12px_rgba(16,185,129,0.2)] hover:scale-105 transition-transform duration-200" 
-          />
-          <span className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] tracking-tight flex items-center">
-            Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
-          </span>
-        </div>
-
-        {/* Desktop Links */}
-        <div className={`hidden md:flex items-center gap-7 lg:gap-9 text-[15px] sm:text-base font-black tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-100' : 'text-[#0d2e27]'}`}>
-          <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Features</a>
-          <a href="#sandbox" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Interactive Demo</a>
-          <button onClick={() => setShowPrivacyModal(true)} className="hover:text-emerald-600 transition-colors flex items-center gap-1 cursor-pointer">Privacy</button>
-          <a href="#pricing" className="hover:text-emerald-600 transition-colors flex items-center gap-1">Pricing</a>
-        </div>
-
-        {/* Buttons */}
-        <div className="hidden md:flex items-center space-x-3">
-          {user ? (
-            <>
-              <button 
-                onClick={() => setCurrentView('dashboard')}
-                className="px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
-              >
-                <LayoutDashboard size={16} />
-                Dashboard
-              </button>
-              <button 
-                onClick={() => supabase.auth.signOut()}
-                className={`px-5 py-2.5 sm:py-3 border-2 font-black text-sm rounded-full transition-all shadow-xs flex items-center gap-2 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-[#1e293b] border-gray-700 text-white hover:bg-gray-800' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
-              >
-                <User size={16} />
-                Sign out
-              </button>
-            </>
-          ) : (
-            <button 
-              onClick={() => setCurrentView('auth')}
-              className="px-6 lg:px-7 py-2.5 sm:py-3 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-sm sm:text-base rounded-full transition-all shadow-md flex items-center gap-2 active:scale-[0.98] cursor-pointer"
-            >
-              Sign in
-              <ArrowRight size={16} />
-            </button>
-          )}
-        </div>
-
-        {/* Mobile Menu Icon */}
-        <div className="flex items-center gap-2 md:hidden">
-          {user ? (
-            <button 
-              onClick={() => setCurrentView('dashboard')}
-              className="px-3.5 py-1.5 bg-emerald-600 text-white font-black text-xs rounded-full flex items-center gap-1"
-            >
-              <LayoutDashboard size={12} />
-              Dashboard
-            </button>
-          ) : (
-            <button 
-              onClick={() => setCurrentView('auth')}
-              className="px-3.5 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-full"
-            >
-              Sign in
-            </button>
-          )}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 text-[#0d2e27] hover:bg-emerald-50 rounded-lg transition-all"
-            aria-label="Toggle Navigation Menu"
+      {/* ─── TOP NAVBAR (GIRGIT AI STYLE) ─── */}
+      <header className="fixed top-0 inset-x-0 z-50 bg-[#eef8f3]/95 backdrop-blur-md border-b border-emerald-500/15 transition-all duration-300">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between">
+          
+          {/* Left: Brand Logo & Title */}
+          <div 
+            onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group shrink-0"
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-      </nav>
+            <img 
+              src="/penguin.jpg" 
+              alt="Anazk AI Logo" 
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500/30 object-cover shadow-xs group-hover:scale-105 transition-transform" 
+            />
+            <span className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] tracking-tight flex items-center">
+              Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+            </span>
+          </div>
 
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 w-[calc(100%-1.25rem)] max-w-md bg-white/95 backdrop-blur-2xl border border-emerald-500/20 rounded-3xl p-5 shadow-2xl z-40 md:hidden flex flex-col space-y-3.5 animate-in fade-in slide-in-from-top-5 duration-200">
-          <a href="#features" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Features</a>
-          <a href="#sandbox" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Interactive Demo</a>
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Pricing</a>
-          <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="text-left font-bold text-gray-800 hover:text-emerald-600 py-2 border-b border-gray-100 text-sm">Privacy</button>
-          <div className="pt-2 flex flex-col space-y-2">
+          {/* Center: Navigation Links with Dropdowns */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-black text-[#0d2e27]">
+            
+            {/* 1. AI Interview Assistant Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setNavAssistantOpen(true)}
+              onMouseLeave={() => setNavAssistantOpen(false)}
+            >
+              <button 
+                onClick={() => setNavAssistantOpen(!navAssistantOpen)}
+                className="flex items-center gap-1 hover:text-emerald-700 py-2 transition-colors cursor-pointer"
+              >
+                <span>AI Interview Assistant</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${navAssistantOpen ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {navAssistantOpen && (
+                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl border border-emerald-500/15 shadow-xl p-2.5 space-y-1 animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <a 
+                    href="#top" 
+                    onClick={() => setNavAssistantOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">⚡</span>
+                    <div>
+                      <span className="block text-xs font-bold">Overview & Live Demo</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">Real-time copilot preview</span>
+                    </div>
+                  </a>
+                  <a 
+                    href="#features" 
+                    onClick={() => setNavAssistantOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">🚀</span>
+                    <div>
+                      <span className="block text-xs font-bold">Features</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">Everything you need to perform</span>
+                    </div>
+                  </a>
+                  <a 
+                    href="#privacy" 
+                    onClick={() => setNavAssistantOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">🛡️</span>
+                    <div>
+                      <span className="block text-xs font-bold">Invisible Overlay</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">Zoom, Teams, Meet undetectable</span>
+                    </div>
+                  </a>
+                  <a 
+                    href="#why-anazk" 
+                    onClick={() => setNavAssistantOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">💡</span>
+                    <div>
+                      <span className="block text-xs font-bold">Why Anazk AI</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">High-scoring interview answers</span>
+                    </div>
+                  </a>
+                  <a 
+                    href="#how-it-works" 
+                    onClick={() => setNavAssistantOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">⚙️</span>
+                    <div>
+                      <span className="block text-xs font-bold">How It Works</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">Whisper speech & global hotkeys</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Other Services Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setNavServicesOpen(true)}
+              onMouseLeave={() => setNavServicesOpen(false)}
+            >
+              <button 
+                onClick={() => setNavServicesOpen(!navServicesOpen)}
+                className="flex items-center gap-1 hover:text-emerald-700 py-2 transition-colors cursor-pointer"
+              >
+                <span>Other Services</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${navServicesOpen ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {navServicesOpen && (
+                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl border border-emerald-500/15 shadow-xl p-2.5 space-y-1 animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <button 
+                    onClick={() => {
+                      setNavServicesOpen(false);
+                      setMentorStep(1);
+                      setMentorError('');
+                      setShowMentorModal(true);
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors text-left cursor-pointer"
+                  >
+                    <span className="text-base">👤</span>
+                    <div>
+                      <span className="block text-xs font-bold">1-on-1 Personal Guidance</span>
+                      <span className="block text-[10px] text-emerald-600 font-bold">₹500 / Session Booking</span>
+                    </div>
+                  </button>
+                  <a 
+                    href="#mentor" 
+                    onClick={() => setNavServicesOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">📄</span>
+                    <div>
+                      <span className="block text-xs font-bold">Resume Review & Optimization</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">ATS & Job Portal Strategy</span>
+                    </div>
+                  </a>
+                  <a 
+                    href="https://wa.me/917986614646" 
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setNavServicesOpen(false)}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 transition-colors"
+                  >
+                    <span className="text-base">💬</span>
+                    <div>
+                      <span className="block text-xs font-bold">WhatsApp Helpline</span>
+                      <span className="block text-[10px] text-gray-500 font-normal">+91 7986614646</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Pricing */}
+            <a href="#pricing" className="hover:text-emerald-700 transition-colors">Pricing</a>
+
+            {/* 4. Reviews */}
+            <a href="#reviews" className="hover:text-emerald-700 transition-colors">Reviews</a>
+
+            {/* 5. FAQ */}
+            <a href="#faq" className="hover:text-emerald-700 transition-colors">FAQs</a>
+
+          </nav>
+
+          {/* Right: Download + Sign in */}
+          <div className="hidden md:flex items-center space-x-3">
+            {/* Download Button */}
+            <a 
+              href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95"
+            >
+              <Download size={14} className="text-emerald-800" />
+              <span>Download</span>
+            </a>
+
             {user ? (
               <>
                 <button 
-                  onClick={() => { setMobileMenuOpen(false); setCurrentView('dashboard'); }}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                  onClick={() => setCurrentView('dashboard')}
+                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
                 >
-                  <LayoutDashboard size={16} />
-                  Go to Dashboard
+                  <LayoutDashboard size={14} />
+                  <span>Dashboard</span>
                 </button>
                 <button 
-                  onClick={() => { setMobileMenuOpen(false); supabase.auth.signOut(); }}
-                  className="w-full py-2.5 border border-gray-200 bg-gray-50 text-gray-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                  onClick={() => supabase.auth.signOut()}
+                  className="px-3.5 py-2 border border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50 font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                 >
-                  <User size={16} />
-                  Sign out
+                  <User size={14} />
+                  <span>Sign out</span>
                 </button>
               </>
             ) : (
               <button 
-                onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
-                className="w-full py-3 bg-[#0d2e27] hover:bg-[#061713] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                onClick={() => setCurrentView('auth')}
+                className="px-5 py-2 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
               >
-                Sign in
-                <ArrowRight size={16} />
+                <span>Sign in</span>
+                <ArrowRight size={14} />
               </button>
             )}
           </div>
+
+          {/* Mobile Menu Trigger */}
+          <div className="flex items-center gap-2 md:hidden">
+            <a 
+              href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1"
+            >
+              <Download size={12} />
+              <span>App</span>
+            </a>
+            {user ? (
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className="px-3 py-1.5 bg-emerald-700 text-white font-black text-xs rounded-lg"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <button 
+                onClick={() => setCurrentView('auth')}
+                className="px-3 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-lg"
+              >
+                Sign in
+              </button>
+            )}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1.5 text-[#0d2e27] hover:bg-emerald-100/50 rounded-lg transition-all"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-x-4 top-20 bg-white/98 backdrop-blur-2xl border border-emerald-500/20 rounded-3xl p-5 shadow-2xl z-50 md:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
+          
+          {/* AI Interview Assistant Accordion */}
+          <div className="border-b border-gray-100 pb-2">
+            <button 
+              onClick={() => setNavMobileAssistant(!navMobileAssistant)}
+              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
+            >
+              <span>AI Interview Assistant</span>
+              <ChevronDown size={16} className={`transition-transform ${navMobileAssistant ? 'rotate-180' : ''}`} />
+            </button>
+            {navMobileAssistant && (
+              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
+                <a href="#top" onClick={() => setMobileMenuOpen(false)} className="block py-1">⚡ Overview & Demo</a>
+                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-1">🚀 Features</a>
+                <a href="#privacy" onClick={() => setMobileMenuOpen(false)} className="block py-1">🛡️ Invisible Overlay</a>
+                <a href="#why-anazk" onClick={() => setMobileMenuOpen(false)} className="block py-1">💡 Why Anazk AI</a>
+                <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block py-1">⚙️ How It Works</a>
+              </div>
+            )}
+          </div>
+
+          {/* Other Services Accordion */}
+          <div className="border-b border-gray-100 pb-2">
+            <button 
+              onClick={() => setNavMobileServices(!navMobileServices)}
+              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
+            >
+              <span>Other Services</span>
+              <ChevronDown size={16} className={`transition-transform ${navMobileServices ? 'rotate-180' : ''}`} />
+            </button>
+            {navMobileServices && (
+              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setMentorStep(1);
+                    setMentorError('');
+                    setShowMentorModal(true);
+                  }}
+                  className="block py-1 text-emerald-700 font-bold text-left"
+                >
+                  👤 1-on-1 Personal Guidance (₹500)
+                </button>
+                <a href="#mentor" onClick={() => setMobileMenuOpen(false)} className="block py-1">📄 Resume Review & Optimization</a>
+                <a href="https://wa.me/917986614646" target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">💬 WhatsApp Helpline (+91 7986614646)</a>
+              </div>
+            )}
+          </div>
+
+          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">Pricing</a>
+          <a href="#reviews" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">Reviews</a>
+          <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 border-b border-gray-100">FAQs</a>
+          <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="text-left py-2 border-b border-gray-100">Terms & Conditions</button>
+
+          <div className="pt-2 flex flex-col space-y-2">
+            <a 
+              href="https://drive.google.com/file/d/1YS9f4llIjXtVglups5bV_Uk5yCrpfEzy/view?usp=sharing" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+            >
+              <Download size={14} />
+              <span>Download Desktop App (.exe)</span>
+            </a>
+            {user ? (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setCurrentView('dashboard'); }}
+                className="w-full py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <LayoutDashboard size={14} />
+                <span>Go to Dashboard</span>
+              </button>
+            ) : (
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
+                className="w-full py-2.5 bg-[#0d2e27] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <span>Sign in</span>
+                <ArrowRight size={14} />
+              </button>
+            )}
+          </div>
+
         </div>
       )}
 
