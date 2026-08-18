@@ -3,7 +3,8 @@ import {
   ArrowRight, Play, CheckCircle2, Download, Menu, X, Mic, Monitor, Star, 
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
   Shield, Eye, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
-  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail, LayoutDashboard
+  MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail, LayoutDashboard,
+  Zap, Target, Code2, Volume2, Clock, FileText, Tag, Sliders, ShieldCheck
 } from 'lucide-react';
 import { getSubscriptionPlan } from './plans';
 import { supabase } from './supabaseClient';
@@ -1101,22 +1102,22 @@ class Solution {
                         <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
                           <li>
                             <button onClick={() => scrollToSection('top')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              ⚡ Overview & Demo
+                              Overview & Demo
                             </button>
                           </li>
                           <li>
                             <button onClick={() => scrollToSection('features')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              🚀 Core Features
+                              Core Features
                             </button>
                           </li>
                           <li>
                             <button onClick={() => scrollToSection('industries')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              💼 All Industries
+                              All Industries
                             </button>
                           </li>
                           <li>
                             <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              💡 Why Anazk AI
+                              Why Anazk AI
                             </button>
                           </li>
                         </ul>
@@ -1129,12 +1130,12 @@ class Solution {
                         <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
                           <li>
                             <button onClick={() => scrollToSection('privacy')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              🛡️ Invisible Overlay
+                              Invisible Overlay
                             </button>
                           </li>
                           <li>
                             <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
-                              ⚙️ System Hotkeys
+                              System Hotkeys
                             </button>
                           </li>
                           <li>
@@ -1145,7 +1146,7 @@ class Solution {
                               onClick={() => setActiveDropdown(null)} 
                               className="hover:text-emerald-800 hover:underline block"
                             >
-                              📥 Windows App (.exe)
+                              Windows App (.exe)
                             </a>
                           </li>
                           <li>
@@ -1153,7 +1154,7 @@ class Solution {
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
                               className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
                             >
-                              🔒 Privacy Protocol
+                              Privacy Protocol
                             </button>
                           </li>
                         </ul>
@@ -1237,11 +1238,11 @@ class Solution {
                           Included Benefits
                         </h4>
                         <ul className="space-y-2 text-xs font-bold text-[#134237]">
-                          <li>🛡️ 100% Screen Share Invisible</li>
-                          <li>🎙️ Whisper Speech Transcription</li>
-                          <li>⚡ OCR Code Problem Solve</li>
-                          <li>🔑 Instant Key On Screen</li>
-                          <li>♾️ Unused Minutes Never Expire</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> 100% Screen Share Invisible</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Whisper Speech Transcription</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> OCR Code Problem Solve</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Instant Key On Screen</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Unused Minutes Never Expire</li>
                         </ul>
                       </div>
                     </div>
@@ -1481,11 +1482,11 @@ class Solution {
             </button>
             {navMobileAssistant && (
               <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <button onClick={() => scrollToSection('top')} className="block py-1 text-left w-full">⚡ Overview & Demo</button>
-                <button onClick={() => scrollToSection('features')} className="block py-1 text-left w-full">🚀 Features</button>
-                <button onClick={() => scrollToSection('industries')} className="block py-1 text-left w-full">💼 All Industries</button>
-                <button onClick={() => scrollToSection('privacy')} className="block py-1 text-left w-full">🛡️ Invisible Overlay</button>
-                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">💡 Why Anazk AI</button>
+                <button onClick={() => scrollToSection('top')} className="block py-1 text-left w-full">Overview & Demo</button>
+                <button onClick={() => scrollToSection('features')} className="block py-1 text-left w-full">Features</button>
+                <button onClick={() => scrollToSection('industries')} className="block py-1 text-left w-full">All Industries</button>
+                <button onClick={() => scrollToSection('privacy')} className="block py-1 text-left w-full">Invisible Overlay</button>
+                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">Why Anazk AI</button>
               </div>
             )}
           </div>
@@ -1534,14 +1535,14 @@ class Solution {
                   }}
                   className="block py-1 text-emerald-700 font-bold text-left w-full cursor-pointer"
                 >
-                  👤 1-on-1 Personal Guidance (₹500)
+                  1-on-1 Personal Guidance (₹500)
                 </button>
-                <button onClick={() => scrollToSection('reviews')} className="block py-1 text-left w-full">⭐ Reviews & Testimonials</button>
-                <button onClick={() => scrollToSection('faq')} className="block py-1 text-left w-full">❓ FAQs</button>
-                <a href="mailto:supportanazkai@gmail.com" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">✉️ Support (supportanazkai@gmail.com)</a>
-                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left w-full">📜 Terms & Conditions</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left w-full">🔒 Privacy Policy</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left w-full">💳 Refund Policy</button>
+                <button onClick={() => scrollToSection('reviews')} className="block py-1 text-left w-full">Reviews & Testimonials</button>
+                <button onClick={() => scrollToSection('faq')} className="block py-1 text-left w-full">FAQs</button>
+                <a href="mailto:supportanazkai@gmail.com" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">Support (supportanazkai@gmail.com)</a>
+                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left w-full">Terms & Conditions</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left w-full">Privacy Policy</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left w-full">Refund Policy</button>
               </div>
             )}
           </div>
@@ -1806,24 +1807,30 @@ class Solution {
 
           <div className="lg:col-span-6 relative flex items-center justify-center min-h-[260px] p-6 rounded-3xl bg-gradient-to-br from-blue-50/40 via-white to-emerald-50/30 border border-gray-100 shadow-sm overflow-hidden">
             {/* Floating Insight Badges */}
-            <div className="w-full max-w-md relative flex flex-wrap gap-3 items-center justify-center p-4">
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all animate-pulse-glow">
-                <span>💭</span> Word Choices
+            <div className="w-full max-w-lg relative flex flex-wrap gap-3.5 items-center justify-center p-4">
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-emerald-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <MessageSquare size={18} className="text-emerald-600" />
+                <span>Word Choices</span>
               </div>
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
-                <span>🗣️</span> Tone
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-blue-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <Volume2 size={18} className="text-blue-600" />
+                <span>Tone</span>
               </div>
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
-                <span>⏱️</span> Timing
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-amber-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <Clock size={18} className="text-amber-600" />
+                <span>Timing</span>
               </div>
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
-                <span>📄</span> Context
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-indigo-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <FileText size={18} className="text-indigo-600" />
+                <span>Context</span>
               </div>
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
-                <span>🌟</span> Keyword
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-teal-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <Tag size={18} className="text-teal-600" />
+                <span>Keyword</span>
               </div>
-              <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-md border border-gray-100/80 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2 transform hover:scale-105 transition-all">
-                <span>🤵</span> Formality level
+              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-purple-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
+                <Sliders size={18} className="text-purple-600" />
+                <span>Formality Level</span>
               </div>
             </div>
           </div>
@@ -1981,72 +1988,86 @@ class Solution {
             {/* Array of feature cards rendered twice for seamless infinite loop */}
             {[
               {
-                icon: "🎯",
+                icon: <Target size={24} className="text-rose-600" />,
+                iconBg: "bg-rose-50/80 border-rose-200/80",
                 title: "Personalized Answers",
                 desc: "Tailors answers based on your resume and experience for authentic, high-scoring responses."
               },
               {
-                icon: "👻",
+                icon: <EyeOff size={24} className="text-purple-600" />,
+                iconBg: "bg-purple-50/80 border-purple-200/80",
                 title: "Undetectable Overlay",
                 desc: "A discreet overlay that sits on top of your meeting window, visible only to you."
               },
               {
-                icon: "🎙️",
+                icon: <Mic size={24} className="text-emerald-600" />,
+                iconBg: "bg-emerald-50/80 border-emerald-200/80",
                 title: "Real Time Answers",
                 desc: "Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages."
               },
               {
-                icon: "💻",
+                icon: <Code2 size={24} className="text-blue-600" />,
+                iconBg: "bg-blue-50/80 border-blue-200/80",
                 title: "Coding Assistance",
                 desc: "Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more."
               },
               {
-                icon: "⚡",
+                icon: <Zap size={24} className="text-amber-600" />,
+                iconBg: "bg-amber-50/80 border-amber-200/80",
                 title: "Sub-Second Latency",
                 desc: "Streams responses in under 0.6 seconds so you answer naturally without awkward silences."
               },
               {
-                icon: "🔒",
+                icon: <ShieldCheck size={24} className="text-teal-600" />,
+                iconBg: "bg-teal-50/80 border-teal-200/80",
                 title: "100% Screen Share Proof",
                 desc: "Hardware-level protection prevents capture detection on Zoom, Teams, and Google Meet."
               },
               // Duplicate set for infinite loop
               {
-                icon: "🎯",
+                icon: <Target size={24} className="text-rose-600" />,
+                iconBg: "bg-rose-50/80 border-rose-200/80",
                 title: "Personalized Answers",
                 desc: "Tailors answers based on your resume and experience for authentic, high-scoring responses."
               },
               {
-                icon: "👻",
+                icon: <EyeOff size={24} className="text-purple-600" />,
+                iconBg: "bg-purple-50/80 border-purple-200/80",
                 title: "Undetectable Overlay",
                 desc: "A discreet overlay that sits on top of your meeting window, visible only to you."
               },
               {
-                icon: "🎙️",
+                icon: <Mic size={24} className="text-emerald-600" />,
+                iconBg: "bg-emerald-50/80 border-emerald-200/80",
                 title: "Real Time Answers",
                 desc: "Instantly transcribes interview questions with high accuracy, supporting multiple accents and languages."
               },
               {
-                icon: "💻",
+                icon: <Code2 size={24} className="text-blue-600" />,
+                iconBg: "bg-blue-50/80 border-blue-200/80",
                 title: "Coding Assistance",
                 desc: "Solves coding problems in real-time, supporting Python, Java, C++, JavaScript, and more."
               },
               {
-                icon: "⚡",
+                icon: <Zap size={24} className="text-amber-600" />,
+                iconBg: "bg-amber-50/80 border-amber-200/80",
                 title: "Sub-Second Latency",
                 desc: "Streams responses in under 0.6 seconds so you answer naturally without awkward silences."
               },
               {
-                icon: "🔒",
+                icon: <ShieldCheck size={24} className="text-teal-600" />,
+                iconBg: "bg-teal-50/80 border-teal-200/80",
                 title: "100% Screen Share Proof",
                 desc: "Hardware-level protection prevents capture detection on Zoom, Teams, and Google Meet."
               }
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="w-[280px] sm:w-[320px] shrink-0 p-6 sm:p-7 rounded-3xl bg-white/80 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1 duration-200"
+                className="w-[280px] sm:w-[320px] shrink-0 p-6 sm:p-7 rounded-3xl bg-white/90 hover:bg-white border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-xl transition-all space-y-3.5 flex flex-col items-center text-center cursor-pointer transform hover:-translate-y-1 duration-200 shadow-sm"
               >
-                <div className="text-3xl">{item.icon}</div>
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-xs ${item.iconBg}`}>
+                  {item.icon}
+                </div>
                 <h3 className="font-display font-bold text-base sm:text-lg text-gray-900">
                   {item.title}
                 </h3>
