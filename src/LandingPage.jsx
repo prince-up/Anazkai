@@ -1911,8 +1911,8 @@ class Solution {
                 </div>
                 
                 <div className="flex items-center justify-center py-4">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-2xl shadow-inner shadow-indigo-100">
-                    🔒
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 border border-indigo-400/30">
+                    <ShieldCheck size={32} className="text-white" />
                   </div>
                 </div>
 
@@ -1955,8 +1955,9 @@ class Solution {
               </div>
 
               {/* Floating resume pill */}
-              <div className="absolute -bottom-2 -right-2 bg-white px-3 py-1.5 rounded-full shadow-md border border-gray-200 text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
-                <span>📄</span> Resume_24.pdf <span className="text-xs">👆</span>
+              <div className="absolute -bottom-2 -right-2 bg-white px-3.5 py-1.5 rounded-full shadow-md border border-emerald-500/20 text-[11px] font-bold text-gray-800 flex items-center gap-2">
+                <FileText size={14} className="text-blue-600" />
+                <span>Resume_24.pdf</span>
               </div>
             </div>
           </div>
@@ -2331,7 +2332,10 @@ class Solution {
 
                     <div className="text-[10px] text-emerald-300/80 z-10 flex items-center justify-between">
                       <span>Screen share active</span>
-                      <span className="text-emerald-400 font-bold">Overlay: Hidden to Team 🔒</span>
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <span>Overlay: Hidden to Team</span>
+                        <ShieldCheck size={12} className="text-emerald-400" />
+                      </span>
                     </div>
                   </div>
 
