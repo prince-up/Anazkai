@@ -109,7 +109,9 @@ function getActiveGroqKey() {
 
 function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
   const cleanKey = (geminiKey || '').trim();
-  const isBearer = cleanKey.startsWith('AQ.') || cleanKey.startsWith('ya29.') || cleanKey.startsWith('Bearer ');
+  // Only ya29. tokens are actual short-lived OAuth Bearer tokens
+  // AQ. keys from Google AI Studio are proper permanent API keys → use as ?key=
+  const isBearer = cleanKey.startsWith('ya29.') || cleanKey.startsWith('Bearer ');
   
   let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:${isStream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`;
   const headers = { 'Content-Type': 'application/json' };
@@ -117,6 +119,7 @@ function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
   if (isBearer) {
     headers['Authorization'] = cleanKey.startsWith('Bearer ') ? cleanKey : `Bearer ${cleanKey}`;
   } else if (cleanKey) {
+    // AQ. and AIzaSy... both used as API key parameter
     url += `${isStream ? '&' : '?'}key=${cleanKey}`;
   }
   
