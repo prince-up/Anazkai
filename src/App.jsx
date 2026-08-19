@@ -501,9 +501,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       addLog(`[Engine] Running Groq Llama 3.3 70B / Vision Engine...`);
       const url = `https://api.groq.com/openai/v1/chat/completions`;
       const groqModels = imageToSend ? [
-        'llama-3.2-11b-vision-preview',
-        'llama-3.2-90b-vision-preview'
-      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+        'meta-llama/llama-4-scout-17b-16e-instruct',
+        'llama-3.2-11b-vision-preview'
+      ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile'];
 
       for (const modelId of groqModels) {
         const controller = new AbortController();
