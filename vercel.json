@@ -1,5 +1,15 @@
 {
+  "cleanUrls": false,
+  "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
     {
       "source": "/((?!assets/|sitemap\\.xml|robots\\.txt|.*\\..*).*)",
       "destination": "/index.html"
@@ -14,6 +24,14 @@
           "value": "application/xml; charset=utf-8"
         },
         {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
           "key": "Cache-Control",
           "value": "public, max-age=3600, s-maxage=3600"
         }
@@ -25,6 +43,14 @@
         {
           "key": "Content-Type",
           "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
         },
         {
           "key": "Cache-Control",
