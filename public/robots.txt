@@ -1,0 +1,5 @@
+# robots.txt for https://anazk.online
+User-agent: *
+Allow: /
+
+Sitemap: https://anazk.online/sitemap.xml
