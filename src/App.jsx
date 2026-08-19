@@ -87,23 +87,16 @@ function maskKey(key) {
 
 // AI Engine API Keys Configuration
 const FREE_TRIAL_GROQ_KEY = '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';
-const FREE_TRIAL_GROQ_MODEL = 'llama-3.3-70b-versatile';
+const HARDCODED_PAID_GEMINI_KEY = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
 function getActiveGeminiKey() {
-  const custom = (localStorage.getItem('custom_gemini_key') || '').trim();
-  if (custom) return custom;
-  const envKey = (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
-  if (envKey) return envKey;
-  return '';
+  const isTrial = localStorage.getItem('anazk_plan_type') === 'free_trial';
+  if (isTrial) return '';
+  return HARDCODED_PAID_GEMINI_KEY;
 }
 
 function getActiveGroqKey() {
-  const custom = (localStorage.getItem('custom_groq_key') || '').trim();
-  if (custom) return custom;
-  const envKey = (import.meta.env.VITE_GROQ_API_KEY || '').trim();
-  if (envKey) return envKey;
-  // Built-in Free Trial fallback — always available
   return FREE_TRIAL_GROQ_KEY;
 }
 
@@ -367,15 +360,19 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     if (isLoading) return;
     
     const isTrial = isFreeTrial || planType === 'free_trial';
-    const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    // Free trial always uses built-in Groq key; paid uses their own keys
-    const groqKey = isTrial ? FREE_TRIAL_GROQ_KEY : getActiveGroqKey();
-    const geminiKey = isTrial ? '' : getActiveGeminiKey(); // skip Gemini for free trial
+    const activePlan = isTrial ? 'free_trial' : 'paid';
+    const activeEngine = isTrial ? 'Groq' : 'Gemini';
+    
+    // Hardcoded Keys (Paid: Gemini key, Free Trial: Groq key)
+    const geminiKey = isTrial ? '' : 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    const groqKey = isTrial ? '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' : '';
 
+    console.log(`[Plan] Active Plan: ${activePlan}`);
+    console.log(`[Plan] Engine: ${activeEngine}`);
     addLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     addLog(`[Plan] ${activePlan.toUpperCase()}`);
-    addLog(`[Engine] ${isTrial ? 'Groq (Free Trial built-in)' : geminiKey ? 'Gemini → Groq fallback' : 'Groq only'}`);
-    addLog(`[Keys] Gemini: ${geminiKey ? maskKey(geminiKey) : 'SKIP (trial)'} | Groq: ${maskKey(groqKey)}`);
+    addLog(`[Engine] ${activeEngine}`);
+    addLog(`[Keys] Gemini: ${geminiKey ? maskKey(geminiKey) : 'SKIP'} | Groq: ${groqKey ? maskKey(groqKey) : 'SKIP'}`);
     
     const textToSend = overrideText !== null ? overrideText : inputText;
     const imageToSend = overrideImage || screenshotData;
@@ -403,14 +400,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. ATTEMPT GEMINI FLASH — PAID USERS ONLY (skipped for free trial)
-    if (!isTrial && geminiKey) {
+    // 1. Paid Users: Gemini Models Only
+    if (activePlan === 'paid') {
       const geminiModels = [
-        'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-latest'
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
+        'gemini-flash-latest'
       ];
-
       
       let imageBase64 = null;
       let imageMime = 'image/png';
@@ -426,6 +423,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
 
       for (const modelId of geminiModels) {
+        console.log(`[Plan] Model being used: ${modelId}`);
+        addLog(`[Gemini] Attempting model: ${modelId}`);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000);
 
@@ -450,25 +449,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             }
           };
 
-          addLog(`[Gemini] Model: ${modelId} | Format: ${geminiKey.startsWith('AQ.') ? 'AQ-key (?key=)' : 'APIKey'}`);
-          addLog(`[Gemini] Endpoint: ${url.split('?')[0]}`);
-
           // --- ATTEMPT 1: ?key= format ---
           let response = await fetch(url, {
             method: 'POST', headers, body: JSON.stringify(geminiBody), signal: controller.signal
           });
           clearTimeout(timeoutId);
-
-          // --- ATTEMPT 2: Bearer format for AQ. keys if ?key= fails ---
-          if (!response.ok && geminiKey.startsWith('AQ.')) {
-            addLog(`[Gemini] ?key= got ${response.status}, trying Bearer format...`);
-            const { url: bUrl, headers: bHeaders } = buildGeminiBearerConfig(geminiKey, modelId, true);
-            const bc = new AbortController();
-            const bt = setTimeout(() => bc.abort(), 12000);
-            response = await fetch(bUrl, { method: 'POST', headers: bHeaders, body: JSON.stringify(geminiBody), signal: bc.signal });
-            clearTimeout(bt);
-            addLog(`[Gemini] Bearer format response: ${response.status}`);
-          }
 
           if (response.ok && response.body) {
             const reader = response.body.getReader();
@@ -507,7 +492,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s (Gemini Flash)`);
+              setStreamStatus(`⚡ ${totalSec}s (Gemini)`);
               addLog(`✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
               success = true;
@@ -531,34 +516,27 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
     }
 
-    // 2. GROQ ENGINE — PRIMARY for Free Trial, FALLBACK for Paid
-    if (!success && groqKey) {
+    // 2. Free Trial Users: Groq Models Only (llama-3.1-8b-instant, llama3-8b-8192, mixtral-8x7b-32768, gemma2-9b-it)
+    if (activePlan === 'free_trial' && groqKey) {
       const url = `https://api.groq.com/openai/v1/chat/completions`;
-      // Free trial: use known-working model directly; paid: try vision models if image
-      const groqModels = isTrial
-        ? [FREE_TRIAL_GROQ_MODEL]
-        : imageToSend
-          ? ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-11b-vision-preview']
-          : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      const groqModels = [
+        'llama-3.1-8b-instant',
+        'llama3-8b-8192',
+        'mixtral-8x7b-32768',
+        'gemma2-9b-it'
+      ];
 
-      addLog(`[Groq] Engine: ${isTrial ? 'Free Trial (built-in key)' : 'Paid fallback'}`);
       addLog(`[Groq] Models to try: ${groqModels.join(', ')}`);
 
-
       for (const modelId of groqModels) {
+        console.log(`[Plan] Model being used: ${modelId}`);
+        addLog(`[Groq] Attempting model: ${modelId}`);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         try {
-          const messages = imageToSend ? [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: promptText },
-                { type: 'image_url', image_url: { url: imageToSend } }
-              ]
-            }
-          ] : [
+          // Skip sending the image block on non-vision models to prevent Groq API errors
+          const messages = [
             { role: 'user', content: promptText }
           ];
 
@@ -569,9 +547,6 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             max_tokens: 500,
             stream: true
           };
-
-          addLog(`[Groq] Model: ${modelId} | Key: ${maskKey(groqKey)}`);
-          addLog(`[Groq] Body: ${JSON.stringify({ model: modelId, msg_count: messages.length, hasImage: !!imageToSend, stream: true })}`);
 
           const response = await fetch(url, {
             method: 'POST',
@@ -922,17 +897,22 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const downsampled = downsampleBuffer(merged, currentSampleRate, 16000);
     const wavBuffer = encodeWAV(downsampled, 16000);
     const base64Wav = arrayBufferToBase64(wavBuffer);
-    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB). Sending to Whisper...`);
+    addLog(`[${new Date().toLocaleTimeString()}] 16kHz WAV ready (${(base64Wav.length / 1024).toFixed(1)} KB).`);
 
     const isTrial = isFreeTrial || planType === 'free_trial';
-    const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    const geminiKey = isTrial ? '' : getActiveGeminiKey(); // no Gemini for free trial
-    const groqKey = isTrial ? FREE_TRIAL_GROQ_KEY : getActiveGroqKey();
+    const activePlan = isTrial ? 'free_trial' : 'paid';
+    const activeEngine = isTrial ? 'Groq' : 'Gemini';
 
+    // Hardcoded Keys
+    const geminiKey = isTrial ? '' : 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    const groqKey = isTrial ? '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' : '';
+
+    console.log(`[Plan] Active Plan: ${activePlan}`);
+    console.log(`[Plan] Engine: ${activeEngine}`);
     addLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     addLog(`[Voice] Plan: ${activePlan.toUpperCase()}`);
-    addLog(`[Voice] Engine: ${isTrial ? 'Groq Whisper + Llama (Free Trial)' : 'Groq Whisper + Gemini/Groq (Paid)'}`);
-    addLog(`[Voice] Groq Key: ${maskKey(groqKey)}`);
+    addLog(`[Voice] Engine: ${activeEngine}`);
+    addLog(`[Voice] Keys: Gemini: ${geminiKey ? maskKey(geminiKey) : 'SKIP'} | Groq: ${groqKey ? maskKey(groqKey) : 'SKIP'}`);
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
     let voiceSysInstruction = `You are a real-time live interview copilot assisting a candidate.
@@ -948,24 +928,128 @@ Guidelines:
       voiceSysInstruction += `\n[Candidate Profile: ${candidateProfile.trim()}]`;
     }
 
-    let transcript = '';
     let voiceSuccess = false;
     let accumulatedText = '';
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // STEP 1: ULTRA-FAST SPEECH-TO-TEXT WITH GROQ WHISPER (<0.25s)
-    addLog(`[STT] Using Groq Whisper (${GROQ_WHISPER_MODEL})...`);
-    if (groqKey) {
-      const whisperModels = [GROQ_WHISPER_MODEL, 'whisper-large-v3'];
+    // 1. Paid Users: Direct Multimodal Gemini (Never use Groq)
+    if (activePlan === 'paid') {
+      const geminiModels = [
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
+        'gemini-flash-latest'
+      ];
 
+      for (const modelId of geminiModels) {
+        console.log(`[Plan] Model being used: ${modelId}`);
+        addLog(`[Voice] Attempting Gemini model: ${modelId}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        try {
+          const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: voiceSysInstruction }]
+              },
+              contents: [{
+                parts: [
+                  { text: "Transcribe spoken interview question and provide the direct, complete spoken interview answer." },
+                  {
+                    inlineData: {
+                      mimeType: 'audio/wav',
+                      data: base64Wav
+                    }
+                  }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 650
+              }
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok && response.body) {
+            const streamReader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+              const { value, done } = await streamReader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr) {
+                    try {
+                      const chunkData = JSON.parse(jsonStr);
+                      const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
+                      if (chunkText) {
+                        if (firstTokenLatency === null) {
+                          firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
+                        }
+                        accumulatedText += chunkText;
+                        setOutputText(accumulatedText);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedText && accumulatedText.trim()) {
+              const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Gemini)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
+              setInterviewCount(prev => prev + 1);
+              voiceSuccess = true;
+              break;
+            }
+          } else {
+            const errTxt = await response.text();
+            let errMsg = '';
+            try {
+              const errJson = JSON.parse(errTxt);
+              errMsg = errJson?.error?.message || errTxt;
+            } catch { errMsg = errTxt; }
+            addLog(`⚠️ Gemini Voice Error (${response.status}): ${errMsg.slice(0, 120)}`);
+            lastErr = `Gemini Audio Error (${response.status}): ${errMsg.slice(0, 100)}`;
+          }
+        } catch (gErr) {
+          clearTimeout(timeoutId);
+          addLog(`⚠️ Gemini Voice Stream exception: ${gErr.message}`);
+          lastErr = gErr.message;
+        }
+      }
+    }
+
+    // 2. Free Trial Users: Groq Whisper STT + Groq LLM (Never use Gemini)
+    if (activePlan === 'free_trial' && groqKey) {
+      let transcript = '';
+
+      // STEP 1: SPEECH-TO-TEXT WITH GROQ WHISPER
+      const whisperModels = [GROQ_WHISPER_MODEL, 'whisper-large-v3'];
       for (const whisperModel of whisperModels) {
+        console.log(`[Plan] Model being used: ${whisperModel}`);
+        addLog(`[STT] Attempting Groq Whisper: ${whisperModel}`);
         const whisperController = new AbortController();
         const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
 
         try {
-          addLog(`[STT Request] Groq Whisper (${whisperModel})...`);
-
           const formData = new FormData();
           const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
           formData.append('file', wavBlob, 'audio.wav');
@@ -1001,56 +1085,55 @@ Guidelines:
           lastErr = err.message;
         }
       }
-    }
 
-    // STEP 2: INSTANT STREAMING ANSWER GENERATION (<0.3s FIRST TOKEN)
-    if (transcript) {
-      setStreamStatus('⚡ Streaming Answer...');
-      setOutputText('');
+      // STEP 2: STREAMING ANSWER GENERATION WITH GROQ LLAMA/MIXTRAL/GEMMA
+      if (transcript) {
+        setStreamStatus('⚡ Streaming Answer...');
+        setOutputText('');
 
-      const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
+        const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
+        const groqModels = [
+          'llama-3.1-8b-instant',
+          'llama3-8b-8192',
+          'mixtral-8x7b-32768',
+          'gemma2-9b-it'
+        ];
 
-      // 2A. ATTEMPT GEMINI STREAM — PAID USERS ONLY (skipped for free trial)
-      if (!isTrial && geminiKey) {
-        addLog(`[Voice Answer] Paid plan → Trying Gemini...`);
-        const geminiModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
-
-
-        for (const modelId of geminiModels) {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
+        for (const modelId of groqModels) {
+          console.log(`[Plan] Model being used: ${modelId}`);
+          addLog(`[Voice Answer] Attempting Groq model: ${modelId}`);
+          const chatController = new AbortController();
+          const chatTimeout = setTimeout(() => chatController.abort(), 12000);
 
           try {
-            const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
-            addLog(`[Answer Request] Google Gemini (${modelId}) Streaming...`);
-
-            const response = await fetch(url, {
+            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
               method: 'POST',
-              headers,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${groqKey}`
+              },
               body: JSON.stringify({
-                systemInstruction: {
-                  parts: [{ text: voiceSysInstruction }]
-                },
-                contents: [{
-                  parts: [{ text: promptForAnswer }]
-                }],
-                generationConfig: {
-                  temperature: 0.2,
-                  maxOutputTokens: 650
-                }
+                model: modelId,
+                messages: [
+                  { role: 'system', content: voiceSysInstruction },
+                  { role: 'user', content: promptForAnswer }
+                ],
+                temperature: 0.2,
+                max_tokens: 650,
+                stream: true
               }),
-              signal: controller.signal
+              signal: chatController.signal
             });
 
-            clearTimeout(timeoutId);
+            clearTimeout(chatTimeout);
 
-            if (response.ok && response.body) {
-              const streamReader = response.body.getReader();
+            if (chatRes.ok && chatRes.body) {
+              const reader = chatRes.body.getReader();
               const decoder = new TextDecoder();
               let buffer = '';
 
               while (true) {
-                const { value, done } = await streamReader.read();
+                const { value, done } = await reader.read();
                 if (done) break;
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
@@ -1059,16 +1142,16 @@ Guidelines:
                 for (const line of lines) {
                   if (line.startsWith('data: ')) {
                     const jsonStr = line.slice(6).trim();
-                    if (jsonStr) {
+                    if (jsonStr && jsonStr !== '[DONE]') {
                       try {
-                        const chunkData = JSON.parse(jsonStr);
-                        const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (chunkText) {
+                        const data = JSON.parse(jsonStr);
+                        const chunk = data.choices?.[0]?.delta?.content;
+                        if (chunk) {
                           if (firstTokenLatency === null) {
                             firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
                             setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
                           }
-                          accumulatedText += chunkText;
+                          accumulatedText += chunk;
                           setOutputText(accumulatedText);
                         }
                       } catch (e) {}
@@ -1079,182 +1162,23 @@ Guidelines:
 
               if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Gemini)`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
+                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Groq)`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;
                 break;
               }
             } else {
-              const errTxt = await response.text();
-              addLog(`⚠️ Gemini Voice Notice (${response.status}): ${errTxt.slice(0, 120)}`);
+              const errTxt = await chatRes.text();
+              addLog(`⚠️ Groq Voice HTTP ${chatRes.status} | Model: ${modelId} | Error: ${errTxt.slice(0, 120)}`);
+              lastErr = `Groq ${chatRes.status}: ${errTxt.slice(0, 100)}`;
             }
-          } catch (gErr) {
-            clearTimeout(timeoutId);
-            addLog(`⚠️ Gemini Voice Stream notice: ${gErr.message}`);
+          } catch (chatErr) {
+            clearTimeout(chatTimeout);
+            addLog(`⚠️ Groq Voice Streaming Error: ${chatErr.message}`);
+            lastErr = chatErr.message;
           }
         }
-      }
-
-      // 2B. GROQ LLAMA — PRIMARY for Free Trial, FALLBACK for Paid
-      if (!voiceSuccess && groqKey) {
-        const voiceGroqModel = isTrial ? FREE_TRIAL_GROQ_MODEL : 'llama-3.3-70b-versatile';
-        const chatController = new AbortController();
-        const chatTimeout = setTimeout(() => chatController.abort(), 12000);
-
-        try {
-          addLog(`[Voice Answer] ${isTrial ? 'Free Trial' : 'Paid fallback'} → Groq model: ${voiceGroqModel}`);
-
-          const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${groqKey}`
-            },
-            body: JSON.stringify({
-              model: voiceGroqModel,
-              messages: [
-                { role: 'system', content: voiceSysInstruction },
-                { role: 'user', content: promptForAnswer }
-              ],
-              temperature: 0.2,
-              max_tokens: 650,
-              stream: true
-            }),
-            signal: chatController.signal
-          });
-
-          clearTimeout(chatTimeout);
-
-          if (chatRes.ok && chatRes.body) {
-            const reader = chatRes.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (jsonStr && jsonStr !== '[DONE]') {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      const chunk = data.choices?.[0]?.delta?.content;
-                      if (chunk) {
-                        if (firstTokenLatency === null) {
-                          firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
-                        }
-                        accumulatedText += chunk;
-                        setOutputText(accumulatedText);
-                      }
-                    } catch (e) {}
-                  }
-                }
-              }
-            }
-
-            if (accumulatedText && accumulatedText.trim()) {
-              const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Llama 3.3)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
-              setInterviewCount(prev => prev + 1);
-              voiceSuccess = true;
-            }
-          }
-        } catch (chatErr) {
-          clearTimeout(chatTimeout);
-          addLog(`⚠️ Voice Streaming Error: ${chatErr.message}`);
-          lastErr = chatErr.message;
-        }
-      }
-    }
-
-    // STEP 3: EMERGENCY DIRECT GEMINI AUDIO FALLBACK IF WHISPER DID NOT GET TRANSCRIPT
-    if (!voiceSuccess && geminiKey) {
-      addLog(`[Emergency Fallback] Direct Gemini Audio Recognition...`);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      try {
-        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-2.0-flash', true);
-        const response = await fetch(url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: voiceSysInstruction }]
-            },
-            contents: [{
-              parts: [
-                { text: "Transcribe spoken interview question and provide the direct, complete spoken interview answer." },
-                {
-                  inlineData: {
-                    mimeType: 'audio/wav',
-                    data: base64Wav
-                  }
-                }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 650
-            }
-          }),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok && response.body) {
-          const streamReader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = '';
-
-          while (true) {
-            const { value, done } = await streamReader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const jsonStr = line.slice(6).trim();
-                if (jsonStr) {
-                  try {
-                    const chunkData = JSON.parse(jsonStr);
-                    const chunkText = chunkData.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (chunkText) {
-                      if (firstTokenLatency === null) {
-                        firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                        setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
-                      }
-                      accumulatedText += chunkText;
-                      setOutputText(accumulatedText);
-                    }
-                  } catch (e) {}
-                }
-              }
-            }
-          }
-
-          if (accumulatedText && accumulatedText.trim()) {
-            const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-            setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
-            addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Direct Audio done in ${totalSec}s`);
-            setInterviewCount(prev => prev + 1);
-            voiceSuccess = true;
-          }
-        }
-      } catch (fbErr) {
-        clearTimeout(timeoutId);
-        lastErr = fbErr.message;
       }
     }
 
