@@ -85,9 +85,36 @@ function maskKey(key) {
   return `${str.slice(0, 8)}...${str.slice(-4)}`;
 }
 
-// AI Engine API Keys: Gemini for Paid Users, Built-in Groq for Free Trial Users
-const SYSTEM_DEFAULT_GEMINI_KEY = (import.meta.env.VITE_GEMINI_API_KEY || 'AQ.Ab8RN6Kk4TXLpadEaCbbXvFk_Pg7ETtDYseb2_-K8iFjL2HlyA').trim();
-const SYSTEM_DEFAULT_GROQ_KEY = (import.meta.env.VITE_GROQ_API_KEY || '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').trim();
+// AI Engine API Keys Configuration
+function getActiveGeminiKey() {
+  const custom = (localStorage.getItem('custom_gemini_key') || '').trim();
+  if (custom) return custom;
+  const envKey = (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
+  if (envKey) return envKey;
+  return '';
+}
+
+function getActiveGroqKey() {
+  const custom = (localStorage.getItem('custom_groq_key') || '').trim();
+  if (custom) return custom;
+  return (import.meta.env.VITE_GROQ_API_KEY || '').trim();
+}
+
+function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
+  const cleanKey = (geminiKey || '').trim();
+  const isBearer = cleanKey.startsWith('AQ.') || cleanKey.startsWith('ya29.') || cleanKey.startsWith('Bearer ');
+  
+  let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:${isStream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`;
+  const headers = { 'Content-Type': 'application/json' };
+  
+  if (isBearer) {
+    headers['Authorization'] = cleanKey.startsWith('Bearer ') ? cleanKey : `Bearer ${cleanKey}`;
+  } else if (cleanKey) {
+    url += `${isStream ? '&' : '?'}key=${cleanKey}`;
+  }
+  
+  return { url, headers };
+}
 
 function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false }) {
   const [inputText, setInputText] = useState('');
@@ -111,6 +138,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   
   // Settings & Preferences
   const [showSettings, setShowSettings] = useState(false);
+  const [customGeminiKey, setCustomGeminiKey] = useState(() => localStorage.getItem('custom_gemini_key') || '');
   const [opacity, setOpacity] = useState(() => parseFloat(localStorage.getItem('overlay_opacity')) || 0.85);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
@@ -138,13 +166,13 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     localStorage.setItem('user_resume_summary', quickSummary);
 
     // Asynchronously generate an AI compressed profile once on upload
-    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+    const geminiKey = getActiveGeminiKey();
     if (geminiKey && fullText.length > 150) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`;
+        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-flash-latest', false);
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             contents: [{
               parts: [{
@@ -163,7 +191,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
           addLog(`✅ Resume summary cached for fast AI calls (${compact.length} chars).`);
         }
       } catch (e) {
-        console.warn('Async resume summary error:', e);
+        console.warn('Async resume summary note:', e);
       }
     }
   };
@@ -327,10 +355,10 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
-    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
+    const groqKey = getActiveGroqKey();
+    const geminiKey = getActiveGeminiKey();
 
-    addLog(`[Plan: ${activePlan}] Starting AI query... (Engine: ${isTrial ? 'Groq Llama 3.3' : 'Gemini Flash'})`);
+    addLog(`[Plan: ${activePlan}] Starting AI query... (Gemini Key: ${geminiKey ? 'Available' : 'None'}, Groq: ${groqKey ? 'Available' : 'None'})`);
     
     const textToSend = overrideText !== null ? overrideText : inputText;
     const imageToSend = overrideImage || screenshotData;
@@ -358,121 +386,12 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. FREE TRIAL: GROQ LLAMA 3.3 70B & VISION ENGINE (WITH 15s TIMEOUT)
-    if (isTrial && groqKey) {
-      const url = `https://api.groq.com/openai/v1/chat/completions`;
-      const groqModels = imageToSend ? [
-        'llama-3.2-11b-vision-preview',
-        'llama-3.2-90b-vision-preview'
-      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
-
-      for (const modelId of groqModels) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        try {
-          const messages = imageToSend ? [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: promptText },
-                { type: 'image_url', image_url: { url: imageToSend } }
-              ]
-            }
-          ] : [
-            { role: 'user', content: promptText }
-          ];
-
-          const requestBody = { 
-            model: modelId, 
-            messages,
-            temperature: 0.2,
-            max_tokens: 450,
-            stream: true
-          };
-
-          addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
-
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Authorization': `Bearer ${groqKey}` 
-            },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-          addLog(`[Response] Groq HTTP ${response.status} (${response.statusText})`);
-
-          if (response.ok && response.body) {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let firstTokenTime = null;
-
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (jsonStr && jsonStr !== '[DONE]') {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      const chunk = data.choices?.[0]?.delta?.content;
-                      if (chunk) {
-                        if (!firstTokenTime) {
-                          firstTokenTime = Date.now();
-                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ Groq Stream (${latency}s)`);
-                        }
-                        accumulatedReply += chunk;
-                        setOutputText(accumulatedReply);
-                      }
-                    } catch (e) {}
-                  }
-                }
-              }
-            }
-
-            if (accumulatedReply && accumulatedReply.trim()) {
-              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s (Free Trial)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
-              setInterviewCount(prev => prev + 1);
-              success = true;
-              break;
-            }
-          } else {
-            const errTxt = await response.text();
-            addLog(`❌ Groq Error Response (${response.status}): ${errTxt}`);
-            lastErr = `Groq HTTP ${response.status}: ${errTxt}`;
-          }
-        } catch (fetchErr) {
-          clearTimeout(timeoutId);
-          if (fetchErr.name === 'AbortError') {
-            addLog(`❌ Groq request timed out after 15s.`);
-            lastErr = 'Request timed out (15s limit).';
-          } else {
-            addLog(`❌ Groq fetch error: ${fetchErr.message}`);
-            lastErr = fetchErr.message;
-          }
-        }
-      }
-    }
-
-    // 2. PAID PLAN OR EMERGENCY FALLBACK (GEMINI FLASH)
-    if (!success && geminiKey) {
+    // 1. ATTEMPT GEMINI FLASH IF KEY IS PROVIDED
+    if (geminiKey) {
       const geminiModels = [
         'gemini-2.0-flash',
         'gemini-flash-latest',
-        'gemini-3.5-flash'
+        'gemini-1.5-flash'
       ];
       
       let imageBase64 = null;
@@ -490,11 +409,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
       for (const modelId of geminiModels) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         try {
-          const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
-          addLog(`[Request] POST ${geminiStreamUrl.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
+          const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
+          addLog(`[Request] POST ${url.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
 
           const contentParts = [{ text: promptText }];
           if (imageBase64) {
@@ -506,9 +425,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             });
           }
 
-          const response = await fetch(geminiStreamUrl, {
+          const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ 
               contents: [{ parts: contentParts }],
               generationConfig: {
@@ -545,7 +464,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                         if (!firstTokenTime) {
                           firstTokenTime = Date.now();
                           const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                          setStreamStatus(isTrial ? `⚡ Trial Stream (${latency}s)` : `⚡ Streaming (${latency}s)`);
+                          setStreamStatus(`⚡ Gemini (${latency}s)`);
                         }
                         accumulatedReply += chunk;
                         setOutputText(accumulatedReply);
@@ -558,7 +477,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s${isTrial ? ' (Trial)' : ''}`);
+              setStreamStatus(`⚡ ${totalSec}s (Gemini Flash)`);
               addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
               success = true;
@@ -566,17 +485,128 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             }
           } else {
             const errTxt = await response.text();
-            lastErr = `Gemini HTTP ${response.status}: ${errTxt}`;
+            addLog(`⚠️ Gemini HTTP ${response.status} Notice: ${errTxt.slice(0, 120)}...`);
+            lastErr = `Gemini HTTP ${response.status}`;
           }
         } catch (err) {
           clearTimeout(timeoutId);
-          lastErr = err.name === 'AbortError' ? 'Gemini request timed out (15s)' : err.message;
+          addLog(`⚠️ Gemini Notice: ${err.message}`);
+          lastErr = err.name === 'AbortError' ? 'Gemini request timed out (12s)' : err.message;
+        }
+      }
+    }
+
+    // 2. ULTRA-FAST GROQ LLAMA 3.3 70B & VISION ENGINE (PRIMARY TRIAL OR SEAMLESS HIGH-SPEED FALLBACK)
+    if (!success && groqKey) {
+      addLog(`[Engine] Running Groq Llama 3.3 70B / Vision Engine...`);
+      const url = `https://api.groq.com/openai/v1/chat/completions`;
+      const groqModels = imageToSend ? [
+        'llama-3.2-11b-vision-preview',
+        'llama-3.2-90b-vision-preview'
+      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+
+      for (const modelId of groqModels) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const messages = imageToSend ? [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: promptText },
+                { type: 'image_url', image_url: { url: imageToSend } }
+              ]
+            }
+          ] : [
+            { role: 'user', content: promptText }
+          ];
+
+          const requestBody = { 
+            model: modelId, 
+            messages,
+            temperature: 0.2,
+            max_tokens: 500,
+            stream: true
+          };
+
+          addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': `Bearer ${groqKey}` 
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstTokenTime = null;
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (!firstTokenTime) {
+                          firstTokenTime = Date.now();
+                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ Groq (${latency}s)`);
+                        }
+                        accumulatedReply += chunk;
+                        setOutputText(accumulatedReply);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedReply && accumulatedReply.trim()) {
+              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${totalSec}s (Sub-Second Engine)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ AI Engine answered in ${totalSec}s (${accumulatedReply.length} chars)`);
+              setInterviewCount(prev => prev + 1);
+              success = true;
+              break;
+            }
+          } else {
+            const errTxt = await response.text();
+            addLog(`❌ Groq Error Response (${response.status}): ${errTxt.slice(0, 120)}`);
+            lastErr = `AI Engine HTTP ${response.status}`;
+          }
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          if (fetchErr.name === 'AbortError') {
+            addLog(`❌ AI request timed out.`);
+            lastErr = 'Request timed out.';
+          } else {
+            addLog(`❌ AI engine error: ${fetchErr.message}`);
+            lastErr = fetchErr.message;
+          }
         }
       }
     }
 
     if (!success && !accumulatedReply) {
-      setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Please check internet connection.'}`);
+      setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Please check your internet connection.'}`);
       setStreamStatus('');
     }
 
@@ -850,8 +880,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    const geminiKey = SYSTEM_DEFAULT_GEMINI_KEY;
-    const groqKey = SYSTEM_DEFAULT_GROQ_KEY;
+    const geminiKey = getActiveGeminiKey();
+    const groqKey = getActiveGroqKey();
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
     let voiceSysInstruction = `You are a real-time live interview copilot assisting a candidate.
@@ -927,98 +957,21 @@ Guidelines:
 
       const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
 
-      // 2A. FREE TRIAL: STREAM WITH GROQ LLAMA 3.3
-      if (isTrial && groqKey) {
-        const chatController = new AbortController();
-        const chatTimeout = setTimeout(() => chatController.abort(), 15000);
-
-        try {
-          addLog(`[Answer Request] Groq Llama 3.3 70B Streaming...`);
-
-          const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${groqKey}`
-            },
-            body: JSON.stringify({
-              model: 'llama-3.3-70b-versatile',
-              messages: [
-                { role: 'system', content: voiceSysInstruction },
-                { role: 'user', content: promptForAnswer }
-              ],
-              temperature: 0.2,
-              max_tokens: 650,
-              stream: true
-            }),
-            signal: chatController.signal
-          });
-
-          clearTimeout(chatTimeout);
-
-          if (chatRes.ok && chatRes.body) {
-            const reader = chatRes.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (jsonStr && jsonStr !== '[DONE]') {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      const chunk = data.choices?.[0]?.delta?.content;
-                      if (chunk) {
-                        if (firstTokenLatency === null) {
-                          firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ First word: ${firstTokenLatency}s (Trial)`);
-                        }
-                        accumulatedText += chunk;
-                        setOutputText(accumulatedText);
-                      }
-                    } catch (e) {}
-                  }
-                }
-              }
-            }
-
-            if (accumulatedText && accumulatedText.trim()) {
-              const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Free Trial)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
-              setInterviewCount(prev => prev + 1);
-              voiceSuccess = true;
-            }
-          }
-        } catch (chatErr) {
-          clearTimeout(chatTimeout);
-          addLog(`⚠️ Groq Chat Streaming Error: ${chatErr.message}`);
-          lastErr = chatErr.message;
-        }
-      }
-
-      // 2B. PAID PLAN: STREAM WITH GOOGLE GEMINI 2.0 FLASH
-      if (!voiceSuccess && geminiKey) {
-        const geminiModels = ['gemini-2.0-flash', 'gemini-flash-latest'];
+      // 2A. ATTEMPT GEMINI STREAM IF KEY PROVIDED
+      if (geminiKey) {
+        const geminiModels = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
 
         for (const modelId of geminiModels) {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000);
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
 
           try {
-            const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${geminiKey}`;
+            const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
             addLog(`[Answer Request] Google Gemini (${modelId}) Streaming...`);
 
-            const response = await fetch(geminiStreamUrl, {
+            const response = await fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: JSON.stringify({
                 systemInstruction: {
                   parts: [{ text: voiceSysInstruction }]
@@ -1071,18 +1024,97 @@ Guidelines:
 
               if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
+                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Gemini)`);
                 addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;
                 break;
               }
+            } else {
+              const errTxt = await response.text();
+              addLog(`⚠️ Gemini Voice Notice (${response.status}): ${errTxt.slice(0, 120)}`);
             }
           } catch (gErr) {
             clearTimeout(timeoutId);
             addLog(`⚠️ Gemini Voice Stream notice: ${gErr.message}`);
-            lastErr = gErr.message;
           }
+        }
+      }
+
+      // 2B. HIGH-SPEED GROQ LLAMA 3.3 70B (PRIMARY TRIAL OR SEAMLESS INSTANT FALLBACK)
+      if (!voiceSuccess && groqKey) {
+        const chatController = new AbortController();
+        const chatTimeout = setTimeout(() => chatController.abort(), 12000);
+
+        try {
+          addLog(`[Answer Request] Groq Llama 3.3 70B Streaming...`);
+
+          const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                { role: 'system', content: voiceSysInstruction },
+                { role: 'user', content: promptForAnswer }
+              ],
+              temperature: 0.2,
+              max_tokens: 650,
+              stream: true
+            }),
+            signal: chatController.signal
+          });
+
+          clearTimeout(chatTimeout);
+
+          if (chatRes.ok && chatRes.body) {
+            const reader = chatRes.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (firstTokenLatency === null) {
+                          firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
+                        }
+                        accumulatedText += chunk;
+                        setOutputText(accumulatedText);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedText && accumulatedText.trim()) {
+              const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Llama 3.3)`);
+              addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
+              setInterviewCount(prev => prev + 1);
+              voiceSuccess = true;
+            }
+          }
+        } catch (chatErr) {
+          clearTimeout(chatTimeout);
+          addLog(`⚠️ Voice Streaming Error: ${chatErr.message}`);
+          lastErr = chatErr.message;
         }
       }
     }
@@ -1094,10 +1126,10 @@ Guidelines:
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       try {
-        const geminiStreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${geminiKey}`;
-        const response = await fetch(geminiStreamUrl, {
+        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-2.0-flash', true);
+        const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             systemInstruction: {
               parts: [{ text: voiceSysInstruction }]
@@ -1397,6 +1429,53 @@ Guidelines:
                     <span>{resumeText.length.toLocaleString()} characters</span>
                   </div>
                 )}
+              </div>
+
+              {/* Custom Gemini API Key (Optional) */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5 space-y-2">
+                <div className="flex justify-between items-center text-gray-300 font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-emerald-400" />
+                    <span>Gemini API Key (Optional)</span>
+                  </div>
+                  {customGeminiKey ? (
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Active
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-gray-400 font-medium">
+                      Built-in Fast AI
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={customGeminiKey}
+                  onChange={(e) => {
+                    setCustomGeminiKey(e.target.value);
+                    if (e.target.value.trim()) {
+                      localStorage.setItem('custom_gemini_key', e.target.value.trim());
+                    } else {
+                      localStorage.removeItem('custom_gemini_key');
+                    }
+                  }}
+                  placeholder="AIzaSy... (Google AI Studio Key)"
+                  className="w-full bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2 text-xs outline-none focus:border-emerald-500/40 font-mono placeholder-gray-600"
+                />
+                <p className="text-[10px] text-gray-500 flex justify-between">
+                  <span>Get key free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-emerald-400 underline">aistudio.google.com</a></span>
+                  {customGeminiKey && (
+                    <button
+                      onClick={() => {
+                        setCustomGeminiKey('');
+                        localStorage.removeItem('custom_gemini_key');
+                      }}
+                      className="text-red-400 hover:text-red-300 font-bold"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </p>
               </div>
 
               {/* Opacity Slider */}
