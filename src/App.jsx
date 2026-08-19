@@ -358,7 +358,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const groqKey = getActiveGroqKey();
     const geminiKey = getActiveGeminiKey();
 
-    addLog(`[Plan: ${activePlan}] Starting AI query... (Gemini Key: ${geminiKey ? 'Available' : 'None'}, Groq: ${groqKey ? 'Available' : 'None'})`);
+    addLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    addLog(`[Plan] Active Plan: ${activePlan}`);
+    addLog(`[Keys] Gemini: ${geminiKey ? maskKey(geminiKey) : 'NOT SET'} | Groq: ${groqKey ? maskKey(groqKey) : 'NOT SET'}`);
     
     const textToSend = overrideText !== null ? overrideText : inputText;
     const imageToSend = overrideImage || screenshotData;
@@ -390,8 +392,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     if (geminiKey) {
       const geminiModels = [
         'gemini-2.0-flash',
-        'gemini-flash-latest',
-        'gemini-1.5-flash'
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest'
       ];
       
       let imageBase64 = null;
@@ -413,8 +415,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
         try {
           const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
-          addLog(`[Request] POST ${url.split('?')[0]} | Model: ${modelId} | Key: ${maskKey(geminiKey)}`);
-
+          
           const contentParts = [{ text: promptText }];
           if (imageBase64) {
             contentParts.push({
@@ -425,16 +426,22 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             });
           }
 
+          const geminiBody = { 
+            contents: [{ parts: contentParts }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 500
+            }
+          };
+
+          addLog(`[Gemini] Model: ${modelId} | Key Type: ${geminiKey.startsWith('AQ.') ? 'Bearer OAuth' : 'API Key'}`);
+          addLog(`[Gemini] URL: ${url.split('?')[0]}`);
+          addLog(`[Gemini] Body: ${JSON.stringify({ model: modelId, parts_count: contentParts.length, hasImage: !!imageBase64 })}`);
+
           const response = await fetch(url, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ 
-              contents: [{ parts: contentParts }],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 500
-              }
-            }),
+            body: JSON.stringify(geminiBody),
             signal: controller.signal
           });
 
@@ -478,32 +485,39 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
               setStreamStatus(`⚡ ${totalSec}s (Gemini Flash)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini answered in ${totalSec}s`);
+              addLog(`✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
               success = true;
               break;
             }
           } else {
             const errTxt = await response.text();
-            addLog(`⚠️ Gemini HTTP ${response.status} Notice: ${errTxt.slice(0, 120)}...`);
-            lastErr = `Gemini HTTP ${response.status}`;
+            let errMsg = '';
+            try {
+              const errJson = JSON.parse(errTxt);
+              errMsg = errJson?.error?.message || errTxt;
+            } catch { errMsg = errTxt; }
+            addLog(`❌ Gemini HTTP ${response.status} | Model: ${modelId} | Error: ${errMsg.slice(0, 200)}`);
+            lastErr = `Gemini ${response.status}: ${errMsg.slice(0, 100)}`;
           }
         } catch (err) {
           clearTimeout(timeoutId);
-          addLog(`⚠️ Gemini Notice: ${err.message}`);
-          lastErr = err.name === 'AbortError' ? 'Gemini request timed out (12s)' : err.message;
+          addLog(`❌ Gemini Exception: ${err.message}`);
+          lastErr = err.name === 'AbortError' ? 'Gemini timed out (12s)' : err.message;
         }
       }
     }
 
     // 2. ULTRA-FAST GROQ LLAMA 3.3 70B & VISION ENGINE (PRIMARY TRIAL OR SEAMLESS HIGH-SPEED FALLBACK)
     if (!success && groqKey) {
-      addLog(`[Engine] Running Groq Llama 3.3 70B / Vision Engine...`);
+      addLog(`[Groq] Starting Groq engine...`);
       const url = `https://api.groq.com/openai/v1/chat/completions`;
       const groqModels = imageToSend ? [
         'meta-llama/llama-4-scout-17b-16e-instruct',
         'llama-3.2-11b-vision-preview'
-      ] : ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile'];
+      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+
+      addLog(`[Groq] Models to try: ${groqModels.join(', ')}`);
 
       for (const modelId of groqModels) {
         const controller = new AbortController();
@@ -530,7 +544,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             stream: true
           };
 
-          addLog(`[Request] POST ${url} | Model: ${modelId} | Auth: Bearer ${maskKey(groqKey)}`);
+          addLog(`[Groq] Model: ${modelId} | Key: ${maskKey(groqKey)}`);
+          addLog(`[Groq] Body: ${JSON.stringify({ model: modelId, msg_count: messages.length, hasImage: !!imageToSend, stream: true })}`);
 
           const response = await fetch(url, {
             method: 'POST',
@@ -581,24 +596,29 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s (Sub-Second Engine)`);
-              addLog(`[${new Date().toLocaleTimeString()}] ✅ AI Engine answered in ${totalSec}s (${accumulatedReply.length} chars)`);
+              setStreamStatus(`⚡ ${totalSec}s (Groq)`);
+              addLog(`✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
               setInterviewCount(prev => prev + 1);
               success = true;
               break;
             }
           } else {
             const errTxt = await response.text();
-            addLog(`❌ Groq Error Response (${response.status}): ${errTxt.slice(0, 120)}`);
-            lastErr = `AI Engine HTTP ${response.status}`;
+            let errMsg = '';
+            try {
+              const errJson = JSON.parse(errTxt);
+              errMsg = errJson?.error?.message || errTxt;
+            } catch { errMsg = errTxt; }
+            addLog(`❌ Groq HTTP ${response.status} | Model: ${modelId} | Error: ${errMsg.slice(0, 200)}`);
+            lastErr = `Groq ${response.status}: ${errMsg.slice(0, 100)}`;
           }
         } catch (fetchErr) {
           clearTimeout(timeoutId);
           if (fetchErr.name === 'AbortError') {
-            addLog(`❌ AI request timed out.`);
-            lastErr = 'Request timed out.';
+            addLog(`❌ Groq timed out (12s) | Model: ${modelId}`);
+            lastErr = 'Groq timed out.';
           } else {
-            addLog(`❌ AI engine error: ${fetchErr.message}`);
+            addLog(`❌ Groq Exception: ${fetchErr.message}`);
             lastErr = fetchErr.message;
           }
         }
@@ -606,7 +626,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     }
 
     if (!success && !accumulatedReply) {
-      setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Please check your internet connection.'}`);
+      setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Check your internet connection.'}`);
       setStreamStatus('');
     }
 
