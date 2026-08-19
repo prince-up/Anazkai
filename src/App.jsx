@@ -86,7 +86,7 @@ function maskKey(key) {
 }
 
 // AI Engine API Keys Configuration
-const FREE_TRIAL_GROQ_KEY = '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';
+const FREE_TRIAL_GROQ_KEY = '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';
 const FREE_TRIAL_GROQ_MODEL = 'llama-3.3-70b-versatile';
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
@@ -107,22 +107,25 @@ function getActiveGroqKey() {
   return FREE_TRIAL_GROQ_KEY;
 }
 
+// Build Gemini request with ?key= parameter (for AIzaSy... and AQ. keys)
 function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
   const cleanKey = (geminiKey || '').trim();
-  // Only ya29. tokens are actual short-lived OAuth Bearer tokens
-  // AQ. keys from Google AI Studio are proper permanent API keys → use as ?key=
   const isBearer = cleanKey.startsWith('ya29.') || cleanKey.startsWith('Bearer ');
-  
   let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:${isStream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`;
   const headers = { 'Content-Type': 'application/json' };
-  
   if (isBearer) {
     headers['Authorization'] = cleanKey.startsWith('Bearer ') ? cleanKey : `Bearer ${cleanKey}`;
   } else if (cleanKey) {
-    // AQ. and AIzaSy... both used as API key parameter
     url += `${isStream ? '&' : '?'}key=${cleanKey}`;
   }
-  
+  return { url, headers };
+}
+
+// Bearer fallback for AQ. keys (in case ?key= doesn't work)
+function buildGeminiBearerConfig(geminiKey, modelId, isStream = true) {
+  const cleanKey = (geminiKey || '').trim();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:${isStream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`;
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cleanKey}` };
   return { url, headers };
 }
 
@@ -447,18 +450,25 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             }
           };
 
-          addLog(`[Gemini] Model: ${modelId} | Key Type: ${geminiKey.startsWith('AQ.') ? 'Bearer OAuth' : 'API Key'}`);
-          addLog(`[Gemini] URL: ${url.split('?')[0]}`);
-          addLog(`[Gemini] Body: ${JSON.stringify({ model: modelId, parts_count: contentParts.length, hasImage: !!imageBase64 })}`);
+          addLog(`[Gemini] Model: ${modelId} | Format: ${geminiKey.startsWith('AQ.') ? 'AQ-key (?key=)' : 'APIKey'}`);
+          addLog(`[Gemini] Endpoint: ${url.split('?')[0]}`);
 
-          const response = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(geminiBody),
-            signal: controller.signal
+          // --- ATTEMPT 1: ?key= format ---
+          let response = await fetch(url, {
+            method: 'POST', headers, body: JSON.stringify(geminiBody), signal: controller.signal
           });
-
           clearTimeout(timeoutId);
+
+          // --- ATTEMPT 2: Bearer format for AQ. keys if ?key= fails ---
+          if (!response.ok && geminiKey.startsWith('AQ.')) {
+            addLog(`[Gemini] ?key= got ${response.status}, trying Bearer format...`);
+            const { url: bUrl, headers: bHeaders } = buildGeminiBearerConfig(geminiKey, modelId, true);
+            const bc = new AbortController();
+            const bt = setTimeout(() => bc.abort(), 12000);
+            response = await fetch(bUrl, { method: 'POST', headers: bHeaders, body: JSON.stringify(geminiBody), signal: bc.signal });
+            clearTimeout(bt);
+            addLog(`[Gemini] Bearer format response: ${response.status}`);
+          }
 
           if (response.ok && response.body) {
             const reader = response.body.getReader();
@@ -510,8 +520,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               const errJson = JSON.parse(errTxt);
               errMsg = errJson?.error?.message || errTxt;
             } catch { errMsg = errTxt; }
-            addLog(`❌ Gemini HTTP ${response.status} | Model: ${modelId} | Error: ${errMsg.slice(0, 200)}`);
-            lastErr = `Gemini ${response.status}: ${errMsg.slice(0, 100)}`;
+            addLog(`❌ Gemini FINAL Error ${response.status} | ${modelId} | ${errMsg.slice(0, 200)}`);
+            lastErr = `Gemini Error (${response.status}): ${errMsg.slice(0, 120)}`;
           }
         } catch (err) {
           clearTimeout(timeoutId);
