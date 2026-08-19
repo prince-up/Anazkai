@@ -86,6 +86,10 @@ function maskKey(key) {
 }
 
 // AI Engine API Keys Configuration
+const FREE_TRIAL_GROQ_KEY = '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';
+const FREE_TRIAL_GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
+
 function getActiveGeminiKey() {
   const custom = (localStorage.getItem('custom_gemini_key') || '').trim();
   if (custom) return custom;
@@ -97,7 +101,10 @@ function getActiveGeminiKey() {
 function getActiveGroqKey() {
   const custom = (localStorage.getItem('custom_groq_key') || '').trim();
   if (custom) return custom;
-  return (import.meta.env.VITE_GROQ_API_KEY || '').trim();
+  const envKey = (import.meta.env.VITE_GROQ_API_KEY || '').trim();
+  if (envKey) return envKey;
+  // Built-in Free Trial fallback — always available
+  return FREE_TRIAL_GROQ_KEY;
 }
 
 function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
@@ -355,12 +362,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    const groqKey = getActiveGroqKey();
-    const geminiKey = getActiveGeminiKey();
+    // Free trial always uses built-in Groq key; paid uses their own keys
+    const groqKey = isTrial ? FREE_TRIAL_GROQ_KEY : getActiveGroqKey();
+    const geminiKey = isTrial ? '' : getActiveGeminiKey(); // skip Gemini for free trial
 
     addLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    addLog(`[Plan] Active Plan: ${activePlan}`);
-    addLog(`[Keys] Gemini: ${geminiKey ? maskKey(geminiKey) : 'NOT SET'} | Groq: ${groqKey ? maskKey(groqKey) : 'NOT SET'}`);
+    addLog(`[Plan] ${activePlan.toUpperCase()}`);
+    addLog(`[Engine] ${isTrial ? 'Groq (Free Trial built-in)' : geminiKey ? 'Gemini → Groq fallback' : 'Groq only'}`);
+    addLog(`[Keys] Gemini: ${geminiKey ? maskKey(geminiKey) : 'SKIP (trial)'} | Groq: ${maskKey(groqKey)}`);
     
     const textToSend = overrideText !== null ? overrideText : inputText;
     const imageToSend = overrideImage || screenshotData;
@@ -388,13 +397,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. ATTEMPT GEMINI FLASH IF KEY IS PROVIDED
-    if (geminiKey) {
+    // 1. ATTEMPT GEMINI FLASH — PAID USERS ONLY (skipped for free trial)
+    if (!isTrial && geminiKey) {
       const geminiModels = [
         'gemini-2.0-flash',
         'gemini-1.5-flash',
         'gemini-1.5-flash-latest'
       ];
+
       
       let imageBase64 = null;
       let imageMime = 'image/png';
@@ -508,16 +518,19 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
     }
 
-    // 2. ULTRA-FAST GROQ LLAMA 3.3 70B & VISION ENGINE (PRIMARY TRIAL OR SEAMLESS HIGH-SPEED FALLBACK)
+    // 2. GROQ ENGINE — PRIMARY for Free Trial, FALLBACK for Paid
     if (!success && groqKey) {
-      addLog(`[Groq] Starting Groq engine...`);
       const url = `https://api.groq.com/openai/v1/chat/completions`;
-      const groqModels = imageToSend ? [
-        'meta-llama/llama-4-scout-17b-16e-instruct',
-        'llama-3.2-11b-vision-preview'
-      ] : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      // Free trial: use known-working model directly; paid: try vision models if image
+      const groqModels = isTrial
+        ? [FREE_TRIAL_GROQ_MODEL]
+        : imageToSend
+          ? ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.2-11b-vision-preview']
+          : ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 
+      addLog(`[Groq] Engine: ${isTrial ? 'Free Trial (built-in key)' : 'Paid fallback'}`);
       addLog(`[Groq] Models to try: ${groqModels.join(', ')}`);
+
 
       for (const modelId of groqModels) {
         const controller = new AbortController();
@@ -900,8 +913,13 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : (planType || 'paid');
-    const geminiKey = getActiveGeminiKey();
-    const groqKey = getActiveGroqKey();
+    const geminiKey = isTrial ? '' : getActiveGeminiKey(); // no Gemini for free trial
+    const groqKey = isTrial ? FREE_TRIAL_GROQ_KEY : getActiveGroqKey();
+
+    addLog(`━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    addLog(`[Voice] Plan: ${activePlan.toUpperCase()}`);
+    addLog(`[Voice] Engine: ${isTrial ? 'Groq Whisper + Llama (Free Trial)' : 'Groq Whisper + Gemini/Groq (Paid)'}`);
+    addLog(`[Voice] Groq Key: ${maskKey(groqKey)}`);
 
     const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
     let voiceSysInstruction = `You are a real-time live interview copilot assisting a candidate.
@@ -924,8 +942,10 @@ Guidelines:
     let firstTokenLatency = null;
 
     // STEP 1: ULTRA-FAST SPEECH-TO-TEXT WITH GROQ WHISPER (<0.25s)
+    addLog(`[STT] Using Groq Whisper (${GROQ_WHISPER_MODEL})...`);
     if (groqKey) {
-      const whisperModels = ['whisper-large-v3-turbo', 'whisper-large-v3'];
+      const whisperModels = [GROQ_WHISPER_MODEL, 'whisper-large-v3'];
+
       for (const whisperModel of whisperModels) {
         const whisperController = new AbortController();
         const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
@@ -977,9 +997,11 @@ Guidelines:
 
       const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
 
-      // 2A. ATTEMPT GEMINI STREAM IF KEY PROVIDED
-      if (geminiKey) {
-        const geminiModels = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
+      // 2A. ATTEMPT GEMINI STREAM — PAID USERS ONLY (skipped for free trial)
+      if (!isTrial && geminiKey) {
+        addLog(`[Voice Answer] Paid plan → Trying Gemini...`);
+        const geminiModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+
 
         for (const modelId of geminiModels) {
           const controller = new AbortController();
@@ -1061,13 +1083,14 @@ Guidelines:
         }
       }
 
-      // 2B. HIGH-SPEED GROQ LLAMA 3.3 70B (PRIMARY TRIAL OR SEAMLESS INSTANT FALLBACK)
+      // 2B. GROQ LLAMA — PRIMARY for Free Trial, FALLBACK for Paid
       if (!voiceSuccess && groqKey) {
+        const voiceGroqModel = isTrial ? FREE_TRIAL_GROQ_MODEL : 'llama-3.3-70b-versatile';
         const chatController = new AbortController();
         const chatTimeout = setTimeout(() => chatController.abort(), 12000);
 
         try {
-          addLog(`[Answer Request] Groq Llama 3.3 70B Streaming...`);
+          addLog(`[Voice Answer] ${isTrial ? 'Free Trial' : 'Paid fallback'} → Groq model: ${voiceGroqModel}`);
 
           const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -1076,7 +1099,7 @@ Guidelines:
               'Authorization': `Bearer ${groqKey}`
             },
             body: JSON.stringify({
-              model: 'llama-3.3-70b-versatile',
+              model: voiceGroqModel,
               messages: [
                 { role: 'system', content: voiceSysInstruction },
                 { role: 'user', content: promptForAnswer }
