@@ -91,8 +91,6 @@ const HARDCODED_PAID_GEMINI_KEY = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
 function getActiveGeminiKey() {
-  const isTrial = localStorage.getItem('anazk_plan_type') === 'free_trial';
-  if (isTrial) return '';
   return HARDCODED_PAID_GEMINI_KEY;
 }
 
@@ -361,11 +359,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : 'paid';
-    const activeEngine = isTrial ? 'Groq' : 'Gemini';
+    const activeEngine = 'Gemini';
     
-    // Hardcoded Keys (Paid: Gemini key, Free Trial: Groq key)
-    const geminiKey = isTrial ? '' : 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
-    const groqKey = isTrial ? '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' : '';
+    // Hardcoded Keys (Both Paid and Trial use Gemini key)
+    const geminiKey = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    const groqKey = '';
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
     console.log(`[Plan] Engine: ${activeEngine}`);
@@ -400,8 +398,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. Paid Users: Gemini Models Only
-    if (activePlan === 'paid') {
+    // 1. Gemini Models (For both Paid and Free Trial)
+    if (activePlan === 'paid' || activePlan === 'free_trial') {
       const geminiModels = [
         'gemini-3.7-flash',
         'gemini-3.6-flash',
@@ -901,11 +899,11 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const isTrial = isFreeTrial || planType === 'free_trial';
     const activePlan = isTrial ? 'free_trial' : 'paid';
-    const activeEngine = isTrial ? 'Groq' : 'Gemini';
+    const activeEngine = 'Gemini';
 
-    // Hardcoded Keys
-    const geminiKey = isTrial ? '' : 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
-    const groqKey = isTrial ? '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' : '';
+    // Hardcoded Keys (Both Paid and Trial use Gemini key)
+    const geminiKey = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    const groqKey = '';
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
     console.log(`[Plan] Engine: ${activeEngine}`);
@@ -933,8 +931,8 @@ Guidelines:
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. Paid Users: Direct Multimodal Gemini (Never use Groq)
-    if (activePlan === 'paid') {
+    // 1. Gemini Voice Engine (For both Paid and Free Trial)
+    if (activePlan === 'paid' || activePlan === 'free_trial') {
       const geminiModels = [
         'gemini-3.7-flash',
         'gemini-3.6-flash',
