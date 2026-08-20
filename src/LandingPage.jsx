@@ -1034,7 +1034,7 @@ class Solution {
             
             {/* 1. AI Interview Assistant Mega Menu */}
             <div 
-              className="relative py-4"
+              className="py-4"
               onMouseEnter={() => setActiveDropdown('assistant')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
@@ -1146,7 +1146,7 @@ class Solution {
 
             {/* 2. Pricing Mega Menu */}
             <div 
-              className="relative py-4"
+              className="py-4"
               onMouseEnter={() => setActiveDropdown('pricing')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
@@ -1232,7 +1232,7 @@ class Solution {
 
             {/* 3. Others Mega Menu */}
             <div 
-              className="relative py-4"
+              className="py-4"
               onMouseEnter={() => setActiveDropdown('others')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
