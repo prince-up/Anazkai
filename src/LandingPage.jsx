@@ -2980,12 +2980,30 @@ class Solution {
                 <Download size={18} />
               </a>
 
-              <div className="bg-[#eef8f3] p-4 rounded-2xl border border-emerald-600/10 text-left space-y-2">
-                <span className="block text-[10px] font-black text-emerald-850 uppercase tracking-wider">🍏 macOS Installation Guide:</span>
-                <span className="text-xs text-gray-700 font-bold block">1. Bypassing Gatekeeper warning:</span>
-                <span className="text-xs text-gray-650 font-medium block pl-3">If macOS blocks opening the app, right-click (or control-click) the app icon in Applications and select **Open** to authorize it, or run: <code className="bg-emerald-100 px-1 rounded font-mono text-[10px]">xattr -cr /Applications/AnazkAI.app</code> in Terminal.</span>
-                <span className="text-xs text-gray-700 font-bold block pt-1">2. Enable Screen Recording:</span>
-                <span className="text-xs text-gray-650 font-medium block pl-3">Go to System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording and ensure **AnazkAI** is toggled **ON** for transcriptions and overlay.</span>
+              <div className="bg-[#eef8f3] p-5 rounded-2xl border border-emerald-600/10 text-left space-y-3.5">
+                <span className="block text-xs font-black text-emerald-850 uppercase tracking-wider">🍏 macOS Setup &amp; Bypass Guide:</span>
+                
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-800 font-bold block">Step 1: Move to Applications</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded">.dmg</code> file and drag **AnazkAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-xs text-gray-800 font-bold block">Step 2: Bypass Gatekeeper / "Damaged" Warnings</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
+                  <div className="bg-[#113a30] text-emerald-200 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold">
+                    xattr -cr /Applications/AnazkAI.app
+                  </div>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
+                  <div className="bg-[#113a30] text-emerald-200 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold">
+                    codesign --force --deep --sign - /Applications/AnazkAI.app
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-800 font-bold block">Step 3: Allow Screen Recording Permissions</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AnazkAI** to **ON** to enable screen overlay/transcriptions.</span>
+                </div>
               </div>
             </div>
             
