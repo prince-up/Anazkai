@@ -33,6 +33,17 @@ function LandingPage() {
     return 'landing';
   });
 
+  const isMacUser = () => {
+    if (typeof window === 'undefined' || !window.navigator) return false;
+    return /Mac|iPhone|iPod|iPad/i.test(navigator.userAgent || navigator.platform);
+  };
+
+  const getDownloadLink = () => {
+    return isMacUser()
+      ? "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg"
+      : "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
+  };
+
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
@@ -601,7 +612,7 @@ Knowledge Base for Anazk AI:
 - Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
 - Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
 - 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Support Email: supportanazkai@gmail.com.
-- Desktop App: Windows 10/11 64-bit installer (.exe) available on Google Drive: https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe
+- Desktop App: Windows 10/11 64-bit installer (.exe) and macOS Apple Silicon/Intel (.dmg) installer available at: https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/
 - Hotkeys: F1 (trigger/answer), F3 (switch audio input), F4 (copy solution), F8 (re-anchor).
 - Contact Support: supportanazkai@gmail.com.
 Format answers cleanly with short bullet points.`
@@ -1128,6 +1139,17 @@ class Solution {
                             </a>
                           </li>
                           <li>
+                            <a 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                              target="_blank" 
+                              rel="noreferrer"
+                              onClick={() => setActiveDropdown(null)} 
+                              className="hover:text-emerald-800 hover:underline block"
+                            >
+                              macOS App (.dmg)
+                            </a>
+                          </li>
+                          <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
                               className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
@@ -1351,7 +1373,18 @@ class Solution {
                               onClick={() => setActiveDropdown(null)} 
                               className="hover:text-emerald-800 hover:underline block"
                             >
-                              Download Desktop App
+                              Download App (Windows)
+                            </a>
+                          </li>
+                          <li>
+                            <a 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                              target="_blank" 
+                              rel="noreferrer"
+                              onClick={() => setActiveDropdown(null)} 
+                              className="hover:text-emerald-800 hover:underline block"
+                            >
+                              Download App (macOS)
                             </a>
                           </li>
                         </ul>
@@ -1370,13 +1403,13 @@ class Solution {
           <div className="hidden md:flex items-center space-x-3">
             {/* Download Button */}
             <a 
-              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href={getDownloadLink()} 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95"
             >
               <Download size={14} className="text-emerald-800" />
-              <span>Download</span>
+              <span>{isMacUser() ? "Download for Mac" : "Download for Windows"}</span>
             </a>
 
             {user ? (
@@ -1401,13 +1434,13 @@ class Solution {
           {/* Mobile Menu Trigger */}
           <div className="flex items-center gap-2 md:hidden">
             <a 
-              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href={getDownloadLink()} 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1"
             >
               <Download size={12} />
-              <span>App</span>
+              <span>{isMacUser() ? "App (dmg)" : "App (exe)"}</span>
             </a>
             {user ? (
               <button 
@@ -1518,13 +1551,13 @@ class Solution {
 
           <div className="pt-2 flex flex-col space-y-2">
             <a 
-              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href={getDownloadLink()} 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
             >
               <Download size={14} />
-              <span>Download Desktop App (.exe)</span>
+              <span>{isMacUser() ? "Download Desktop App (.dmg)" : "Download Desktop App (.exe)"}</span>
             </a>
             {user ? (
               <button 
@@ -2598,7 +2631,8 @@ class Solution {
                 <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
-                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (.exe)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -2908,8 +2942,8 @@ class Solution {
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-2 pr-8">Get Anazk AI for Windows</h3>
-            <p className="text-gray-500 text-xs font-semibold mb-5 sm:mb-6">Install our secure desktop client built natively for Windows. Bypasses screen captures automatically.</p>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-2 pr-8">Get Anazk AI</h3>
+            <p className="text-gray-500 text-xs font-semibold mb-5 sm:mb-6">Install our secure desktop client. Bypasses screen captures automatically.</p>
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
@@ -2923,17 +2957,35 @@ class Solution {
                   <span className="text-2xl">🪟</span>
                   <div>
                     <span className="block text-xs sm:text-sm font-extrabold text-white">Download for Windows</span>
-                    <span className="block text-[10px] text-emerald-100">x64 Installer (.exe) • Direct from Google Drive</span>
+                    <span className="block text-[10px] text-emerald-100">x64 Installer (.exe) • Direct Download</span>
                   </div>
                 </div>
                 <Download size={18} />
               </a>
 
-              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-2xl border border-gray-100">
-                <span className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">System Compatibility:</span>
-                <span className="text-xs text-gray-600 font-semibold block">• Supported on Windows 10 & Windows 11 (64-bit)</span>
-                <span className="text-xs text-gray-600 font-semibold block">• Active Content-Protection Overlay Integration</span>
-                <span className="text-[10px] text-emerald-600 font-bold block mt-2">Currently, macOS and Linux support are in private beta.</span>
+              <a 
+                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShowDownloadModal(false)}
+                className="w-full py-3.5 sm:py-4 bg-[#0d2e27] hover:bg-emerald-950 text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg"
+              >
+                <div className="flex items-center gap-3 text-left">
+                  <span className="text-2xl">🍎</span>
+                  <div>
+                    <span className="block text-xs sm:text-sm font-extrabold text-white">Download for macOS</span>
+                    <span className="block text-[10px] text-emerald-100">dmg Package • Apple Silicon / Intel</span>
+                  </div>
+                </div>
+                <Download size={18} />
+              </a>
+
+              <div className="bg-[#eef8f3] p-4 rounded-2xl border border-emerald-600/10 text-left space-y-2">
+                <span className="block text-[10px] font-black text-emerald-850 uppercase tracking-wider">🍏 macOS Installation Guide:</span>
+                <span className="text-xs text-gray-700 font-bold block">1. Bypassing Gatekeeper warning:</span>
+                <span className="text-xs text-gray-650 font-medium block pl-3">If macOS blocks opening the app, right-click (or control-click) the app icon in Applications and select **Open** to authorize it, or run: <code className="bg-emerald-100 px-1 rounded font-mono text-[10px]">xattr -cr /Applications/AnazkAI.app</code> in Terminal.</span>
+                <span className="text-xs text-gray-700 font-bold block pt-1">2. Enable Screen Recording:</span>
+                <span className="text-xs text-gray-650 font-medium block pl-3">Go to System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording and ensure **AnazkAI** is toggled **ON** for transcriptions and overlay.</span>
               </div>
             </div>
             
