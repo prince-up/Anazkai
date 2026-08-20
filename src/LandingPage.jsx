@@ -28,7 +28,7 @@ function LandingPage() {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
       if (path.includes('login') || path.includes('signin') || path.includes('signup')) return 'auth';
-      if (path.includes('dashboard')) return 'dashboard';
+      if (path.includes('dashboard')) return 'landing';
     }
     return 'landing';
   });
@@ -131,7 +131,7 @@ function LandingPage() {
       const activeUser = session?.user ?? null;
       setUser(activeUser);
       if (activeUser && currentView === 'auth') {
-        setCurrentView('dashboard');
+        setCurrentView('landing');
       }
       if (activeUser) {
         setMentorForm(prev => ({
@@ -146,7 +146,7 @@ function LandingPage() {
       const activeUser = session?.user ?? null;
       setUser(activeUser);
       if (activeUser && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-        setCurrentView('dashboard');
+        setCurrentView('landing');
       } else if (event === 'SIGNED_OUT') {
         setCurrentView('landing');
       }
@@ -947,30 +947,8 @@ class Solution {
         onBackToHome={() => setCurrentView('landing')} 
         onSuccess={(usr) => {
           setUser(usr);
-          setCurrentView('dashboard');
+          setCurrentView('landing');
         }} 
-      />
-    );
-  }
-
-  if (currentView === 'dashboard') {
-    return (
-      <Dashboard 
-        user={user} 
-        onSignOut={async () => {
-          await supabase.auth.signOut();
-          setUser(null);
-          setCurrentView('landing');
-        }}
-        onOpenPricing={() => {
-          setCurrentView('landing');
-          setTimeout(() => {
-            const el = document.getElementById('pricing');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }, 150);
-        }}
-        onOpenDownload={() => window.open("https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe", "_blank")}
-        onBackToHome={() => setCurrentView('landing')}
       />
     );
   }
@@ -1402,22 +1380,13 @@ class Solution {
             </a>
 
             {user ? (
-              <>
-                <button 
-                  onClick={() => setCurrentView('dashboard')}
-                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
-                >
-                  <LayoutDashboard size={14} />
-                  <span>Dashboard</span>
-                </button>
-                <button 
-                  onClick={() => supabase.auth.signOut()}
-                  className="px-3.5 py-2 border border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50 font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-                >
-                  <User size={14} />
-                  <span>Sign out</span>
-                </button>
-              </>
+              <button 
+                onClick={() => supabase.auth.signOut()}
+                className="px-3.5 py-2 border border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50 font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <User size={14} />
+                <span>Sign out</span>
+              </button>
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
@@ -1442,10 +1411,10 @@ class Solution {
             </a>
             {user ? (
               <button 
-                onClick={() => setCurrentView('dashboard')}
-                className="px-3 py-1.5 bg-emerald-700 text-white font-black text-xs rounded-lg"
+                onClick={() => supabase.auth.signOut()}
+                className="px-3 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-lg cursor-pointer"
               >
-                Dashboard
+                Sign out
               </button>
             ) : (
               <button 
@@ -1559,11 +1528,16 @@ class Solution {
             </a>
             {user ? (
               <button 
-                onClick={() => { setMobileMenuOpen(false); setCurrentView('dashboard'); }}
-                className="w-full py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                onClick={async () => { 
+                  setMobileMenuOpen(false); 
+                  await supabase.auth.signOut();
+                  setUser(null);
+                  setCurrentView('landing'); 
+                }}
+                className="w-full py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <LayoutDashboard size={14} />
-                <span>Go to Dashboard</span>
+                <User size={14} />
+                <span>Sign out</span>
               </button>
             ) : (
               <button 
