@@ -10,7 +10,7 @@
     "electron:start": "electron . --dev",
     "start": "vite build && electron .",
     "dist": "vite build && electron-builder",
-    "dist:mac": "vite build && electron-builder --mac"
+    "dist:mac": "vite build && electron-builder --mac -p never"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
