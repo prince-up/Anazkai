@@ -40,7 +40,7 @@ function LandingPage() {
 
   const getDownloadLink = () => {
     return isMacUser()
-      ? "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg"
+      ? "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg"
       : "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
   };
 
@@ -1140,7 +1140,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1378,7 +1378,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -2632,7 +2632,7 @@ class Solution {
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
                 <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
-                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -2964,7 +2964,7 @@ class Solution {
               </a>
 
               <a 
-                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0.dmg" 
+                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
