@@ -34,6 +34,9 @@
     "vite": "^4.4.5",
     "wait-on": "^9.1.0"
   },
+  "overrides": {
+    "@noble/hashes": "1.3.1"
+  },
   "build": {
     "appId": "com.anazk.app",
     "productName": "AnazkAI",
