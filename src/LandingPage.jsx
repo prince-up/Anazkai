@@ -3350,55 +3350,58 @@ class Solution {
                   </button>
                 </div>
 
-                {/* Body / Big Greeting */}
-                <div className="px-6 py-4 space-y-6">
-                  <div className="space-y-1">
-                    <h3 className="text-3xl font-black tracking-tight text-white leading-tight">
-                      Hi there 👋
-                    </h3>
-                    <h4 className="text-2xl font-black text-white/90">
-                      How can we help?
-                    </h4>
+                {/* Scrollable Container for Middle Content */}
+                <div className="flex-1 overflow-y-auto chat-scrollbar">
+                  {/* Body / Big Greeting */}
+                  <div className="px-6 py-4 space-y-6">
+                    <div className="space-y-1">
+                      <h3 className="text-3xl font-black tracking-tight text-white leading-tight">
+                        Hi there 👋
+                      </h3>
+                      <h4 className="text-2xl font-black text-white/90">
+                        How can we help?
+                      </h4>
+                    </div>
+
+                    {/* Send us a message Action Card */}
+                    <button
+                      onClick={() => setChatTab('messages')}
+                      className="w-full bg-white text-gray-900 font-bold px-5 py-4 rounded-2xl shadow-xl flex items-center justify-between hover:bg-gray-50 transition-all active:scale-[0.98] cursor-pointer group"
+                    >
+                      <span className="text-sm font-extrabold text-gray-800">Send us a message</span>
+                      <span className="text-indigo-600 font-black text-base group-hover:translate-x-1 transition-transform">➤</span>
+                    </button>
                   </div>
 
-                  {/* Send us a message Action Card */}
-                  <button
-                    onClick={() => setChatTab('messages')}
-                    className="w-full bg-white text-gray-900 font-bold px-5 py-4 rounded-2xl shadow-xl flex items-center justify-between hover:bg-gray-50 transition-all active:scale-[0.98] cursor-pointer group"
-                  >
-                    <span className="text-sm font-extrabold text-gray-800">Send us a message</span>
-                    <span className="text-indigo-600 font-black text-base group-hover:translate-x-1 transition-transform">➤</span>
-                  </button>
-                </div>
-
-                {/* Quick Shortcuts */}
-                <div className="px-6 space-y-2 pb-4">
-                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Quick help topics:</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => handleSendChatMessage('how to buy credits')}
-                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
-                    >
-                      💳 Buy Credits
-                    </button>
-                    <button
-                      onClick={() => handleSendChatMessage('how to download app')}
-                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
-                    >
-                      📥 Download .exe
-                    </button>
-                    <button
-                      onClick={() => handleSendChatMessage('is it undetectable on zoom meet')}
-                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
-                    >
-                      🛡️ Stealth Mode
-                    </button>
-                    <button
-                      onClick={() => handleSendChatMessage('how to book personal mentor')}
-                      className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
-                    >
-                      👤 Mentor ₹500
-                    </button>
+                  {/* Quick Shortcuts */}
+                  <div className="px-6 space-y-2 pb-4">
+                    <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Quick help topics:</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleSendChatMessage('how to buy credits')}
+                        className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                      >
+                        💳 Buy Credits
+                      </button>
+                      <button
+                        onClick={() => handleSendChatMessage('how to download app')}
+                        className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                      >
+                        📥 Download .exe
+                      </button>
+                      <button
+                        onClick={() => handleSendChatMessage('is it undetectable on zoom meet')}
+                        className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                      >
+                        🛡️ Stealth Mode
+                      </button>
+                      <button
+                        onClick={() => handleSendChatMessage('how to book personal mentor')}
+                        className="p-2.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 rounded-xl text-[11px] font-bold text-gray-700 text-left transition-colors cursor-pointer"
+                      >
+                        👤 Mentor ₹500
+                      </button>
+                    </div>
                   </div>
                 </div>
 
