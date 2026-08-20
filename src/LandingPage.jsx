@@ -601,7 +601,7 @@ Knowledge Base for Anazk AI:
 - Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
 - Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
 - 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Support Email: supportanazkai@gmail.com.
-- Desktop App: Windows 10/11 64-bit installer (.exe) available on Google Drive: https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe
+- Desktop App: Windows 10/11 64-bit installer (.exe) available on Google Drive: https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe
 - Hotkeys: F1 (trigger/answer), F3 (switch audio input), F4 (copy solution), F8 (re-anchor).
 - Contact Support: supportanazkai@gmail.com.
 Format answers cleanly with short bullet points.`
@@ -969,7 +969,7 @@ class Solution {
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 150);
         }}
-        onOpenDownload={() => window.open("https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe", "_blank")}
+        onOpenDownload={() => window.open("https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe", "_blank")}
         onBackToHome={() => setCurrentView('landing')}
       />
     );
@@ -1140,7 +1140,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1367,7 +1367,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1392,7 +1392,7 @@ class Solution {
           <div className="hidden md:flex items-center space-x-3">
             {/* Download Button */}
             <a 
-              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95"
@@ -1432,7 +1432,7 @@ class Solution {
           {/* Mobile Menu Trigger */}
           <div className="flex items-center gap-2 md:hidden">
             <a 
-              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1"
@@ -1549,7 +1549,7 @@ class Solution {
 
           <div className="pt-2 flex flex-col space-y-2">
             <a 
-              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
@@ -2624,7 +2624,7 @@ class Solution {
                 <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
-                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (.exe)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (.exe)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -2939,7 +2939,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
