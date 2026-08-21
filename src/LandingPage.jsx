@@ -3111,7 +3111,7 @@ class Solution {
 
           {/* Copyright & Made in India */}
           <div className="space-y-1 text-xs font-bold text-gray-500">
-            <p>© 2026 Anazk AI · Developed by Prince Yadav · All rights reserved</p>
+            <p>© 2026 Anazk AI · All rights reserved</p>
             <p className="text-emerald-700 font-extrabold">Made In India 🇮🇳</p>
           </div>
 
