@@ -170,9 +170,53 @@ const SubscriptionGuard = ({ children }) => {
         setIsAuthorized(true);
         setError('');
       } else {
-        setPlanType('free');
-        setIsAuthorized(false);
-        setError('Your account has 0 credit minutes. Please buy credits at anazk.online');
+        // 0 credits → check if device free trial is still available
+        const deviceId = getDeviceId();
+        // Use email-scoped trial key so deleted+re-registered users get fresh trial
+        const trialKey = `anazk_free_trial_used_${user.email?.replace(/[^a-z0-9]/gi, '_')}`;
+        const trialUsed = localStorage.getItem(trialKey) === 'true';
+
+        if (!trialUsed) {
+          // Auto-start 5-min free trial for first-time / new account users
+          const now = Date.now();
+          const trialStartKey = `anazk_free_trial_start_${user.email?.replace(/[^a-z0-9]/gi, '_')}`;
+          
+          // Check if trial was already started (and still running) for this email
+          const existingStart = localStorage.getItem(trialStartKey);
+          if (existingStart) {
+            const elapsed = Date.now() - parseInt(existingStart, 10);
+            const remainingMs = FREE_TRIAL_DURATION_MS - elapsed;
+            if (remainingMs > 0) {
+              setTimeRemaining(Math.ceil(remainingMs / 60000));
+              setPlanType('free_trial');
+              setIsAuthorized(true);
+              setError('');
+              startTrialTimerForEmail(user.email);
+              return;
+            } else {
+              // Trial ended
+              localStorage.setItem(trialKey, 'true');
+              localStorage.removeItem(trialStartKey);
+              setPlanType('free');
+              setIsAuthorized(false);
+              setTimeRemaining(0);
+              setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
+            }
+          } else {
+            // Fresh trial — start now
+            localStorage.setItem(trialStartKey, now.toString());
+            setTimeRemaining(FREE_TRIAL_DURATION_MINUTES);
+            setPlanType('free_trial');
+            setIsAuthorized(true);
+            setError('');
+            startTrialTimerForEmail(user.email);
+          }
+        } else {
+          setPlanType('free');
+          setIsAuthorized(false);
+          setTimeRemaining(0);
+          setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
+        }
       }
 
       // Sync credits every 15s
@@ -223,6 +267,34 @@ const SubscriptionGuard = ({ children }) => {
           setPlanType('free');
           setTimeRemaining(0);
           setError('Free trial ended. Please log in and purchase minutes at anazk.online');
+          return;
+        }
+        setTimeRemaining(Math.ceil(remaining / 60000));
+      }
+    }, 10000);
+  };
+
+  // 4b. Email-scoped trial timer (for logged-in users with 0 credits)
+  const startTrialTimerForEmail = (email) => {
+    const emailKey = email?.replace(/[^a-z0-9]/gi, '_');
+    const trialStartKey = `anazk_free_trial_start_${emailKey}`;
+    const trialUsedKey = `anazk_free_trial_used_${emailKey}`;
+
+    if (trialTimerRef.current) clearInterval(trialTimerRef.current);
+
+    trialTimerRef.current = setInterval(() => {
+      const trialStartTimeStr = localStorage.getItem(trialStartKey);
+      if (trialStartTimeStr) {
+        const startTime = parseInt(trialStartTimeStr, 10);
+        const remaining = FREE_TRIAL_DURATION_MS - (Date.now() - startTime);
+        if (remaining <= 0) {
+          clearInterval(trialTimerRef.current);
+          localStorage.setItem(trialUsedKey, 'true');
+          localStorage.removeItem(trialStartKey);
+          setIsAuthorized(false);
+          setPlanType('free');
+          setTimeRemaining(0);
+          setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
           return;
         }
         setTimeRemaining(Math.ceil(remaining / 60000));
