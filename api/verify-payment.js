@@ -82,6 +82,56 @@ export default async function handler(req, res) {
     if (supabaseUrl && supabaseServiceKey) {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+        // --- EMAIL BASED CREDITS ALLOCATION ---
+        if (email) {
+          const cleanEmail = email.trim().toLowerCase();
+          try {
+            // Check if profile exists
+            const { data: profile, error: profileErr } = await supabase
+              .from('profiles')
+              .select('id, credits_minutes')
+              .eq('email', cleanEmail)
+              .maybeSingle();
+
+            if (profile && !profileErr) {
+              const currentMins = profile.credits_minutes || 0;
+              const { error: updateErr } = await supabase
+                .from('profiles')
+                .update({ credits_minutes: currentMins + durationMinutes })
+                .eq('id', profile.id);
+
+              if (updateErr) {
+                console.error(`Failed to update credits for profile ${profile.id}:`, updateErr.message);
+              } else {
+                console.log(`Successfully credited ${durationMinutes} minutes directly to profile email: ${cleanEmail}`);
+              }
+            } else {
+              // Profile doesn't exist yet, store in pending_credits
+              const { data: pending, error: pendingErr } = await supabase
+                .from('pending_credits')
+                .select('id, credits_minutes')
+                .eq('email', cleanEmail)
+                .maybeSingle();
+
+              if (pending && !pendingErr) {
+                const currentPendingMins = pending.credits_minutes || 0;
+                await supabase
+                  .from('pending_credits')
+                  .update({ credits_minutes: currentPendingMins + durationMinutes })
+                  .eq('id', pending.id);
+              } else {
+                await supabase
+                  .from('pending_credits')
+                  .insert([{ email: cleanEmail, credits_minutes: durationMinutes }]);
+              }
+              console.log(`Stored ${durationMinutes} pending minutes for unregistered email: ${cleanEmail}`);
+            }
+          } catch (emailAllocEx) {
+            console.error('Email credits allocation exception:', emailAllocEx.message);
+          }
+        }
+
         const { error: dbError } = await supabase
           .from('licenses')
           .insert([

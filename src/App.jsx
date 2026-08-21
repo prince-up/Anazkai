@@ -8,6 +8,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as pdfjsLib from 'pdfjs-dist';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
+import { supabase } from './supabaseClient';
 
 // Configure pdfjs worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '3.11.174'}/pdf.worker.min.js`;
@@ -120,7 +121,7 @@ function buildGeminiBearerConfig(geminiKey, modelId, isStream = true) {
   return { url, headers };
 }
 
-function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false }) {
+function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false, currentUser = null }) {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [screenshotData, setScreenshotData] = useState(null);
@@ -138,6 +139,33 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const formatted = `[${timestamp}] ${msg}`;
     console.log(formatted);
     setDebugLogs(prev => [formatted, ...prev.slice(0, 49)]);
+  };
+
+  const decrementUserCredits = async () => {
+    if (isFreeTrial || planType === 'vip' || !currentUser) return;
+    try {
+      const { data: profile, error: getErr } = await supabase
+        .from('profiles')
+        .select('credits_minutes')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (!getErr && profile) {
+        const currentMins = profile.credits_minutes || 0;
+        const nextMins = Math.max(0, currentMins - 1);
+        
+        const { error: updateErr } = await supabase
+          .from('profiles')
+          .update({ credits_minutes: nextMins })
+          .eq('id', currentUser.id);
+
+        if (!updateErr) {
+          addLog(`Deducted 1 credit minute. Remaining: ${nextMins} mins.`);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to decrement credits:', e.message);
+    }
   };
   
   // Settings & Preferences
@@ -493,6 +521,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               setStreamStatus(`⚡ ${totalSec}s`);
               addLog(`✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
+              decrementUserCredits();
               success = true;
               break;
             }
@@ -598,6 +627,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
               setStreamStatus(`⚡ ${totalSec}s`);
               addLog(`✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
               setInterviewCount(prev => prev + 1);
+              decrementUserCredits();
               success = true;
               break;
             }
@@ -1014,6 +1044,7 @@ Guidelines:
               setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
               addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
               setInterviewCount(prev => prev + 1);
+              decrementUserCredits();
               voiceSuccess = true;
               break;
             }
@@ -1163,6 +1194,7 @@ Guidelines:
                 setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
                 addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
                 setInterviewCount(prev => prev + 1);
+                decrementUserCredits();
                 voiceSuccess = true;
                 break;
               }

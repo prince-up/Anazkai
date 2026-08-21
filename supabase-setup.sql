@@ -81,3 +81,55 @@ DROP POLICY IF EXISTS "Allow service role full access" ON public.licenses;
 CREATE POLICY "Allow service role full access"
   ON public.licenses FOR ALL
   USING (true);
+
+
+-- 8. Email Login & Credits Sync Table Modifications (Run this in Supabase SQL editor)
+-- Add credits_minutes to profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS credits_minutes INTEGER DEFAULT 0;
+
+-- Create pending_credits table for pre-registration checkout
+CREATE TABLE IF NOT EXISTS public.pending_credits (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email           TEXT UNIQUE NOT NULL,
+  credits_minutes INTEGER DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS on pending_credits
+ALTER TABLE public.pending_credits ENABLE ROW LEVEL SECURITY;
+
+-- Allow service role full access to pending_credits
+DROP POLICY IF EXISTS "Service role full access pending_credits" ON public.pending_credits;
+CREATE POLICY "Service role full access pending_credits"
+  ON public.pending_credits FOR ALL
+  USING (true);
+
+-- Trigger to automatically transfer pending credits when user signs up
+CREATE OR REPLACE FUNCTION public.transfer_pending_credits()
+RETURNS TRIGGER AS $$
+DECLARE
+  pending_mins INTEGER;
+BEGIN
+  -- Check if there are pending credits for the signing-up email
+  SELECT credits_minutes INTO pending_mins
+  FROM public.pending_credits
+  WHERE email = NEW.email;
+
+  IF FOUND AND pending_mins > 0 THEN
+    -- Transfer credits to profiles
+    NEW.credits_minutes = COALESCE(NEW.credits_minutes, 0) + pending_mins;
+    -- Clean up from pending_credits
+    DELETE FROM public.pending_credits WHERE email = NEW.email;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Bind trigger on profiles insert
+DROP TRIGGER IF EXISTS on_profile_created_transfer_credits ON public.profiles;
+CREATE TRIGGER on_profile_created_transfer_credits
+  BEFORE INSERT ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.transfer_pending_credits();
+
