@@ -901,6 +901,7 @@ class Solution {
     if (activeTab === 'coding') {
       setSimulatedCode('');
       setSimulatedSolution('');
+      
       let index = 0;
       const interval = setInterval(() => {
         if (index < codingProblem.code.length) {
@@ -908,19 +909,23 @@ class Solution {
           index++;
         } else {
           clearInterval(interval);
-          // Start simulated answer
-          let solIndex = 0;
-          const solInterval = setInterval(() => {
-            if (solIndex < codingProblem.solution.length) {
-              setSimulatedSolution(prev => prev + codingProblem.solution[solIndex]);
-              solIndex += 3; // speed up solution typing
-            } else {
-              clearInterval(solInterval);
-            }
-          }, 15);
         }
-      }, 30);
-      return () => clearInterval(interval);
+      }, 10);
+      
+      let solIndex = 0;
+      const solInterval = setInterval(() => {
+        if (solIndex < codingProblem.solution.length) {
+          setSimulatedSolution(prev => prev + codingProblem.solution.slice(solIndex, solIndex + 4));
+          solIndex += 4;
+        } else {
+          clearInterval(solInterval);
+        }
+      }, 15);
+
+      return () => {
+        clearInterval(interval);
+        clearInterval(solInterval);
+      };
     } else {
       setSimulatedCode('');
       setSimulatedSolution('');
@@ -1758,20 +1763,20 @@ class Solution {
                   {/* Left panel: Code captured */}
                   <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
                     <div className="border-b border-gray-100 pb-2">
-                      <span className="block text-[10px] text-teal-600 font-black uppercase tracking-wider mb-1">🖥️ captured coding task</span>
-                      <p className="text-[#0d2e27] font-mono text-[10px] font-bold leading-relaxed">{codingProblem.question}</p>
+                      <span className="block text-[10px] text-teal-650 font-black uppercase tracking-wider mb-1" style={{ color: '#0d9488' }}>🖥️ captured coding task</span>
+                      <p className="text-[#0d2e27] font-mono text-[10px] font-bold leading-relaxed" style={{ color: '#0d2e27' }}>{codingProblem.question}</p>
                     </div>
-                    <pre className="bg-gray-50 border border-gray-100 p-2.5 sm:p-3 rounded-xl text-emerald-800 font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[160px] sm:max-h-[180px] no-scrollbar">{simulatedCode || '// loading code context...'}</pre>
+                    <pre className="bg-gray-50 border border-gray-100 p-2.5 sm:p-3 rounded-xl font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[160px] sm:max-h-[180px] no-scrollbar" style={{ color: '#0f172a', backgroundColor: '#f9fafb', borderColor: '#f1f5f9' }}>{simulatedCode || '// loading code context...'}</pre>
                   </div>
 
                   {/* Right panel: Solution output */}
                   <div className="bg-[#f1f5f9] rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
                     <div className="border-b border-gray-250 pb-2">
-                      <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider">🤖 AI Solutions (Java)</span>
+                      <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider" style={{ color: '#059669' }}>🤖 AI Solutions (Java)</span>
                     </div>
-                    <pre className="text-gray-700 font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[140px] sm:max-h-[160px] no-scrollbar whitespace-pre">{simulatedSolution}</pre>
+                    <pre className="font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[140px] sm:max-h-[160px] no-scrollbar whitespace-pre" style={{ color: '#1e293b' }}>{simulatedSolution || '// analyzing...'}</pre>
                     <div className="pt-2 border-t border-gray-200 flex justify-end">
-                      <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-sm">
+                      <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-sm cursor-pointer">
                         Copy Solution
                       </button>
                     </div>
