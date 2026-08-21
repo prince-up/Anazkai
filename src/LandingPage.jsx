@@ -809,9 +809,106 @@ Format answers cleanly with short bullet points.`
 
   // Interactive Sandbox state
   const [sandboxQuestion, setSandboxQuestion] = useState('');
-  const [sandboxResponse, setSandboxResponse] = useState('');
+  const [sandboxResponse, setSandboxResponse] = useState('"A discounted cash flow model values a company by projecting future free cash flows and discounting them to present value using the weighted average cost of capital."');
   const [isSandboxLoading, setIsSandboxLoading] = useState(false);
   const [sandboxTranscript, setSandboxTranscript] = useState('');
+  
+  const [sandboxPos, setSandboxPos] = useState({ x: 80, y: 130 });
+  const [sandboxCollapsed, setSandboxCollapsed] = useState(false);
+  const [sandboxMode, setSandboxMode] = useState('say');
+  const [sandboxInputText, setSandboxInputText] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  const handleDragStart = (e) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const handleDragMove = (e) => {
+      if (!isDragging) return;
+      const container = document.getElementById('sandbox-screen-container');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      
+      let newX = e.clientX - rect.left - dragOffset.x;
+      let newY = e.clientY - rect.top - dragOffset.y;
+
+      const widgetWidth = sandboxCollapsed ? 200 : 460;
+      const widgetHeight = sandboxCollapsed ? 48 : 280;
+
+      newX = Math.max(0, Math.min(newX, rect.width - widgetWidth));
+      newY = Math.max(0, Math.min(newY, rect.height - widgetHeight));
+
+      setSandboxPos({ x: newX, y: newY });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [isDragging, dragOffset, sandboxCollapsed]);
+
+  const triggerQuickResponse = (mode) => {
+    setIsSandboxLoading(true);
+    setSandboxResponse('');
+    setTimeout(() => {
+      let ans = "";
+      if (mode === 'assist') {
+        ans = '"Assist mode: Based on the system architecture, a single-primary MySQL setup is optimal if write throughput is under 10k/sec. We should add a Redis cache layer for profile reads to reduce DB CPU load by up to 60%."';
+      } else if (mode === 'say') {
+        ans = '"A discounted cash flow model values a company by projecting future free cash flows and discounting them to present value using the weighted average cost of capital."';
+      } else if (mode === 'follow') {
+        ans = '"Recommended follow-ups: 1. How does the choice of terminal value growth rate affect the total valuation sensitivity? 2. What are the key differences between WACC and cost of equity?"';
+      } else if (mode === 'recap') {
+        ans = '"Recap: Valuation relies on free cash flows and discount rates. Capital cost (WACC) acts as the discount factor to compute current value."';
+      }
+      setSandboxResponse(ans);
+      setIsSandboxLoading(false);
+    }, 800);
+  };
+
+  const handleSandboxActionSubmit = (e) => {
+    e.preventDefault();
+    if (!sandboxInputText.trim()) return;
+
+    setIsSandboxLoading(true);
+    setSandboxResponse('');
+    const prompt = sandboxInputText;
+    setSandboxInputText('');
+
+    setTimeout(() => {
+      let ans = "";
+      const q = prompt.toLowerCase();
+      if (q.includes('price') || q.includes('buy') || q.includes('cost')) {
+        ans = '"Sandbox Assistant: To purchase credits, head to the Pricing section below! We offer starter credits at ₹259 with instant key delivery. All unused minutes stay valid forever."';
+      } else if (q.includes('undetect') || q.includes('zoom') || q.includes('meet') || q.includes('invisible')) {
+        ans = '"Sandbox Assistant: Anazk AI uses custom graphics driver hooks so that its overlay is 100% invisible on Zoom, Teams, and Google Meet screen share sessions. Only you can see it on your screen."';
+      } else if (q.includes('how') || q.includes('work') || q.includes('app')) {
+        ans = '"Sandbox Assistant: The app runs in the background, listening to audio via virtual input devices and capturing IDE screens. It then shows bullet point suggestions directly on your screen."';
+      } else {
+        ans = `"${prompt} is a great question. In a high-stakes interview, I recommend starting with a high-level summary of your engineering approach, followed by data-driven specifications and key trade-offs."`;
+      }
+      setSandboxResponse(ans);
+      setIsSandboxLoading(false);
+    }, 1000);
+  };
 
   // Disable right-click & developer hotkeys for tight privacy
   useEffect(() => {
@@ -2072,6 +2169,199 @@ class Solution {
               <span className="w-1.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.6s' }}></span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ─── INTERACTIVE SANDBOX SIMULATOR SECTION (id="sandbox") ─── */}
+      <section id="sandbox" className={`py-20 px-4 sm:px-8 border-t transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#080d1a] border-gray-800' : 'bg-[#eefcf4]/50 border-emerald-500/10'}`}>
+        <div className="max-w-6xl mx-auto text-center space-y-8">
+          
+          <div className="space-y-3">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest ${activeTab === 'coding' ? 'bg-emerald-950/50 border border-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800'}`}>
+              <Sparkles size={12} />
+              Try Live Sandbox
+            </span>
+            <h2 className={`font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
+              Test the Desktop Overlay Live
+            </h2>
+            <p className={`text-sm sm:text-base font-semibold max-w-2xl mx-auto transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
+              Experience the exact invisible overlay. Try typing a question, changing interview modes, and dragging the overlay around the mock desktop screen below.
+            </p>
+          </div>
+
+          {/* Interactive Screen Area */}
+          <div id="sandbox-screen-container" className="w-full h-[550px] relative rounded-3xl border border-slate-700/30 shadow-2xl overflow-hidden bg-slate-900 select-none">
+            {/* Background: Mock Video Interview Call Screen */}
+            <div className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-40 filter blur-xs">
+              <div className="w-full h-full bg-[#0a0f1d] flex items-center justify-center">
+                <div className="grid grid-cols-2 w-full h-full opacity-35">
+                  <div className="border-r border-b border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Interviewer Camera (Screen Shared)</div>
+                  <div className="border-b border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Your Camera Overlay</div>
+                  <div className="border-r border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Coding Task IDE Window</div>
+                  <div className="flex items-center justify-center text-gray-500 text-xs font-mono">System Audio Output</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Instruction Banner overlay */}
+            <div className="absolute top-4 left-4 right-4 bg-slate-950/80 backdrop-blur-xs py-2 px-4 rounded-xl border border-slate-800/80 text-[11px] sm:text-xs text-slate-300 z-10 flex items-center justify-between text-left">
+              <span>💡 <strong>Tip:</strong> Drag the widget by holding the top bar. Click <strong>"Hide"</strong> to collapse it to the floating pill.</span>
+              <button 
+                onClick={() => {
+                  setSandboxPos({ x: 80, y: 130 });
+                  setSandboxCollapsed(false);
+                }} 
+                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded font-bold cursor-pointer transition-colors"
+              >
+                Reset Widget
+              </button>
+            </div>
+
+            {/* ─── WIDGET OR COLLAPSED PILL ─── */}
+            {sandboxCollapsed ? (
+              // COLLAPSED PILL (IMAGE 2 FORM)
+              <div 
+                style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
+                onMouseDown={handleDragStart}
+                className="absolute w-[200px] h-[48px] bg-slate-950/90 backdrop-blur-md rounded-full border border-slate-800 shadow-2xl p-1.5 flex items-center justify-between z-30 transition-shadow select-none active:shadow-emerald-500/10"
+              >
+                {/* Steering icon / target logo */}
+                <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707-.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                  </svg>
+                </div>
+                {/* Expand / Hide toggle */}
+                <button 
+                  onClick={() => setSandboxCollapsed(false)}
+                  className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-white font-extrabold text-[11px] rounded-full flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-colors"
+                >
+                  <ChevronDown size={11} className="rotate-180" />
+                  <span>Expand</span>
+                </button>
+                {/* Stop button (dark circle with white square) */}
+                <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800/80 flex items-center justify-center shrink-0">
+                  <span className="w-2.5 h-2.5 bg-white rounded-xs"></span>
+                </div>
+              </div>
+            ) : (
+              // EXPANDED OVERLAY WINDOW (IMAGE 1 FORM)
+              <div 
+                style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px` }}
+                className="absolute w-[460px] max-w-[90vw] bg-slate-950/95 backdrop-blur-md rounded-3xl border border-slate-800/90 shadow-2xl flex flex-col z-30 select-none overflow-hidden"
+              >
+                {/* Draggable header bar */}
+                <div 
+                  onMouseDown={handleDragStart}
+                  className="px-5 py-3.5 border-b border-slate-800/40 flex items-center justify-between bg-slate-900/20"
+                  style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Anazk AI Overlay</span>
+                  </div>
+                  {/* What should I say? Blue badge on top right */}
+                  <span className="px-3 py-1 bg-[#0b48a3] border border-blue-500/30 text-white font-extrabold text-[10px] rounded-full shadow-xs">
+                    {sandboxMode === 'say' ? 'What should I say?' : sandboxMode === 'follow' ? 'Follow-up' : sandboxMode === 'recap' ? 'Recap' : 'Assist'}
+                  </span>
+                </div>
+
+                {/* Text Response area */}
+                <div className="p-5 text-left min-h-[120px] flex flex-col justify-between">
+                  {isSandboxLoading ? (
+                    <div className="flex items-center gap-2 py-4">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></span>
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      <span className="text-xs text-slate-400 font-bold">Transcribing audio and analyzing screen...</span>
+                    </div>
+                  ) : (
+                    <p className="text-slate-200 font-sans text-xs sm:text-[13px] leading-relaxed font-semibold transition-all duration-300">
+                      {sandboxResponse || '"Type a question in the prompt box below, or click any mode like Assist, What should I say?, Follow-up, or Recap to test."'}
+                    </p>
+                  )}
+                </div>
+
+                {/* Action Modes Row */}
+                <div className="px-5 py-2.5 border-y border-slate-800/50 flex flex-wrap items-center justify-start gap-x-3.5 gap-y-1.5 text-[10px] font-black text-slate-450 select-none bg-slate-900/30">
+                  <button 
+                    onClick={() => { setSandboxMode('assist'); triggerQuickResponse('assist'); }}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'assist' ? 'text-emerald-450 font-black' : ''}`}
+                  >
+                    <span>✨ Assist</span>
+                  </button>
+                  <span>•</span>
+                  <button 
+                    onClick={() => { setSandboxMode('say'); triggerQuickResponse('say'); }}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'say' ? 'text-emerald-450 font-black' : ''}`}
+                  >
+                    <span>🖋️ What should I say?</span>
+                  </button>
+                  <span>•</span>
+                  <button 
+                    onClick={() => { setSandboxMode('follow'); triggerQuickResponse('follow'); }}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'follow' ? 'text-emerald-450 font-black' : ''}`}
+                  >
+                    <span>💬 Follow-up questions</span>
+                  </button>
+                  <span>•</span>
+                  <button 
+                    onClick={() => { setSandboxMode('recap'); triggerQuickResponse('recap'); }}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'recap' ? 'text-emerald-450 font-black' : ''}`}
+                  >
+                    <span>🔄 Recap</span>
+                  </button>
+                </div>
+
+                {/* Bottom Input Area */}
+                <div className="p-4 bg-slate-955">
+                  <form onSubmit={handleSandboxActionSubmit} className="border border-slate-800 rounded-2xl p-2 flex items-center justify-between gap-2.5 bg-slate-900/60 shadow-inner">
+                    {/* Left side: Smart pill + menu dot */}
+                    <div className="flex items-center gap-1.5 shrink-0 pl-1">
+                      <span className="px-2 py-1 bg-slate-800 border border-slate-700/60 text-slate-350 font-black text-[9px] rounded-lg">
+                        ⚡ Smart
+                      </span>
+                      <span className="text-slate-500 font-bold text-xs">...</span>
+                    </div>
+
+                    {/* Input element */}
+                    <input 
+                      type="text"
+                      value={sandboxInputText}
+                      onChange={(e) => setSandboxInputText(e.target.value)}
+                      placeholder="Ask about your screen or conversation, or ⌘ ↩ for Assist"
+                      className="w-full bg-transparent border-0 text-slate-100 text-[11px] font-sans placeholder-slate-500 focus:outline-none focus:ring-0 select-text cursor-text"
+                    />
+
+                    {/* Play/Send circular button */}
+                    <button 
+                      type="submit"
+                      disabled={isSandboxLoading}
+                      className="w-7 h-7 rounded-full bg-[#0b48a3] hover:bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </button>
+                  </form>
+
+                  {/* Hide option (collapses to small pill widget) */}
+                  <div className="mt-3.5 flex items-center justify-between text-[10px] text-slate-500 font-extrabold px-1">
+                    <span className="font-mono">Press Enter to Ask</span>
+                    <button 
+                      onClick={() => setSandboxCollapsed(true)}
+                      className="flex items-center gap-1 hover:text-white cursor-pointer px-2.5 py-1 bg-slate-900 border border-slate-800/80 rounded-lg hover:bg-slate-855 transition-colors"
+                    >
+                      <ChevronDown size={11} />
+                      <span>Hide Widget</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+
         </div>
       </section>
 
