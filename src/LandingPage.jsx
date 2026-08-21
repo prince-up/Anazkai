@@ -3052,13 +3052,15 @@ class Solution {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
-                className="w-full py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-500/25"
+                className="w-full py-3.5 sm:py-4 bg-[#10b981] hover:bg-[#0e9f6e] text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-500/20"
               >
-                <div className="flex items-center gap-3 text-left">
-                  <span className="text-2xl">🪟</span>
+                <div className="flex items-center gap-3.5 text-left">
+                  <svg className="w-5 h-5 text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M0 3.449L9.75 2.1v9.45H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.1zM11.25 1.899L24 0v11.55H11.25V1.899zM11.25 12.45H24v11.55l-12.75-1.9v-9.65z" />
+                  </svg>
                   <div>
                     <span className="block text-xs sm:text-sm font-extrabold text-white">Download for Windows</span>
-                    <span className="block text-[10px] text-emerald-100">x64 Installer (.exe) • Direct Download</span>
+                    <span className="block text-[10px] text-emerald-100/90 font-medium">x64 Installer (.exe) • Direct Download</span>
                   </div>
                 </div>
                 <Download size={18} />
@@ -3071,46 +3073,47 @@ class Solution {
                 onClick={() => setShowDownloadModal(false)}
                 className="w-full py-3.5 sm:py-4 bg-[#0d2e27] hover:bg-emerald-950 text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg"
               >
-                <div className="flex items-center gap-3 text-left">
-                  <span className="text-2xl">🍎</span>
+                <div className="flex items-center gap-3.5 text-left">
+                  <svg className="w-5 h-5 text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.56 2.95-1.39z" />
+                  </svg>
                   <div>
                     <span className="block text-xs sm:text-sm font-extrabold text-white">Download for macOS</span>
-                    <span className="block text-[10px] text-emerald-100">dmg Package • Apple Silicon / Intel</span>
+                    <span className="block text-[10px] text-emerald-100/90 font-medium">dmg Package • Apple Silicon / Intel</span>
                   </div>
                 </div>
                 <Download size={18} />
               </a>
 
               <div className="bg-[#eef8f3] p-5 rounded-2xl border border-emerald-600/10 text-left space-y-3.5">
-                <span className="block text-xs font-black text-emerald-850 uppercase tracking-wider">🍏 macOS Setup &amp; Bypass Guide:</span>
+                <span className="block text-xs font-black text-emerald-850 uppercase tracking-wider flex items-center gap-1.5">
+                  <Info size={14} className="text-emerald-700 shrink-0" />
+                  macOS Setup &amp; Bypass Guide
+                </span>
                 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 1: Move to Applications</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded">.dmg</code> file and drag **AnazkAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **AnazkAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <span className="text-xs text-gray-800 font-bold block">Step 2: Bypass Gatekeeper / "Damaged" Warnings</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
-                  <div className="bg-[#113a30] text-emerald-200 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold">
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
+                  <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
                     xattr -cr /Applications/AnazkAI.app
                   </div>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
-                  <div className="bg-[#113a30] text-emerald-200 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold">
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
+                  <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
                     codesign --force --deep --sign - /Applications/AnazkAI.app
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 3: Allow Screen Recording Permissions</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AnazkAI** to **ON** to enable screen overlay/transcriptions.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AnazkAI** to **ON** to enable screen overlay/transcriptions.</span>
                 </div>
               </div>
             </div>
-            
-            <p className="mt-4 text-[10px] text-center text-gray-400 font-semibold">
-              Anazk AI. Developed by Prince Yadav.
-            </p>
           </div>
         </div>
       )}
