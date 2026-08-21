@@ -1189,7 +1189,7 @@ class Solution {
 
               {/* Mega Dropdown Box */}
               {activeDropdown === 'assistant' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
@@ -1312,7 +1312,7 @@ class Solution {
 
               {/* Mega Dropdown Box */}
               {activeDropdown === 'pricing' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
@@ -1398,7 +1398,7 @@ class Solution {
 
               {/* Mega Dropdown Box (Exact GirGit AI Screenshot Style) */}
               {activeDropdown === 'others' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
@@ -1541,13 +1541,18 @@ class Solution {
             </button>
 
             {user ? (
-              <button 
-                onClick={() => supabase.auth.signOut()}
-                className={`px-3.5 py-2 border font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-300 hover:bg-gray-800' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
-              >
-                <User size={14} />
-                <span>Sign out</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-300' : 'bg-white border-[#0d2e27]/20 text-[#0d2e27]'}`} title="Logged in account">
+                  <User size={14} className={activeTab === 'coding' ? 'text-emerald-400' : 'text-[#c99a4c]'} />
+                  <span className="text-xs font-black max-w-[150px] truncate">{user.email}</span>
+                </div>
+                <button 
+                  onClick={() => supabase.auth.signOut()}
+                  className={`px-3.5 py-1.5 border font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-300 hover:bg-gray-800' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
+                >
+                  <span>Sign out</span>
+                </button>
+              </div>
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
@@ -1684,18 +1689,23 @@ class Solution {
               <span>Download Desktop App</span>
             </button>
             {user ? (
-              <button 
-                onClick={async () => { 
-                  setMobileMenuOpen(false); 
-                  await supabase.auth.signOut();
-                  setUser(null);
-                  setCurrentView('landing'); 
-                }}
-                className="w-full py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <User size={14} />
-                <span>Sign out</span>
-              </button>
+              <div className="flex flex-col gap-2">
+                <div className="w-full py-2 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center gap-2 text-[#0d2e27]">
+                  <User size={14} className="text-[#c99a4c]" />
+                  <span className="text-xs font-black truncate max-w-[200px]">{user.email}</span>
+                </div>
+                <button 
+                  onClick={async () => { 
+                    setMobileMenuOpen(false); 
+                    await supabase.auth.signOut();
+                    setUser(null);
+                    setCurrentView('landing'); 
+                  }}
+                  className="w-full py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>Sign out</span>
+                </button>
+              </div>
             ) : (
               <button 
                 onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
