@@ -1435,15 +1435,13 @@ class Solution {
           {/* Right: Download + Sign in */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Download Button */}
-            <a 
-              href={getDownloadLink()} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95"
+            <button 
+              onClick={() => setShowDownloadModal(true)} 
+              className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Download size={14} className="text-emerald-800" />
-              <span>{isMacUser() ? "Download for Mac" : "Download for Windows"}</span>
-            </a>
+              <span>Download App</span>
+            </button>
 
             {user ? (
               <button 
@@ -1466,15 +1464,13 @@ class Solution {
 
           {/* Mobile Menu Trigger */}
           <div className="flex items-center gap-2 md:hidden">
-            <a 
-              href={getDownloadLink()} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1"
+            <button 
+              onClick={() => setShowDownloadModal(true)}
+              className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer"
             >
               <Download size={12} />
-              <span>{isMacUser() ? "App (dmg)" : "App (exe)"}</span>
-            </a>
+              <span>Download App</span>
+            </button>
             {user ? (
               <button 
                 onClick={() => supabase.auth.signOut()}
@@ -1583,15 +1579,13 @@ class Solution {
           </div>
 
           <div className="pt-2 flex flex-col space-y-2">
-            <a 
-              href={getDownloadLink()} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setShowDownloadModal(true); }}
+              className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Download size={14} />
-              <span>{isMacUser() ? "Download Desktop App (.dmg)" : "Download Desktop App (.exe)"}</span>
-            </a>
+              <span>Download Desktop App</span>
+            </button>
             {user ? (
               <button 
                 onClick={async () => { 
