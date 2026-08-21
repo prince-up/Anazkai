@@ -45,6 +45,12 @@
       "target": [
         "nsis",
         "portable"
+      ],
+      "protocols": [
+        {
+          "name": "AnazkAI",
+          "schemes": ["anazkai"]
+        }
       ]
     },
     "mac": {

@@ -8,6 +8,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as pdfjsLib from 'pdfjs-dist';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
+import AppLoginPage from './pages/AppLoginPage';
 import { supabase } from './supabaseClient';
 
 // Configure pdfjs worker
@@ -543,116 +544,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
     }
 
-    // 2. Free Trial Users: Groq Models Only (llama-3.1-8b-instant, llama3-8b-8192, mixtral-8x7b-32768, gemma2-9b-it)
-    if (activePlan === 'free_trial' && groqKey) {
-      const url = `https://api.groq.com/openai/v1/chat/completions`;
-      const groqModels = [
-        'llama-3.1-8b-instant',
-        'llama3-8b-8192',
-        'mixtral-8x7b-32768',
-        'gemma2-9b-it'
-      ];
+    // NOTE: Free trial users now use Gemini (same path as paid), no Groq needed
 
-      addLog(`[Groq] Models to try: ${groqModels.join(', ')}`);
-
-      for (const modelId of groqModels) {
-        console.log(`[Plan] Model being used: ${modelId}`);
-        addLog(`[Groq] Attempting model: ${modelId}`);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-        try {
-          // Skip sending the image block on non-vision models to prevent Groq API errors
-          const messages = [
-            { role: 'user', content: promptText }
-          ];
-
-          const requestBody = { 
-            model: modelId, 
-            messages,
-            temperature: 0.2,
-            max_tokens: 500,
-            stream: true
-          };
-
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Authorization': `Bearer ${groqKey}` 
-            },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (response.ok && response.body) {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let firstTokenTime = null;
-
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split('\n');
-              buffer = lines.pop() || '';
-
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (jsonStr && jsonStr !== '[DONE]') {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      const chunk = data.choices?.[0]?.delta?.content;
-                      if (chunk) {
-                        if (!firstTokenTime) {
-                          firstTokenTime = Date.now();
-                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ AI (${latency}s)`);
-                        }
-                        accumulatedReply += chunk;
-                        setOutputText(accumulatedReply);
-                      }
-                    } catch (e) {}
-                  }
-                }
-              }
-            }
-
-            if (accumulatedReply && accumulatedReply.trim()) {
-              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s`);
-              addLog(`✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
-              setInterviewCount(prev => prev + 1);
-              decrementUserCredits();
-              success = true;
-              break;
-            }
-          } else {
-            const errTxt = await response.text();
-            let errMsg = '';
-            try {
-              const errJson = JSON.parse(errTxt);
-              errMsg = errJson?.error?.message || errTxt;
-            } catch { errMsg = errTxt; }
-            addLog(`❌ Groq HTTP ${response.status} | Model: ${modelId} | Error: ${errMsg.slice(0, 200)}`);
-            lastErr = `Groq ${response.status}: ${errMsg.slice(0, 100)}`;
-          }
-        } catch (fetchErr) {
-          clearTimeout(timeoutId);
-          if (fetchErr.name === 'AbortError') {
-            addLog(`❌ Groq timed out (12s) | Model: ${modelId}`);
-            lastErr = 'Groq timed out.';
-          } else {
-            addLog(`❌ Groq Exception: ${fetchErr.message}`);
-            lastErr = fetchErr.message;
-          }
-        }
-      }
-    }
 
     if (!success && !accumulatedReply) {
       setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Check your internet connection.'}`);
@@ -1066,151 +959,8 @@ Guidelines:
       }
     }
 
-    // 2. Free Trial Users: Groq Whisper STT + Groq LLM (Never use Gemini)
-    if (activePlan === 'free_trial' && groqKey) {
-      let transcript = '';
+    // NOTE: Free trial users now use Gemini voice (same path as paid), no Groq needed
 
-      // STEP 1: SPEECH-TO-TEXT WITH GROQ WHISPER
-      const whisperModels = [GROQ_WHISPER_MODEL, 'whisper-large-v3'];
-      for (const whisperModel of whisperModels) {
-        console.log(`[Plan] Model being used: ${whisperModel}`);
-        addLog(`[STT] Attempting Groq Whisper: ${whisperModel}`);
-        const whisperController = new AbortController();
-        const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
-
-        try {
-          const formData = new FormData();
-          const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-          formData.append('file', wavBlob, 'audio.wav');
-          formData.append('model', whisperModel);
-          formData.append('response_format', 'json');
-          formData.append('temperature', '0');
-
-          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${groqKey}` },
-            body: formData,
-            signal: whisperController.signal
-          });
-
-          clearTimeout(whisperTimeout);
-
-          if (whisperRes.ok) {
-            const whisperData = await whisperRes.json();
-            transcript = whisperData.text?.trim();
-            if (transcript) {
-              const sttLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-              addLog(`[STT Success (${sttLatency}s)] Heard: "${transcript}"`);
-              break;
-            }
-          } else {
-            const errTxt = await whisperRes.text();
-            addLog(`⚠️ Whisper ${whisperModel} returned ${whisperRes.status}: ${errTxt}`);
-            lastErr = errTxt;
-          }
-        } catch (err) {
-          clearTimeout(whisperTimeout);
-          addLog(`⚠️ Whisper ${whisperModel} error: ${err.message}`);
-          lastErr = err.message;
-        }
-      }
-
-      // STEP 2: STREAMING ANSWER GENERATION WITH GROQ LLAMA/MIXTRAL/GEMMA
-      if (transcript) {
-        setStreamStatus('⚡ Streaming Answer...');
-        setOutputText('');
-
-        const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
-        const groqModels = [
-          'llama-3.1-8b-instant',
-          'llama3-8b-8192',
-          'mixtral-8x7b-32768',
-          'gemma2-9b-it'
-        ];
-
-        for (const modelId of groqModels) {
-          console.log(`[Plan] Model being used: ${modelId}`);
-          addLog(`[Voice Answer] Attempting Groq model: ${modelId}`);
-          const chatController = new AbortController();
-          const chatTimeout = setTimeout(() => chatController.abort(), 12000);
-
-          try {
-            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${groqKey}`
-              },
-              body: JSON.stringify({
-                model: modelId,
-                messages: [
-                  { role: 'system', content: voiceSysInstruction },
-                  { role: 'user', content: promptForAnswer }
-                ],
-                temperature: 0.2,
-                max_tokens: 650,
-                stream: true
-              }),
-              signal: chatController.signal
-            });
-
-            clearTimeout(chatTimeout);
-
-            if (chatRes.ok && chatRes.body) {
-              const reader = chatRes.body.getReader();
-              const decoder = new TextDecoder();
-              let buffer = '';
-
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                  if (line.startsWith('data: ')) {
-                    const jsonStr = line.slice(6).trim();
-                    if (jsonStr && jsonStr !== '[DONE]') {
-                      try {
-                        const data = JSON.parse(jsonStr);
-                        const chunk = data.choices?.[0]?.delta?.content;
-                        if (chunk) {
-                          if (firstTokenLatency === null) {
-                            firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                            setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
-                          }
-                          accumulatedText += chunk;
-                          setOutputText(accumulatedText);
-                        }
-                      } catch (e) {}
-                    }
-                  }
-                }
-              }
-
-              if (accumulatedText && accumulatedText.trim()) {
-                const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
-                setInterviewCount(prev => prev + 1);
-                decrementUserCredits();
-                voiceSuccess = true;
-                break;
-              }
-            } else {
-              const errTxt = await chatRes.text();
-              addLog(`⚠️ Groq Voice HTTP ${chatRes.status} | Model: ${modelId} | Error: ${errTxt.slice(0, 120)}`);
-              lastErr = `Groq ${chatRes.status}: ${errTxt.slice(0, 100)}`;
-            }
-          } catch (chatErr) {
-            clearTimeout(chatTimeout);
-            addLog(`⚠️ Groq Voice Streaming Error: ${chatErr.message}`);
-            lastErr = chatErr.message;
-          }
-        }
-      }
-    }
 
     if (!voiceSuccess || !accumulatedText) {
       setIsLoading(false);
@@ -1867,6 +1617,11 @@ function App() {
   useEffect(() => {
     setIsDesktop(isDesktopEnvironment());
   }, []);
+
+  // Website: /app-login route for deep link auth
+  if (!isDesktop && window.location.pathname === '/app-login') {
+    return <AppLoginPage />;
+  }
 
   if (!isDesktop) {
     return <LandingPage />;

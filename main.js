@@ -1,5 +1,20 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell } = require('electron');
 const path = require('path');
+
+// Register anazkai:// as a custom deep-link protocol (must be before app.whenReady)
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('anazkai', process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('anazkai');
+}
+
+// Ensure single instance so deep links work correctly on Windows
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
 
 // Ensure unrestricted audio device access and no user-gesture requirement for audio in Electron
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream');
@@ -51,8 +66,43 @@ ipcMain.on('open-devtools', () => {
   }
 });
 
+// IPC handler to open external browser URL (for website login redirect)
+ipcMain.on('open-external-url', (event, url) => {
+  shell.openExternal(url);
+});
+
+// Handle deep link from second instance (Windows) — anazkai://auth?access_token=xxx
+app.on('second-instance', (event, commandLine) => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    // Find anazkai:// URL in args
+    const deepLink = commandLine.find(arg => arg.startsWith('anazkai://'));
+    if (deepLink) {
+      mainWindow.webContents.send('auth-deep-link', deepLink);
+    }
+  }
+});
+
+// Handle deep link on macOS (open-url event)
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  if (mainWindow && url.startsWith('anazkai://')) {
+    mainWindow.webContents.send('auth-deep-link', url);
+  }
+});
+
 app.whenReady().then(() => {
   createWindow();
+
+  // Handle deep link if app was launched directly via anazkai:// (Windows cold start)
+  const deepLinkArg = process.argv.find(arg => arg.startsWith('anazkai://'));
+  if (deepLinkArg) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      mainWindow.webContents.send('auth-deep-link', deepLinkArg);
+    });
+  }
+
 
   // Register Display Media Request Handler for system audio loopback capture
   session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
