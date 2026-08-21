@@ -1055,7 +1055,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* ─── TOP NAVBAR (GIRGIT AI MEGA-MENU STYLE) ─── */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-[#eef8f3]/95 backdrop-blur-md border-b border-emerald-500/15 transition-all duration-300">
+      <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-md transition-all duration-300 border-b ${activeTab === 'coding' ? 'bg-[#030712]/95 border-gray-800 text-gray-100' : 'bg-[#eef8f3]/95 border-emerald-500/15 text-[#0d2e27]'}`}>
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between relative">
           
           {/* Left: Brand Logo & Title */}
@@ -1068,13 +1068,13 @@ class Solution {
               alt="Anazk AI Logo" 
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500/30 object-cover shadow-xs group-hover:scale-105 transition-transform" 
             />
-            <span className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] tracking-tight flex items-center">
+            <span className={`font-display font-black text-xl sm:text-2xl tracking-tight flex items-center ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
               Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
             </span>
           </div>
 
           {/* Center: Mega Menu Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black text-[#0d2e27]">
+          <nav className={`hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black ${activeTab === 'coding' ? 'text-gray-250' : 'text-[#0d2e27]'}`}>
             
             {/* 1. AI Interview Assistant Mega Menu */}
             <div 
@@ -1084,31 +1084,31 @@ class Solution {
             >
               <button 
                 onClick={() => setActiveDropdown(activeDropdown === 'assistant' ? null : 'assistant')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'assistant' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'assistant' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
               >
                 <span>AI Interview Assistant</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'assistant' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'assistant' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
               </button>
 
               {/* Mega Dropdown Box */}
               {activeDropdown === 'assistant' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
-                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
                           Anazk AI Copilot
                         </h3>
-                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Real-time AI assistance, invisible screen-share overlay, and intelligent live problem solving.
                         </p>
                       </div>
 
                       <button 
                         onClick={() => scrollToSection('sandbox')}
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group cursor-pointer"
+                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group cursor-pointer ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
                       >
                         <span>Try Live Sandbox</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -1116,29 +1116,29 @@ class Solution {
                     </div>
 
                     {/* Right Columns with Divider */}
-                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Capabilities
                         </h4>
-                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
                           <li>
-                            <button onClick={() => scrollToSection('top')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('top')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               Overview & Demo
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('features')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('features')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               Core Features
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('industries')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('industries')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               All Industries
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('why-anazk')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               Why Anazk AI
                             </button>
                           </li>
@@ -1146,17 +1146,17 @@ class Solution {
                       </div>
 
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Stealth & App
                         </h4>
-                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
                           <li>
-                            <button onClick={() => scrollToSection('privacy')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('privacy')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               Invisible Overlay
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('why-anazk')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('why-anazk')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               System Hotkeys
                             </button>
                           </li>
@@ -1166,7 +1166,7 @@ class Solution {
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
-                              className="hover:text-emerald-800 hover:underline block"
+                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Windows App (.exe)
                             </a>
@@ -1177,7 +1177,7 @@ class Solution {
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
-                              className="hover:text-emerald-800 hover:underline block"
+                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               macOS App (.dmg)
                             </a>
@@ -1185,7 +1185,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
+                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Privacy Protocol
                             </button>
@@ -1207,31 +1207,31 @@ class Solution {
             >
               <button 
                 onClick={() => setActiveDropdown(activeDropdown === 'pricing' ? null : 'pricing')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'pricing' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'pricing' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
               >
                 <span>Pricing</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'pricing' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'pricing' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
               </button>
 
               {/* Mega Dropdown Box */}
               {activeDropdown === 'pricing' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
-                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
                           Anazk AI Pricing
                         </h3>
-                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Pay only for what you use. Instant license key generation & lifetime credit validity.
                         </p>
                       </div>
 
                       <button 
                         onClick={() => scrollToSection('pricing')}
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group cursor-pointer"
+                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group cursor-pointer ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
                       >
                         <span>View Full Pricing</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -1239,43 +1239,43 @@ class Solution {
                     </div>
 
                     {/* Right Columns with Divider */}
-                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Credit Packages
                         </h4>
-                        <ul className="space-y-3 text-xs font-bold text-[#134237]">
+                        <ul className={`space-y-3 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
                           <li>
-                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
-                              <span className="font-black text-[#0d2e27]">Starter Session</span> — <span className="text-emerald-800 font-black">₹259</span>
-                              <span className="block text-[11px] text-[#134237]/75 font-medium">150 Minutes Validity</span>
+                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
+                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Starter Session</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹259</span>
+                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>150 Minutes Validity</span>
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
-                              <span className="font-black text-[#0d2e27]">Standard Pack</span> — <span className="text-emerald-800 font-black">₹500</span>
-                              <span className="block text-[11px] text-[#134237]/75 font-medium">350 Minutes • Popular</span>
+                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
+                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Standard Pack</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹500</span>
+                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>350 Minutes • Popular</span>
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-800 block text-left cursor-pointer">
-                              <span className="font-black text-[#0d2e27]">Power Pack</span> — <span className="text-emerald-800 font-black">₹2,500</span>
-                              <span className="block text-[11px] text-[#134237]/75 font-medium">2,000 Minutes Full Access</span>
+                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
+                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Power Pack</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹2,500</span>
+                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>2,000 Minutes Full Access</span>
                             </button>
                           </li>
                         </ul>
                       </div>
 
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Included Benefits
                         </h4>
-                        <ul className="space-y-2 text-xs font-bold text-[#134237]">
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> 100% Screen Share Invisible</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Whisper Speech Transcription</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> OCR Code Problem Solve</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Instant Key On Screen</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-700 shrink-0" /> Unused Minutes Never Expire</li>
+                        <ul className={`space-y-2 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> 100% Screen Share Invisible</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Whisper Speech Transcription</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> OCR Code Problem Solve</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Instant Key On Screen</li>
+                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Unused Minutes Never Expire</li>
                         </ul>
                       </div>
                     </div>
@@ -1293,31 +1293,31 @@ class Solution {
             >
               <button 
                 onClick={() => setActiveDropdown(activeDropdown === 'others' ? null : 'others')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'others' ? 'text-emerald-700' : 'hover:text-emerald-700'}`}
+                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'others' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
               >
                 <span>Others</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'others' ? 'rotate-180 text-emerald-600' : 'text-gray-500'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'others' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
               </button>
 
               {/* Mega Dropdown Box (Exact GirGit AI Screenshot Style) */}
               {activeDropdown === 'others' && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] bg-[#dbf5e7] rounded-3xl border border-emerald-600/20 shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 text-[#0d2e27]">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#dbf5e7] border-emerald-600/20 text-[#0d2e27]'}">
                   <div className="grid grid-cols-12 gap-8 items-start">
                     
                     {/* Left Promo Area */}
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
-                        <h3 className="font-display font-black text-xl text-[#0d2e27]">
+                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
                           More from Anazk AI
                         </h3>
-                        <p className="text-xs text-[#134237]/80 leading-relaxed font-semibold">
+                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Company info, contact, FAQs, and the legal details — everything else in one place.
                         </p>
                       </div>
 
                       <a 
                         href="mailto:supportanazkai@gmail.com" 
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#0d2e27] hover:text-emerald-700 transition-colors pt-2 group"
+                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
                       >
                         <span>Know More</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -1325,14 +1325,14 @@ class Solution {
                     </div>
 
                     {/* Right Columns with Divider */}
-                    <div className="col-span-7 border-l border-[#0d2e27]/15 pl-8 grid grid-cols-2 gap-6">
+                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
                       
                       {/* Column 1: Company */}
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Company
                         </h4>
-                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
                           <li>
                             <button 
                               onClick={() => {
@@ -1341,7 +1341,7 @@ class Solution {
                                 setMentorError('');
                                 setShowMentorModal(true);
                               }}
-                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
+                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               About & Mentorship
                             </button>
@@ -1350,18 +1350,18 @@ class Solution {
                             <a 
                               href="mailto:supportanazkai@gmail.com" 
                               onClick={() => setActiveDropdown(null)}
-                              className="hover:text-emerald-800 hover:underline block"
+                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Contact Support
                             </a>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('faq')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('faq')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               FAQs
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => scrollToSection('reviews')} className="hover:text-emerald-800 hover:underline block text-left cursor-pointer">
+                            <button onClick={() => scrollToSection('reviews')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               Reviews & Testimonials
                             </button>
                           </li>
@@ -1370,14 +1370,14 @@ class Solution {
 
                       {/* Column 2: Legal & Download */}
                       <div>
-                        <h4 className="text-xs font-black text-[#0d2e27] uppercase tracking-wider mb-3.5">
+                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
                           Legal & Download
                         </h4>
-                        <ul className="space-y-2.5 text-xs font-bold text-[#134237]">
+                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowTermsModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
+                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Terms & Condition
                             </button>
@@ -1385,7 +1385,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
+                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Privacy Policy
                             </button>
@@ -1393,7 +1393,7 @@ class Solution {
                           <li>
                             <button 
                               onClick={() => { setActiveDropdown(null); setShowRefundModal(true); }}
-                              className="hover:text-emerald-800 hover:underline block text-left cursor-pointer"
+                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Refund Policy
                             </button>
@@ -1404,7 +1404,7 @@ class Solution {
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
-                              className="hover:text-emerald-800 hover:underline block"
+                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Download App (Windows)
                             </a>
@@ -1415,7 +1415,7 @@ class Solution {
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
-                              className="hover:text-emerald-800 hover:underline block"
+                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
                             >
                               Download App (macOS)
                             </a>
@@ -1437,16 +1437,16 @@ class Solution {
             {/* Download Button */}
             <button 
               onClick={() => setShowDownloadModal(true)} 
-              className="px-4 py-2 border border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              className={`px-4 py-2 border rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 hover:bg-gray-800 text-gray-100' : 'border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900'}`}
             >
-              <Download size={14} className="text-emerald-800" />
+              <Download size={14} className={activeTab === 'coding' ? 'text-gray-400' : 'text-emerald-800'} />
               <span>Download App</span>
             </button>
 
             {user ? (
               <button 
                 onClick={() => supabase.auth.signOut()}
-                className="px-3.5 py-2 border border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50 font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                className={`px-3.5 py-2 border font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-300 hover:bg-gray-800' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 <User size={14} />
                 <span>Sign out</span>
@@ -1454,7 +1454,7 @@ class Solution {
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
-                className="px-5 py-2 bg-[#0d2e27] hover:bg-emerald-950 text-white font-black text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer"
+                className={`px-5 py-2 text-white font-black text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-[#0d2e27] hover:bg-emerald-950'}`}
               >
                 <span>Sign in</span>
                 <ArrowRight size={14} />
@@ -1466,7 +1466,7 @@ class Solution {
           <div className="flex items-center gap-2 md:hidden">
             <button 
               onClick={() => setShowDownloadModal(true)}
-              className="px-2.5 py-1.5 border border-emerald-600/30 bg-emerald-100 text-emerald-900 rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer"
+              className={`px-2.5 py-1.5 border rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-200' : 'border-emerald-600/30 bg-emerald-100 text-emerald-900'}`}
             >
               <Download size={12} />
               <span>Download App</span>
@@ -1474,14 +1474,14 @@ class Solution {
             {user ? (
               <button 
                 onClick={() => supabase.auth.signOut()}
-                className="px-3 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-lg cursor-pointer"
+                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg cursor-pointer ${activeTab === 'coding' ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
               >
                 Sign out
               </button>
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
-                className="px-3 py-1.5 bg-[#0d2e27] text-white font-black text-xs rounded-lg"
+                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg ${activeTab === 'coding' ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
               >
                 Sign in
               </button>
