@@ -71,7 +71,7 @@ const AppLoginPage = () => {
       const { error: authErr } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app-login`
+          redirectTo: 'https://anazk.online/app-login'
         }
       });
       if (authErr) throw authErr;
