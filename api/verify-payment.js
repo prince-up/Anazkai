@@ -99,6 +99,41 @@ export default async function handler(req, res) {
         } else {
           console.log(`Generated and saved license key: ${generatedLicenseKey} for ${durationMinutes} mins.`)
         }
+
+        // 4b. Record referral code usage if present
+        if (body.referralCode) {
+          try {
+            const { data: codeData, error: codeErr } = await supabase
+              .from('referral_codes')
+              .select('*')
+              .eq('code', body.referralCode.trim().toUpperCase())
+              .single()
+
+            if (codeData && !codeErr) {
+              const { error: usageErr } = await supabase
+                .from('referral_usages')
+                .insert([
+                  {
+                    code: codeData.code,
+                    buyer_email: email || null,
+                    order_id: orderId,
+                    payment_id: paymentId,
+                    discount_amount: codeData.discount_rupees,
+                    commission_amount: codeData.commission_rupees,
+                    status: 'pending'
+                  }
+                ])
+
+              if (usageErr) {
+                console.error('Warning: Failed to record referral usage in Supabase:', usageErr.message)
+              } else {
+                console.log(`Successfully recorded referral usage for code ${codeData.code}`)
+              }
+            }
+          } catch (refEx) {
+            console.error('Referral record database exception:', refEx.message)
+          }
+        }
       } catch (dbEx) {
         console.error('Supabase DB operation error during payment verify:', dbEx.message)
       }

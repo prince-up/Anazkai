@@ -1,4 +1,5 @@
 import Razorpay from 'razorpay'
+import { createClient } from '@supabase/supabase-js'
 
 const PLANS = {
   '1-hour': { name: 'Anazk 1 Hour', amount: 25900, durationMinutes: 60 },
@@ -52,6 +53,31 @@ export default async function handler(req, res) {
 
     // Ensure amount is parsed as integer
     amount = parseInt(amount, 10)
+
+    // Verify and apply Referral Code discount if present
+    const supabaseUrl = process.env.VITE_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (body.referralCode && supabaseUrl && supabaseServiceKey) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        const { data: codeData, error: dbError } = await supabase
+          .from('referral_codes')
+          .select('*')
+          .eq('code', body.referralCode.trim().toUpperCase())
+          .single()
+
+        if (codeData && !dbError) {
+          const discountPaise = parseInt(codeData.discount_rupees, 10) * 100
+          if (discountPaise > 0) {
+            amount = Math.max(100, amount - discountPaise)
+            notes.referralCode = codeData.code
+          }
+        }
+      } catch (dbEx) {
+        console.error('Supabase query error in create-order:', dbEx.message)
+      }
+    }
 
     // Validate minimum amount (>= 100 paise = 1 INR)
     if (isNaN(amount) || amount < 100) {

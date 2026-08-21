@@ -54,6 +54,9 @@ function LandingPage() {
   const [checkoutError, setCheckoutError] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [user, setUser] = useState(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [appliedCodeData, setAppliedCodeData] = useState(null);
+  const [referralError, setReferralError] = useState('');
   
   // Real Stories / Candidate Reviews Carousel
   const [activeReviewIndex, setActiveReviewIndex] = useState(2);
@@ -276,6 +279,29 @@ function LandingPage() {
     }
   };
 
+  const handleApplyReferral = async () => {
+    if (!referralCode.trim()) return;
+    setReferralError('');
+    try {
+      const { data, error } = await supabase
+        .from('referral_codes')
+        .select('*')
+        .eq('code', referralCode.trim().toUpperCase())
+        .single();
+
+      if (error || !data) {
+        setReferralError('Invalid or expired Referral Code.');
+        setAppliedCodeData(null);
+      } else {
+        setAppliedCodeData(data);
+        setReferralError('');
+      }
+    } catch (err) {
+      setReferralError('Failed to verify code. Please check your connection.');
+      setAppliedCodeData(null);
+    }
+  };
+
   const startCheckout = async (planId) => {
     if (!user) {
       setShowSignInModal(true);
@@ -298,7 +324,8 @@ function LandingPage() {
         body: JSON.stringify({ 
           planId: plan.id,
           amount: plan.priceInr ? plan.priceInr * 100 : undefined,
-          currency: 'INR'
+          currency: 'INR',
+          referralCode: appliedCodeData ? appliedCodeData.code : undefined
         }),
       });
       const data = await response.json();
@@ -327,7 +354,8 @@ function LandingPage() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_signature: response.razorpay_signature,
                 planId: plan.id,
-                email: user.email
+                email: user.email,
+                referralCode: appliedCodeData ? appliedCodeData.code : undefined
               }),
             });
             const verifyData = await verifyRes.json();
@@ -2388,6 +2416,53 @@ class Solution {
           <a href="#cancel" className="hover:text-gray-800 transition-colors">Stealth Mode Included</a>
         </div>
 
+        {/* Referral / Promo Code Input Block */}
+        <div className="max-w-md mx-auto w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+          <label className="block text-xs font-bold text-gray-700 text-left">
+            🎟️ Got a Referral / Influencer Code?
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter Code (e.g. SHAHDEO50)"
+              value={referralCode}
+              onChange={(e) => {
+                setReferralCode(e.target.value.toUpperCase());
+                setReferralError('');
+              }}
+              disabled={appliedCodeData !== null}
+              className="flex-1 px-3.5 py-2 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-emerald-500 uppercase disabled:bg-gray-50 disabled:text-gray-400"
+            />
+            {appliedCodeData ? (
+              <button
+                onClick={() => {
+                  setAppliedCodeData(null);
+                  setReferralCode('');
+                }}
+                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold border border-red-200/50 transition-all cursor-pointer"
+              >
+                Remove
+              </button>
+            ) : (
+              <button
+                onClick={handleApplyReferral}
+                disabled={!referralCode.trim()}
+                className="px-4 py-2 bg-[#0d2e27] hover:bg-emerald-950 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Apply
+              </button>
+            )}
+          </div>
+          {referralError && (
+            <p className="text-[11px] font-bold text-red-500 text-left pl-1">{referralError}</p>
+          )}
+          {appliedCodeData && (
+            <p className="text-[11px] font-bold text-emerald-650 text-left pl-1">
+              🎉 Code applied! You get a ₹{appliedCodeData.discount_rupees} discount on any plan.
+            </p>
+          )}
+        </div>
+
         {/* Cards Frame */}
         <div className="max-w-5xl mx-auto w-full mt-8 sm:mt-12">
           <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
@@ -2396,7 +2471,16 @@ class Solution {
               <div className="space-y-3 sm:space-y-4">
                 <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">1 Hour Session</span>
                 <div className="pt-1 sm:pt-2">
-                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹259</span>
+                  {appliedCodeData ? (
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
+                        ₹{Math.max(1, 259 - parseInt(appliedCodeData.discount_rupees, 10))}
+                      </span>
+                      <span className="text-gray-400 text-sm font-semibold line-through">₹259</span>
+                    </div>
+                  ) : (
+                    <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹259</span>
+                  )}
                   <span className="block text-gray-400 text-xs font-semibold mt-1">($3.10) one-time</span>
                 </div>
                 <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
@@ -2432,7 +2516,16 @@ class Solution {
               <div className="space-y-3 sm:space-y-4">
                 <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">2 Hours Session</span>
                 <div className="pt-1 sm:pt-2">
-                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹500</span>
+                  {appliedCodeData ? (
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
+                        ₹{Math.max(1, 500 - parseInt(appliedCodeData.discount_rupees, 10))}
+                      </span>
+                      <span className="text-gray-400 text-sm font-semibold line-through">₹500</span>
+                    </div>
+                  ) : (
+                    <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹500</span>
+                  )}
                   <span className="block text-gray-400 text-xs font-semibold mt-1">($5.99) one-time</span>
                 </div>
                 <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
@@ -2463,7 +2556,16 @@ class Solution {
               <div className="space-y-3 sm:space-y-4">
                 <span className="block text-xs sm:text-sm font-extrabold text-emerald-600 uppercase tracking-wider">10 Interview Sessions</span>
                 <div className="pt-1 sm:pt-2">
-                  <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,500</span>
+                  {appliedCodeData ? (
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
+                        ₹{Math.max(1, 2500 - parseInt(appliedCodeData.discount_rupees, 10))}
+                      </span>
+                      <span className="text-gray-400 text-sm font-semibold line-through">₹2,500</span>
+                    </div>
+                  ) : (
+                    <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹2,500</span>
+                  )}
                   <span className="block text-gray-400 text-xs font-semibold mt-1">($29.90) one-time</span>
                 </div>
                 <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
