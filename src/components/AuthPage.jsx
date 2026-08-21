@@ -5,7 +5,7 @@ import {
   CheckCircle2, AlertCircle, Check, ArrowRight
 } from 'lucide-react';
 
-export default function AuthPage({ onBackToHome, onSuccess }) {
+export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
@@ -23,7 +23,10 @@ export default function AuthPage({ onBackToHome, onSuccess }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: isAppLogin ? 'https://anazk.online/app-login' : window.location.origin,
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       });
       if (error) throw error;

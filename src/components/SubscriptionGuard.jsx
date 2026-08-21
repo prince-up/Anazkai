@@ -419,24 +419,30 @@ const SubscriptionGuard = ({ children }) => {
 
   // Login Screen
   return (
-    <div className="flex flex-col h-screen bg-[#070b19]/90 backdrop-blur-3xl text-gray-100 p-6 font-sans select-none relative overflow-hidden items-center justify-center border border-emerald-500/20">
-      <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div 
+      className="flex flex-col h-screen bg-[#fbf7ee] text-[#0d2e27] p-6 font-sans select-none relative overflow-hidden items-center justify-center border border-emerald-500/20"
+      style={{ WebkitAppRegion: 'drag' }}
+    >
+      <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#c99a4c]/20 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] pointer-events-none"></div>
 
-      <div className="bg-black/55 p-7 rounded-3xl border border-white/10 shadow-2xl z-10 w-full max-w-sm flex flex-col items-center">
+      <div 
+        className="bg-white p-7 rounded-3xl border border-[#0d2e27]/10 shadow-2xl z-10 w-full max-w-sm flex flex-col items-center"
+        style={{ WebkitAppRegion: 'no-drag' }}
+      >
 
         {/* Logo */}
         <img
           src="dist/penguin.jpg"
           alt="Anazk Logo"
-          className="w-14 h-14 rounded-2xl object-cover border border-emerald-500/30 mb-3.5 shadow-lg"
+          className="w-14 h-14 rounded-2xl object-cover border border-[#c99a4c]/30 mb-3.5 shadow-lg"
           onError={(e) => { e.target.src = 'penguin.jpg'; }}
         />
 
-        <h2 className="text-xl font-black mb-1 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent text-center">
+        <h2 className="text-xl font-black mb-1 bg-gradient-to-r from-[#0d2e27] to-[#14473d] bg-clip-text text-transparent text-center">
           AnazkAI Stealth HUD
         </h2>
-        <p className="text-gray-400 text-xs text-center font-medium mb-5">
+        <p className="text-[#0d2e27]/60 text-xs text-center font-bold mb-5">
           Sign in to access your interview minutes
         </p>
 
@@ -446,7 +452,7 @@ const SubscriptionGuard = ({ children }) => {
             <button
               onClick={handleLoginWithWebsite}
               disabled={isValidating}
-              className="w-full py-3 px-4 mb-3 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all border shadow-lg bg-emerald-500 hover:bg-emerald-600 border-emerald-400 text-white hover:scale-[1.02] active:scale-[0.98] shadow-emerald-500/30 cursor-pointer"
+              className="w-full py-3 px-4 mb-3 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all border shadow-lg bg-[#0d2e27] hover:bg-[#14473d] border-[#0d2e27] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               {isValidating ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -459,16 +465,16 @@ const SubscriptionGuard = ({ children }) => {
             </button>
 
             {isValidating && (
-              <p className="text-emerald-400 text-[11px] font-bold text-center mb-3 animate-pulse">
+              <p className="text-[#c99a4c] text-[11px] font-bold text-center mb-3 animate-pulse">
                 ⏳ Waiting for browser login... come back after signing in on anazk.online
               </p>
             )}
 
             {/* Divider */}
             <div className="w-full flex items-center gap-3 my-2 mb-3">
-              <div className="flex-1 h-[1px] bg-white/10"></div>
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">or</span>
-              <div className="flex-1 h-[1px] bg-white/10"></div>
+              <div className="flex-1 h-[1px] bg-[#0d2e27]/10"></div>
+              <span className="text-[10px] text-[#0d2e27]/50 font-bold uppercase tracking-wider">or</span>
+              <div className="flex-1 h-[1px] bg-[#0d2e27]/10"></div>
             </div>
 
             {/* Free Trial */}
@@ -477,11 +483,11 @@ const SubscriptionGuard = ({ children }) => {
               disabled={freeTrialUsed}
               className={`w-full py-2.5 px-4 mb-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all border shadow-lg ${
                 freeTrialUsed
-                  ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border-emerald-500/40 text-emerald-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                  ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-white hover:bg-gray-50 border-[#c99a4c]/50 text-[#c99a4c] hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
               }`}
             >
-              <Gift size={14} className={freeTrialUsed ? 'text-gray-500' : 'text-emerald-400'} />
+              <Gift size={14} className={freeTrialUsed ? 'text-gray-400' : 'text-[#c99a4c]'} />
               <span>{freeTrialUsed ? '🚫 Free Trial Already Used' : '🎁 Start 5-Min Free Trial'}</span>
             </button>
 
@@ -489,7 +495,7 @@ const SubscriptionGuard = ({ children }) => {
             <button
               type="button"
               onClick={() => setShowEmailForm(true)}
-              className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors cursor-pointer mt-1"
+              className="text-[11px] text-[#0d2e27]/70 font-bold hover:text-[#0d2e27] transition-colors cursor-pointer mt-1"
             >
               or sign in with email & password
             </button>
@@ -502,7 +508,7 @@ const SubscriptionGuard = ({ children }) => {
             <button
               type="button"
               onClick={() => setShowEmailForm(false)}
-              className="text-[11px] text-emerald-400 hover:underline cursor-pointer mb-3 self-start"
+              className="text-[11px] text-[#0d2e27] font-bold hover:underline cursor-pointer mb-3 self-start"
             >
               ← Back to Website Login
             </button>
@@ -510,39 +516,39 @@ const SubscriptionGuard = ({ children }) => {
             <form onSubmit={handleAuthSubmit} className="w-full flex flex-col gap-3">
               {!isLoginMode && (
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
                   <input
                     type="text"
                     required
                     placeholder="Full Name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 bg-black/60 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-all text-xs"
+                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
                   />
                 </div>
               )}
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
                 <input
                   type="email"
                   required
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-black/60 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-all text-xs"
+                  className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
                 />
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
                 <input
                   type="password"
                   required
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-black/60 border border-white/10 rounded-xl outline-none focus:border-emerald-500/50 text-white placeholder-gray-600 transition-all text-xs"
+                  className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
                 />
               </div>
 
@@ -551,8 +557,8 @@ const SubscriptionGuard = ({ children }) => {
                 disabled={isValidating || !email || !password}
                 className={`w-full py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer ${
                   isValidating || !email || !password
-                    ? 'bg-emerald-500/40 text-white/50 cursor-not-allowed'
-                    : 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-[1.02] active:scale-[0.98]'
+                    ? 'bg-[#0d2e27]/40 text-white/50 cursor-not-allowed'
+                    : 'bg-[#0d2e27] hover:bg-[#14473d] text-white hover:scale-[1.02] active:scale-[0.98]'
                 }`}
               >
                 {isValidating ? (
@@ -566,25 +572,25 @@ const SubscriptionGuard = ({ children }) => {
               </button>
             </form>
 
-            <div className="mt-4 text-[11px] text-gray-500 font-bold text-center">
+            <div className="mt-4 text-[11px] text-[#0d2e27]/70 font-bold text-center">
               {isLoginMode ? (
-                <p>New user? <button type="button" onClick={() => { setIsLoginMode(false); setError(''); }} className="text-emerald-400 hover:underline cursor-pointer">Create Account</button></p>
+                <p>New user? <button type="button" onClick={() => { setIsLoginMode(false); setError(''); }} className="text-[#c99a4c] hover:underline cursor-pointer">Create Account</button></p>
               ) : (
-                <p>Already registered? <button type="button" onClick={() => { setIsLoginMode(true); setError(''); }} className="text-emerald-400 hover:underline cursor-pointer">Sign In</button></p>
+                <p>Already registered? <button type="button" onClick={() => { setIsLoginMode(true); setError(''); }} className="text-[#c99a4c] hover:underline cursor-pointer">Sign In</button></p>
               )}
             </div>
           </>
         )}
 
         {error && (
-          <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 rounded-xl text-[11px] font-semibold mt-3 w-full">
+          <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 p-2.5 rounded-xl text-[11px] font-semibold mt-3 w-full">
             <AlertCircle size={13} className="shrink-0 mt-0.5" />
             <p className="leading-relaxed">{error}</p>
           </div>
         )}
 
-        <p className="mt-4 text-[10px] text-gray-600 text-center">
-          Buy minutes at <span className="text-emerald-400 font-bold">anazk.online</span>
+        <p className="mt-4 text-[10px] text-[#0d2e27]/50 font-bold text-center">
+          Buy minutes at <span className="text-[#c99a4c]">anazk.online</span>
         </p>
       </div>
     </div>
