@@ -477,7 +477,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                         if (!firstTokenTime) {
                           firstTokenTime = Date.now();
                           const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ Gemini (${latency}s)`);
+                          setStreamStatus(`⚡ AI (${latency}s)`);
                         }
                         accumulatedReply += chunk;
                         setOutputText(accumulatedReply);
@@ -490,7 +490,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s (Gemini)`);
+              setStreamStatus(`⚡ ${totalSec}s`);
               addLog(`✅ Gemini answered in ${totalSec}s`);
               setInterviewCount(prev => prev + 1);
               success = true;
@@ -582,7 +582,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
                         if (!firstTokenTime) {
                           firstTokenTime = Date.now();
                           const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
-                          setStreamStatus(`⚡ Groq (${latency}s)`);
+                          setStreamStatus(`⚡ AI (${latency}s)`);
                         }
                         accumulatedReply += chunk;
                         setOutputText(accumulatedReply);
@@ -595,7 +595,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
             if (accumulatedReply && accumulatedReply.trim()) {
               const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${totalSec}s (Groq)`);
+              setStreamStatus(`⚡ ${totalSec}s`);
               addLog(`✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
               setInterviewCount(prev => prev + 1);
               success = true;
@@ -1011,7 +1011,7 @@ Guidelines:
 
             if (accumulatedText && accumulatedText.trim()) {
               const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Gemini)`);
+              setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
               addLog(`[${new Date().toLocaleTimeString()}] ✅ Gemini Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
               setInterviewCount(prev => prev + 1);
               voiceSuccess = true;
@@ -1160,7 +1160,7 @@ Guidelines:
 
               if (accumulatedText && accumulatedText.trim()) {
                 const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s (Groq)`);
+                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
                 addLog(`[${new Date().toLocaleTimeString()}] ✅ Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
                 setInterviewCount(prev => prev + 1);
                 voiceSuccess = true;

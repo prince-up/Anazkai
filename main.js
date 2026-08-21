@@ -12,6 +12,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 600,
     height: 800,
+    icon: path.join(__dirname, 'dist', 'penguin.jpg'),
     alwaysOnTop: true, // Always on top as requested
     resizable: true,
     show: true, // Start visible by default

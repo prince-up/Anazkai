@@ -41,13 +41,14 @@
       "output": "dist-electron"
     },
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "portable"
-      ],
-      "signAndEditExecutable": false
+      ]
     },
     "mac": {
+      "icon": "build/icon.icns",
       "target": "dmg"
     },
     "linux": {
