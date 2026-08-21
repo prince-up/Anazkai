@@ -118,8 +118,15 @@ const SubscriptionGuard = ({ children }) => {
       const credits = activeProfile?.credits_minutes || 0;
       setTimeRemaining(credits);
 
-      // Check if user has vip bypass email
-      if (user.email === 'admin@anazk.online' || user.email === 'prince@anazk.online') {
+      // VIP Admin emails - permanent unlimited access, no payment needed
+      const VIP_EMAILS = [
+        'admin@anazk.online',
+        'prince@anazk.online',
+        'luckyprinceyadav1234@gmail.com'
+      ];
+
+      if (VIP_EMAILS.includes(user.email?.toLowerCase())) {
+        setTimeRemaining(999999);
         setPlanType('vip');
         setIsAuthorized(true);
         setError('');
