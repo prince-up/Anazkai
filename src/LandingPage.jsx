@@ -40,8 +40,8 @@ function LandingPage() {
 
   const getDownloadLink = () => {
     return isMacUser()
-      ? "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg"
-      : "https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
+      ? "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg"
+      : "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
   };
 
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
@@ -640,7 +640,7 @@ Knowledge Base for Anazk AI:
 - Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
 - Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
 - 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Support Email: supportanazkai@gmail.com.
-- Desktop App: Windows 10/11 64-bit installer (.exe) and macOS Apple Silicon/Intel (.dmg) installer available at: https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/
+- Desktop App: Windows 10/11 64-bit installer (.exe) and macOS Apple Silicon/Intel (.dmg) installer available at: https://github.com/prince-up/anzak-download/releases/download/v1.0.0/
 - Hotkeys: F1 (trigger/answer), F3 (switch audio input), F4 (copy solution), F8 (re-anchor).
 - Contact Support: supportanazkai@gmail.com.
 Format answers cleanly with short bullet points.`
@@ -1259,7 +1259,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1270,7 +1270,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1497,7 +1497,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1508,7 +1508,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -2890,15 +2890,15 @@ class Solution {
               </button>
             </div>
 
-            {/* Card 4: Lifetime Access for ₹349 */}
+            {/* Card 4: Anazk Part 1 for ₹349 */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#c99a4c]/30 hover:border-[#c99a4c]/60 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left relative">
-              {/* Lifetime Tag */}
+              {/* New Tag */}
               <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#c99a4c] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
-                Lifetime
+                New
               </div>
 
               <div className="space-y-3 sm:space-y-4">
-                <span className="block text-xs sm:text-sm font-extrabold text-[#c99a4c] uppercase tracking-wider">Lifetime Access</span>
+                <span className="block text-xs sm:text-sm font-extrabold text-[#c99a4c] uppercase tracking-wider">Anazk Part 1</span>
                 <div className="pt-1 sm:pt-2">
                   {appliedCodeData ? (
                     <div className="flex items-baseline gap-2">
@@ -2910,12 +2910,12 @@ class Solution {
                   ) : (
                     <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹349</span>
                   )}
-                  <span className="block text-gray-400 text-xs font-semibold mt-1">($4.19) one-time forever</span>
+                  <span className="block text-gray-400 text-xs font-semibold mt-1">($4.19) one-time</span>
                 </div>
                 <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-emerald-500 shrink-0" />
-                    <span>Unlimited AI sessions forever</span>
+                    <span>Unlimited AI sessions</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-emerald-500 shrink-0" />
@@ -2931,7 +2931,7 @@ class Solution {
                 onClick={() => startCheckout('lifetime-349')}
                 className="w-full py-3.5 bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] hover:from-[#b8893b] hover:to-[#c99a4c] text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
               >
-                Buy Lifetime — ₹349
+                Buy Now — ₹349
               </button>
             </div>
 
@@ -3078,8 +3078,8 @@ class Solution {
                 <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
-                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
-                <li><a href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -3394,7 +3394,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3413,7 +3413,7 @@ class Solution {
               </a>
 
               <a 
-                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService-1.0.0-arm64.dmg" 
+                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
