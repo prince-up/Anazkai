@@ -1,6 +1,9 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell } = require('electron');
 const path = require('path');
 
+// ── SEB STEALTH: Disguise process name so lockdown browsers don't flag it ──
+app.setName('SystemAudioService');
+
 // Register anazkai:// as a custom deep-link protocol (must be before app.whenReady)
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -28,19 +31,25 @@ function createWindow() {
     width: 600,
     height: 800,
     icon: path.join(__dirname, 'dist', 'penguin.jpg'),
-    alwaysOnTop: true, // Always on top as requested
+    alwaysOnTop: true,   // Will be set to 'screen-saver' level after creation
     resizable: true,
-    show: true, // Start visible by default
-    skipTaskbar: false,
-    transparent: true, // Make background transparent
-    backgroundColor: '#00000000', // Clear transparent window background
-    frame: false, // Remove window frame
+    show: true,          // Start visible by default
+    skipTaskbar: true,   // ── SEB STEALTH: Hide from taskbar / task manager UI ──
+    transparent: true,   // Make background transparent
+    backgroundColor: '#00000000',
+    frame: false,        // Remove window frame
+    focusable: true,     // Keep true so login/clicks work; we switch to false via IPC when needed
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false, // Allow IPC from React
-      devTools: true // Always enable DevTools for debugging
+      contextIsolation: false,
+      devTools: true
     }
   });
+
+  // ── SEB STEALTH: Set window level to 'screen-saver' so it renders above SEB fullscreen ──
+  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  // Keep window visually on top even when SEB takes focus
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   const isDev = process.argv.includes('--dev');
   
@@ -171,6 +180,42 @@ app.whenReady().then(() => {
     }
   });
 
+  // ── SEB EXTRA HOTKEYS: Work at OS level even inside SEB lockdown ──
+  // F5: Scroll AI response UP
+  globalShortcut.register('F5', () => {
+    if (mainWindow) mainWindow.webContents.send('shortcut-triggered', 'F5');
+  });
+
+  // F6: Scroll AI response DOWN
+  globalShortcut.register('F6', () => {
+    if (mainWindow) mainWindow.webContents.send('shortcut-triggered', 'F6');
+  });
+
+  // F7: Increase window opacity (more visible)
+  globalShortcut.register('F7', () => {
+    if (mainWindow) {
+      const current = mainWindow.getOpacity();
+      mainWindow.setOpacity(Math.min(1.0, parseFloat((current + 0.1).toFixed(1))));
+    }
+  });
+
+  // F8: Decrease window opacity (more transparent / stealth)
+  globalShortcut.register('F8', () => {
+    if (mainWindow) {
+      const current = mainWindow.getOpacity();
+      mainWindow.setOpacity(Math.max(0.1, parseFloat((current - 0.1).toFixed(1))));
+    }
+  });
+
+  // F9: Toggle SEB stealth mode — make window non-focusable so SEB doesn't detect interaction
+  globalShortcut.register('F9', () => {
+    if (mainWindow) {
+      const isFocusable = mainWindow.isFocusable ? mainWindow.isFocusable() : true;
+      mainWindow.setFocusable(!isFocusable);
+      mainWindow.webContents.send('shortcut-triggered', 'F9');
+    }
+  });
+
   // Handle IPC request for full screen capture
   ipcMain.handle('capture-screen', async () => {
     try {
@@ -268,8 +313,15 @@ app.whenReady().then(() => {
     if (mainWindow) mainWindow.setOpacity(opacity);
   });
 
+  // ── SEB STEALTH: Always use 'screen-saver' level so we stay above SEB fullscreen ──
   ipcMain.on('toggle-always-on-top', (event, isAlwaysOnTop) => {
-    if (mainWindow) mainWindow.setAlwaysOnTop(isAlwaysOnTop);
+    if (mainWindow) {
+      if (isAlwaysOnTop) {
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      } else {
+        mainWindow.setAlwaysOnTop(false);
+      }
+    }
   });
 
   ipcMain.on('minimize-window', () => {
