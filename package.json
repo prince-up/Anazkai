@@ -36,7 +36,7 @@
   },
   "build": {
     "appId": "com.anazk.app",
-    "productName": "AnazkAI",
+    "productName": "AudioService",
     "directories": {
       "output": "dist-electron"
     },

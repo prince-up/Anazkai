@@ -1,9 +1,6 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell } = require('electron');
 const path = require('path');
 
-// ── SEB STEALTH: Disguise process name so lockdown browsers don't flag it ──
-app.setName('SystemAudioService');
-
 // Register anazkai:// as a custom deep-link protocol (must be before app.whenReady)
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
