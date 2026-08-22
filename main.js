@@ -22,6 +22,8 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('enable-features', 'PulseaudioLoopbackForCast,WebRTCPipeWireCapturer');
 
 let mainWindow;
+let userWantsToClose = false;
+let sebWatchdogActive = true;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -83,8 +85,6 @@ function createWindow() {
   });
 
   // Pulse watchdog every 800ms — keeps re-asserting screen-saver level
-  // User can pause this via F2 (hide/show toggle handled separately)
-  let sebWatchdogActive = true;
   const sebWatchdog = setInterval(() => {
     if (mainWindow && !mainWindow.isDestroyed() && sebWatchdogActive) {
       // Only re-assert if window should be visible (not user-hidden via F2)
@@ -98,6 +98,30 @@ function createWindow() {
   // Expose watchdog toggle via IPC so F2 hide/show still works smoothly
   ipcMain.on('seb-watchdog-pause', () => { sebWatchdogActive = false; });
   ipcMain.on('seb-watchdog-resume', () => { sebWatchdogActive = true; });
+
+  // ── SEB ANTI-KILL: Prevent SEB from force-closing our app ──
+  mainWindow.on('close', (e) => {
+    if (!userWantsToClose) {
+      // SEB or OS is trying to kill us — block it and just hide instead
+      e.preventDefault();
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.hide();
+        // Re-show after a short delay so SEB thinks it closed us
+        setTimeout(() => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show();
+            mainWindow.setAlwaysOnTop(true, 'screen-saver');
+          }
+        }, 1500);
+      }
+    }
+  });
+
+  // IPC from the app's close button — this is the REAL user close
+  ipcMain.on('force-close-window', () => {
+    userWantsToClose = true;
+    if (mainWindow) mainWindow.close();
+  });
 
   mainWindow.on('closed', () => {
     clearInterval(sebWatchdog);
@@ -373,6 +397,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.on('close-window', () => {
+    userWantsToClose = true;
     if (mainWindow) mainWindow.close();
   });
 
