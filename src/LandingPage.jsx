@@ -38,12 +38,18 @@ function LandingPage() {
     return /Mac|iPhone|iPod|iPad/i.test(navigator.userAgent || navigator.platform);
   };
 
-  const getDownloadLink = () => {
-    return isMacUser()
-      ? "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg"
-      : "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
+ const getDownloadLink = (type = 'main') => {
+    if (isMacUser()) {
+      return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg";
+    }
+    
+    // Windows links based on type
+    if (type === 'audio') {
+      return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
+    }
+    
+    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
   };
-
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
@@ -3411,6 +3417,24 @@ class Solution {
                 </div>
                 <Download size={18} />
               </a>
+              <a 
+    href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={() => setShowDownloadModal(false)}
+    className="w-full py-3.5 sm:py-4 bg-[#0d2e27]/80 hover:bg-[#0d2e27] text-white rounded-2xl flex items-center justify-between px-5 sm:px-6 font-bold transition-all active:scale-[0.98] cursor-pointer shadow-lg border border-emerald-500/20"
+  >
+    <div className="flex items-center gap-3.5 text-left">
+      <svg className="w-5 h-5 text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M0 3.449L9.75 2.1v9.45H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.1zM11.25 1.899L24 0v11.55H11.25V1.899zM11.25 12.45H24v11.55l-12.75-1.9v-9.65z" />
+      </svg>
+      <div>
+        <span className="block text-xs sm:text-sm font-extrabold text-white">Download Anazk Part 1</span>
+        <span className="block text-[10px] text-emerald-100/90 font-medium">Audio Service (.exe) • Direct Download</span>
+      </div>
+    </div>
+    <Download size={18} />
+  </a>
 
               <a 
                 href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
@@ -3430,6 +3454,7 @@ class Solution {
                 </div>
                 <Download size={18} />
               </a>
+
 
               <div className="bg-[#eef8f3] p-5 rounded-2xl border border-emerald-600/10 text-left space-y-3.5">
                 <span className="block text-xs font-black text-emerald-850 uppercase tracking-wider flex items-center gap-1.5">

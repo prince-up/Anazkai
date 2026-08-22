@@ -9,3 +9,6 @@ release/
 .env
 .DS_Store
 *.local
+
+.vercel
+.env*.local

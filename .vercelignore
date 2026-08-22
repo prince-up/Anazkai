@@ -1,0 +1,13 @@
+﻿node_modules
+dist-electron
+release
+public/release
+dist
+.git
+*.exe
+*.zip
+*.dmg
+*.AppImage
+*.7z
+*.blockmap
+*.log
