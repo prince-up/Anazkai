@@ -93,7 +93,22 @@ const HARDCODED_PAID_GEMINI_KEY = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
 function getActiveGeminiKey() {
+  // 1. User's own custom key (highest priority — always try first)
+  const customKey = localStorage.getItem('custom_gemini_key');
+  if (customKey && customKey.trim().length > 10) return customKey.trim();
+  // 2. Internal hardcoded key (fallback)
   return HARDCODED_PAID_GEMINI_KEY;
+}
+
+// Returns both keys so we can retry with the other if one fails
+function getBothGeminiKeys() {
+  const customKey = (localStorage.getItem('custom_gemini_key') || '').trim();
+  const internalKey = HARDCODED_PAID_GEMINI_KEY;
+  // Return unique keys in priority order
+  const keys = [];
+  if (customKey.length > 10) keys.push(customKey);
+  if (internalKey && internalKey !== customKey) keys.push(internalKey);
+  return keys;
 }
 
 function getActiveGroqKey() {
@@ -391,7 +406,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const activeEngine = 'Gemini';
     
     // Hardcoded Keys (Both Paid and Trial use Gemini key)
-    const geminiKey = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    // getActiveGeminiKey() returns custom key first, then internal as fallback
+    const geminiKey = getActiveGeminiKey();
     const groqKey = '';
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
@@ -824,8 +840,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const activePlan = isTrial ? 'free_trial' : 'paid';
     const activeEngine = 'Gemini';
 
-    // Hardcoded Keys (Both Paid and Trial use Gemini key)
-    const geminiKey = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+    // getActiveGeminiKey() returns custom key first, then internal key as fallback
+    const geminiKey = getActiveGeminiKey();
     const groqKey = '';
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
