@@ -1497,7 +1497,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1508,7 +1508,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -2764,7 +2764,7 @@ class Solution {
 
         {/* Cards Frame */}
         <div className="max-w-5xl mx-auto w-full mt-8 sm:mt-12">
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 items-stretch">
             {/* Card 1: 1 Hour for ₹259 */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 hover:border-emerald-500/20 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left">
               <div className="space-y-3 sm:space-y-4">
@@ -2889,6 +2889,52 @@ class Solution {
                 Buy Credits
               </button>
             </div>
+
+            {/* Card 4: Lifetime Access for ₹349 */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#c99a4c]/30 hover:border-[#c99a4c]/60 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left relative">
+              {/* Lifetime Tag */}
+              <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#c99a4c] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                Lifetime
+              </div>
+
+              <div className="space-y-3 sm:space-y-4">
+                <span className="block text-xs sm:text-sm font-extrabold text-[#c99a4c] uppercase tracking-wider">Lifetime Access</span>
+                <div className="pt-1 sm:pt-2">
+                  {appliedCodeData ? (
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">
+                        ₹{Math.max(1, 349 - parseInt(appliedCodeData.discount_rupees, 10))}
+                      </span>
+                      <span className="text-gray-400 text-sm font-semibold line-through">₹349</span>
+                    </div>
+                  ) : (
+                    <span className="font-display font-black text-3xl sm:text-4xl text-[#0d2e27]">₹349</span>
+                  )}
+                  <span className="block text-gray-400 text-xs font-semibold mt-1">($4.19) one-time forever</span>
+                </div>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 font-semibold pt-3 sm:pt-4 border-t border-gray-50">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Unlimited AI sessions forever</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>Stealth Mode + all features</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-emerald-500 shrink-0" />
+                    <span>No expiry, no renewal needed</span>
+                  </li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => startCheckout('lifetime-349')}
+                className="w-full py-3.5 bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] hover:from-[#b8893b] hover:to-[#c99a4c] text-white rounded-full text-xs sm:text-sm font-black shadow-lg transition-all cursor-pointer"
+              >
+                Buy Lifetime — ₹349
+              </button>
+            </div>
+
           </div>
         </div>
       </section>
@@ -3348,7 +3394,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3367,7 +3413,7 @@ class Solution {
               </a>
 
               <a 
-                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AnazkAI-1.0.0-arm64.dmg" 
+                href="https://github.com/prince-up/anzak-downlaod-/releases/download/v1.0.0/AudioService-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}

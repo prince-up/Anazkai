@@ -28,6 +28,16 @@ export const SUBSCRIPTION_PLANS = [
     durationMinutes: 1200,
   },
   {
+    id: 'lifetime-349',
+    name: 'Anazk Lifetime Access',
+    priceInr: 349,
+    interval: 'one-time',
+    displayPrice: '₹349',
+    detail: 'Lifetime Access — One Time',
+    durationMinutes: 999999,
+    recommended: false,
+  },
+  {
     id: 'personal-mentor',
     name: '1-on-1 Personal Guidance Session',
     priceInr: 500,
