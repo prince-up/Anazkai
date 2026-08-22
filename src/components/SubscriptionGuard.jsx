@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Globe, Mail, Lock, AlertCircle, Gift, ShieldCheck, User, LogIn } from 'lucide-react';
+import { Globe, Mail, Lock, AlertCircle, Gift, ShieldCheck, User, LogIn, CreditCard, CheckCircle } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const FREE_TRIAL_DURATION_MINUTES = 5;
 const FREE_TRIAL_DURATION_MS = FREE_TRIAL_DURATION_MINUTES * 60 * 1000;
 
 const WEBSITE_LOGIN_URL = 'https://anazk.online/app-login';
+const RAZORPAY_KEY_ID = 'rzp_live_TQP7ZivrFvZ5cE';
 
 const VIP_EMAILS = [
   'admin@anazk.online',
@@ -397,6 +398,91 @@ const SubscriptionGuard = ({ children }) => {
     if (trialTimerRef.current) clearInterval(trialTimerRef.current);
   };
 
+  // 9. Handle Razorpay payment success — grant lifetime credits
+  const handlePaymentSuccess = async (paymentId) => {
+    if (!currentUser) return;
+    try {
+      setIsValidating(true);
+      setError('');
+      // Update Supabase: grant 999999 credits (lifetime access)
+      const { error: updateErr } = await supabase
+        .from('profiles')
+        .update({ credits_minutes: 999999 })
+        .eq('id', currentUser.id);
+      if (updateErr) throw updateErr;
+      // Also store payment ID in localStorage for reference
+      localStorage.setItem(`anazk_payment_id_${currentUser.id}`, paymentId);
+      setPlanType('paid');
+      setTimeRemaining(999999);
+      setIsAuthorized(true);
+      setError('');
+    } catch (err) {
+      setError(`Payment received ✅ but activation failed. Email supportanazkai@gmail.com with Payment ID: ${paymentId}`);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // 10. Open Razorpay checkout
+  const handleBuyNow = () => {
+    if (!currentUser) {
+      setError('Please log in first before purchasing.');
+      return;
+    }
+    setError('');
+
+    const openCheckout = () => {
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: 34900, // ₹349 in paise
+        currency: 'INR',
+        name: 'AnazkAI',
+        description: 'Lifetime Access — One Time Payment',
+        image: 'https://anazk.online/favicon.ico',
+        prefill: {
+          email: currentUser?.email || '',
+          name: currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '',
+        },
+        notes: {
+          user_id: currentUser?.id || '',
+          email: currentUser?.email || '',
+        },
+        theme: { color: '#0d2e27' },
+        handler: async (response) => {
+          await handlePaymentSuccess(response.razorpay_payment_id);
+        },
+        modal: {
+          ondismiss: () => setError('Payment cancelled. Click "Buy ₹349" to try again.'),
+          escape: true,
+          animation: true,
+        },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response) => {
+        setError('Payment failed: ' + (response.error?.description || 'Unknown error. Please try again.'));
+      });
+      rzp.open();
+    };
+
+    // Load Razorpay script if not already loaded
+    if (window.Razorpay) {
+      openCheckout();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = openCheckout;
+      script.onerror = () => {
+        // Fallback: open website pricing in browser
+        if (ipcRenderer) {
+          ipcRenderer.send('open-external-url', 'https://anazk.online/#pricing');
+        }
+        setError('Payment page failed to load. Opening website instead...');
+      };
+      document.body.appendChild(script);
+    }
+  };
+
   const deviceId = getDeviceId();
   const freeTrialUsed = localStorage.getItem(`anazk_free_trial_used_${deviceId}`) === 'true';
 
@@ -590,8 +676,34 @@ const SubscriptionGuard = ({ children }) => {
         )}
 
         <p className="mt-4 text-[10px] text-[#0d2e27]/50 font-bold text-center">
-          Buy minutes at <span className="text-[#c99a4c]">anazk.online</span>
+          Buy at <span className="text-[#c99a4c]">anazk.online</span> or pay below
         </p>
+
+        {/* Buy Now Button — always visible if user is logged in */}
+        {currentUser && (
+          <button
+            onClick={handleBuyNow}
+            disabled={isValidating}
+            className="w-full mt-3 py-3 px-4 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all shadow-lg bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] hover:from-[#b8893b] hover:to-[#c99a4c] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-[#c99a4c]/30"
+          >
+            {isValidating ? (
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            ) : (
+              <>
+                <CreditCard size={16} />
+                <span>Buy Lifetime Access — ₹349</span>
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Show Buy button even if not logged in (with prompt) */}
+        {!currentUser && (
+          <div className="w-full mt-3 p-3 rounded-xl border border-[#c99a4c]/40 bg-[#c99a4c]/5 text-center">
+            <p className="text-[11px] text-[#c99a4c] font-bold">💳 Login first, then buy ₹349 for lifetime access</p>
+          </div>
+        )}
+
       </div>
     </div>
   );
