@@ -24,6 +24,8 @@ app.commandLine.appendSwitch('enable-features', 'PulseaudioLoopbackForCast,WebRT
 let mainWindow;
 let userWantsToClose = false;
 let sebWatchdogActive = true;
+let isUserHiding = false;
+let isUserMinimizing = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -63,8 +65,12 @@ function createWindow() {
   mainWindow.setContentProtection(true);
 
   // ── SEB WATCHDOG: Prevent SEB from hiding or minimizing our window ──
-  // If SEB tries to minimize → immediately restore
+  // If SEB tries to minimize → immediately restore (unless user initiated)
   mainWindow.on('minimize', (e) => {
+    if (isUserMinimizing) {
+      isUserMinimizing = false;
+      return;
+    }
     e.preventDefault && e.preventDefault();
     setTimeout(() => {
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -74,8 +80,12 @@ function createWindow() {
     }, 100);
   });
 
-  // If SEB tries to hide → immediately show again
+  // If SEB tries to hide → immediately show again (unless user initiated)
   mainWindow.on('hide', () => {
+    if (isUserHiding) {
+      isUserHiding = false;
+      return;
+    }
     setTimeout(() => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.show();
@@ -115,12 +125,6 @@ function createWindow() {
         }, 1500);
       }
     }
-  });
-
-  // IPC from the app's close button — this is the REAL user close
-  ipcMain.on('force-close-window', () => {
-    userWantsToClose = true;
-    if (mainWindow) mainWindow.close();
   });
 
   mainWindow.on('closed', () => {
@@ -214,14 +218,15 @@ app.whenReady().then(() => {
       if (mainWindow.isVisible()) {
         // User wants to hide → pause watchdog so it doesn't immediately show again
         mainWindow.webContents.send('seb-watchdog-pause-renderer'); // notify renderer
-        ipcMain.emit('seb-watchdog-pause'); // pause internal watchdog
+        sebWatchdogActive = false; // pause internal watchdog
+        isUserHiding = true; // Set user action flag
         mainWindow.hide();
       } else {
         // User wants to show → resume watchdog
         mainWindow.show();
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.focus();
-        ipcMain.emit('seb-watchdog-resume');
+        sebWatchdogActive = true; // resume internal watchdog
       }
     }
   });
@@ -393,7 +398,10 @@ app.whenReady().then(() => {
   });
 
   ipcMain.on('minimize-window', () => {
-    if (mainWindow) mainWindow.minimize();
+    if (mainWindow) {
+      isUserMinimizing = true;
+      mainWindow.minimize();
+    }
   });
 
   ipcMain.on('close-window', () => {
