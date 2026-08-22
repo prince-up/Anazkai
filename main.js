@@ -60,7 +60,47 @@ function createWindow() {
   // Prevent window from being captured in screen shares, screenshots, or recordings
   mainWindow.setContentProtection(true);
 
+  // ── SEB WATCHDOG: Prevent SEB from hiding or minimizing our window ──
+  // If SEB tries to minimize → immediately restore
+  mainWindow.on('minimize', (e) => {
+    e.preventDefault && e.preventDefault();
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.restore();
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      }
+    }, 100);
+  });
+
+  // If SEB tries to hide → immediately show again
+  mainWindow.on('hide', () => {
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show();
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      }
+    }, 100);
+  });
+
+  // Pulse watchdog every 800ms — keeps re-asserting screen-saver level
+  // User can pause this via F2 (hide/show toggle handled separately)
+  let sebWatchdogActive = true;
+  const sebWatchdog = setInterval(() => {
+    if (mainWindow && !mainWindow.isDestroyed() && sebWatchdogActive) {
+      // Only re-assert if window should be visible (not user-hidden via F2)
+      if (mainWindow.isVisible()) {
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+        mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      }
+    }
+  }, 800);
+
+  // Expose watchdog toggle via IPC so F2 hide/show still works smoothly
+  ipcMain.on('seb-watchdog-pause', () => { sebWatchdogActive = false; });
+  ipcMain.on('seb-watchdog-resume', () => { sebWatchdogActive = true; });
+
   mainWindow.on('closed', () => {
+    clearInterval(sebWatchdog);
     mainWindow = null;
   });
 }
@@ -144,13 +184,20 @@ app.whenReady().then(() => {
     }
   });
 
+  // F2: Toggle visibility — pause watchdog during hide so it doesn't fight us
   globalShortcut.register('F2', () => {
     if (mainWindow) {
       if (mainWindow.isVisible()) {
+        // User wants to hide → pause watchdog so it doesn't immediately show again
+        mainWindow.webContents.send('seb-watchdog-pause-renderer'); // notify renderer
+        ipcMain.emit('seb-watchdog-pause'); // pause internal watchdog
         mainWindow.hide();
       } else {
+        // User wants to show → resume watchdog
         mainWindow.show();
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.focus();
+        ipcMain.emit('seb-watchdog-resume');
       }
     }
   });
