@@ -3911,24 +3911,20 @@ class Solution {
         {/* Floating Trigger Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className="pl-2.5 pr-5 py-2.5 bg-gradient-to-r from-[#4b52b2] to-[#5c64c7] hover:from-[#3d4399] hover:to-[#4b52b2] text-white rounded-full shadow-[0_12px_35px_rgba(75,82,178,0.38)] hover:shadow-[0_16px_45px_rgba(75,82,178,0.5)] border border-indigo-300/30 flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
+          className="p-1.5 pr-6 bg-gradient-to-b from-[#113a30] to-[#0a1f1a] hover:from-[#15463a] hover:to-[#0d2e27] border border-emerald-500/20 text-white rounded-full shadow-[0_8px_30px_rgba(13,46,39,0.5)] flex items-center gap-3.5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
           aria-label="Open AI Support Chatbot"
         >
           <div className="relative flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm text-white">
-              💬
-            </div>
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#4b52b2]"></span>
+            <img 
+              src="/penguin.jpg" 
+              alt="Anazk Avatar" 
+              className="w-9 h-9 rounded-full object-cover shadow-sm border border-emerald-400/30 group-hover:border-emerald-400/60 transition-colors"
+            />
+            <span className="absolute right-0 bottom-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0a1f1a] shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
           </div>
-          <div className="text-left">
-            <span className="font-extrabold text-xs tracking-tight block text-white">
-              {chatOpen ? 'Close Chat' : 'Chat with AI'}
-            </span>
-            <span className="text-[10px] text-indigo-100 font-semibold block leading-none">
-              {chatOpen ? 'Click to hide' : 'Online · Ask anything'}
-            </span>
-          </div>
+          <span className="font-display font-black text-sm tracking-wide text-white">
+            {chatOpen ? 'Close' : 'Anazk'}
+          </span>
         </button>
       </div>
 
