@@ -5,7 +5,7 @@ import {
   CheckCircle2, AlertCircle, Check, ArrowRight
 } from 'lucide-react';
 
-export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false }) {
+export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, isModal = false, onClose }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
@@ -131,14 +131,19 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false }
   };
 
   return (
-    <div className="min-h-screen bg-[#05130d] text-white flex flex-col justify-between font-sans relative overflow-x-hidden selection:bg-[#c99a4c] selection:text-white">
+    <div className={isModal ? "w-full flex items-center justify-center" : "min-h-screen bg-[#05130d] text-white flex flex-col justify-between font-sans relative overflow-x-hidden selection:bg-[#c99a4c] selection:text-white"}>
       
-      {/* Background Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />
+      {!isModal && (
+        <>
+          {/* Background Ambient Glows */}
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />
+        </>
+      )}
 
       {/* Top Navbar */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
+      {!isModal && (
+        <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-20">
         <div 
           onClick={onBackToHome}
           className="flex items-center gap-3 cursor-pointer group"
@@ -162,24 +167,37 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false }
             <span>Back to Home</span>
           </button>
         )}
-      </header>
+        </header>
+      )}
 
       {/* Main Centered Auth Blade Animation Container */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-2 relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-2 relative z-10 w-full">
         
         {/* Top Header Badge */}
-        <div className="text-center space-y-1.5 mb-6">
-          <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#c99a4c] block">
-            ANAZK AI · SECURE ACCESS
-          </span>
-          <h1 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
-            Login & Signup <span className="text-[#e2b365]">Portal</span>
-          </h1>
-        </div>
+        {!isModal && (
+          <div className="text-center space-y-1.5 mb-6">
+            <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#c99a4c] block">
+              ANAZK AI · SECURE ACCESS
+            </span>
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
+              Login & Signup <span className="text-[#e2b365]">Portal</span>
+            </h1>
+          </div>
+        )}
 
         {/* Outer Dual-Panel Card Container */}
-        <div className="w-full max-w-[880px] bg-[#fbf7ee] rounded-[32px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.65)] border border-emerald-500/20 overflow-hidden relative min-h-[520px] sm:min-h-[560px] flex flex-col md:flex-row transition-all duration-700">
+        <div className={`w-full max-w-[880px] bg-[#fbf7ee] rounded-[32px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.65)] border border-emerald-500/20 overflow-hidden relative min-h-[520px] sm:min-h-[560px] flex flex-col md:flex-row transition-all duration-700 ${isModal ? 'max-h-[90vh] overflow-y-auto' : ''}`}>
           
+          {isModal && onClose && (
+            <button 
+              onClick={onClose}
+              className="absolute top-4 right-4 z-50 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 p-2 rounded-full transition-all cursor-pointer backdrop-blur-sm"
+              title="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          )}
+
           {/* ══════════════════════════════════════════════════════════════════
               PANEL 1: CREAM / IVORY FORM PANEL (Sign In or Sign Up Form)
           ══════════════════════════════════════════════════════════════════ */}
@@ -448,9 +466,11 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false }
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-4 text-center text-xs text-gray-500 font-medium relative z-20">
-        © 2026 Anazk AI. All rights reserved. · Safe & Secure Encryption
-      </footer>
+      {!isModal && (
+        <footer className="w-full max-w-7xl mx-auto px-6 py-4 text-center text-xs text-gray-500 font-medium relative z-20">
+          © 2026 Anazk AI. All rights reserved. · Safe & Secure Encryption
+        </footer>
+      )}
 
     </div>
   );
