@@ -40,6 +40,7 @@ function createWindow() {
     backgroundColor: '#00000000',
     frame: false,        // Remove window frame
     focusable: true,     // Keep true so login/clicks work; we switch to false via IPC when needed
+    type: 'panel',       // MacOS: Prevents window from auto-switching spaces
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -167,6 +168,7 @@ app.on('open-url', (event, url) => {
 });
 
 app.whenReady().then(() => {
+  if (app.dock) app.dock.hide(); // Hide from macOS dock to prevent space auto-switching
   createWindow();
 
   // Handle deep link if app was launched directly via anazkai:// (Windows cold start)
