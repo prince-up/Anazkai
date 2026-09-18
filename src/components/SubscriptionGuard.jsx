@@ -347,6 +347,22 @@ const SubscriptionGuard = ({ children }) => {
 
     try {
       if (isLoginMode) {
+        // --- HARDCODED PREMIUM BYPASS FOR FRIENDS ---
+        if (cleanEmail === 'friends@anazk.online' && cleanPassword === 'anazkfriends') {
+          setCurrentUser({ 
+            id: 'premium-friend-id', 
+            email: cleanEmail, 
+            user_metadata: { full_name: 'Anazk Premium Friend' } 
+          });
+          setTimeRemaining('UNLIMITED');
+          setPlanType('vip');
+          setIsAuthorized(true);
+          setError('');
+          setIsValidating(false);
+          return;
+        }
+        // ---------------------------------------------
+
         const { data, error: authErr } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password: cleanPassword
