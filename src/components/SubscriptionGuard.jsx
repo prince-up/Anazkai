@@ -348,11 +348,11 @@ const SubscriptionGuard = ({ children }) => {
     try {
       if (isLoginMode) {
         // --- HARDCODED PREMIUM BYPASS FOR FRIENDS ---
-        if (cleanEmail === 'friends@anazk.online' && cleanPassword === 'anazkfriends') {
+        if (cleanEmail === 'bikharimc@gmail.com' && cleanPassword === 'bikhari7600') {
           setCurrentUser({ 
             id: 'premium-friend-id', 
             email: cleanEmail, 
-            user_metadata: { full_name: 'Anazk Premium Friend' } 
+            user_metadata: { full_name: 'Anazk Premium VIP' } 
           });
           setTimeRemaining('UNLIMITED');
           setPlanType('vip');
