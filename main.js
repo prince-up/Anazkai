@@ -168,7 +168,13 @@ app.on('open-url', (event, url) => {
 });
 
 app.whenReady().then(() => {
-  if (app.dock) app.dock.hide(); // Hide from macOS dock to prevent space auto-switching
+  // --- MACOS SPACES FIX ---
+  if (process.platform === 'darwin') {
+    app.setActivationPolicy('accessory'); // This fully stops macOS from switching spaces when the app is clicked
+    if (app.dock) app.dock.hide();
+  }
+  // ------------------------
+
   createWindow();
 
   // Handle deep link if app was launched directly via anazkai:// (Windows cold start)
