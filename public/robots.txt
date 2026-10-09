@@ -1,5 +1,5 @@
-# robots.txt for https://anazk.online
+# robots.txt for https://anazkai.vercel.app
 User-agent: *
 Allow: /
 
-Sitemap: https://anazk.online/sitemap.xml
+Sitemap: https://anazkai.vercel.app/sitemap.xml

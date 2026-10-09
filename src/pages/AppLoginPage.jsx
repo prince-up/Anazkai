@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import AuthPage from '../components/AuthPage';
 
 /**
- * AppLoginPage - Shown at /app-login on the website (anazk.online/app-login)
+ * AppLoginPage - Shown at /app-login on the website (anazkai.vercel.app/app-login)
  * 
  * Flow:
  * 1. User opens this page from the desktop app (via browser)

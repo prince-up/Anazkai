@@ -151,7 +151,7 @@ Anazk AI includes an end-to-end monetization and license verification engine:
 ```mermaid
 sequenceDiagram
     participant Candidate as Candidate
-    participant Web as Web Checkout (anazk.online)
+    participant Web as Web Checkout (anazkai.vercel.app)
     participant Razorpay as Razorpay / Stripe
     participant DB as Supabase PostgreSQL
     participant App as Anazk Desktop App

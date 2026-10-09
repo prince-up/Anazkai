@@ -9,8 +9,8 @@ const WEBSITE_LOGIN_URL = 'https://anazkai.vercel.app/app-login';
 const RAZORPAY_KEY_ID = 'rzp_live_TQP7ZivrFvZ5cE';
 
 const VIP_EMAILS = [
-  'admin@anazk.online',
-  'prince@anazk.online',
+  'admin@anazkai.vercel.app',
+  'prince@anazkai.vercel.app',
   'luckyprinceyadav1234@gmail.com'
 ];
 
