@@ -3200,7 +3200,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3218,7 +3218,7 @@ class Solution {
                 <Download size={18} />
               </a>
               <a 
-    href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+    href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
     target="_blank"
     rel="noopener noreferrer"
     onClick={() => setShowDownloadModal(false)}
