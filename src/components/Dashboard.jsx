@@ -50,7 +50,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
     {
       id: 1,
       sender: 'bot',
-      text: "👋 Hi! I'm the Anazk AI Support Assistant. How can I help you with your interview preparation or desktop setup today?",
+      text: "👋 Hi! I'm the Hide AI Support Assistant. How can I help you with your interview preparation or desktop setup today?",
       actions: [
         { label: '📄 How to use resume context?', query: 'how to upload and use resume in interview' },
         { label: '🛡️ Stealth hotkeys guide', query: 'what are hotkeys F1 F3 F4' },
@@ -250,11 +250,11 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
 
     setTimeout(() => {
       const q = queryText.toLowerCase();
-      let botReply = "I can help with that! Anazk AI provides active content-protection overlay for Google Meet, Zoom, and MS Teams.";
+      let botReply = "I can help with that! Hide AI provides active content-protection overlay for Google Meet, Zoom, and MS Teams.";
       let actions = [];
 
       if (q.includes('resume') || q.includes('cv') || q.includes('pdf')) {
-        botReply = "📄 You can upload your resume in PDF format under the 'CVs & Resumes' tab. Anazk AI will automatically reference your past projects, stack, and metrics when formulating answers during live interview rounds.";
+        botReply = "📄 You can upload your resume in PDF format under the 'CVs & Resumes' tab. Hide AI will automatically reference your past projects, stack, and metrics when formulating answers during live interview rounds.";
       } else if (q.includes('hotkey') || q.includes('f1') || q.includes('f3') || q.includes('f4') || q.includes('stealth')) {
         botReply = "🛡️ Stealth Hotkeys:\n• F1: Instant Full-screen OCR capture\n• F4: Snip region of coding question\n• F3: Stream AI answer directly to your invisible HUD overlay.";
       } else if (q.includes('credit') || q.includes('plan') || q.includes('price') || q.includes('buy') || q.includes('cost')) {
@@ -294,11 +294,11 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
         >
           <img 
             src="/penguin.jpg" 
-            alt="Anazk Logo" 
+            alt="HideAI Logo" 
             className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500/30 shadow-xs" 
           />
           <span className="font-display font-black text-xl text-[#0d2e27] tracking-tight flex items-center">
-            Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+            HideAI<span className="text-emerald-600 font-extrabold ml-1">AI</span>
           </span>
         </div>
 
@@ -346,11 +346,11 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
             >
               <img 
                 src="/penguin.jpg" 
-                alt="Anazk Logo" 
+                alt="HideAI Logo" 
                 className="w-9 h-9 rounded-full object-cover border-2 border-emerald-500/30 shadow-xs group-hover:scale-105 transition-transform" 
               />
               <span className="font-display font-black text-2xl text-[#0d2e27] tracking-tight flex items-center">
-                Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+                HideAI<span className="text-emerald-600 font-extrabold ml-1">AI</span>
               </span>
             </div>
             
@@ -715,7 +715,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   CVs & Resumes
                 </h1>
                 <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-600 mt-1">
-                  Upload your PDF / DOC resumes so Anazk AI tailors interview solutions directly to your background.
+                  Upload your PDF / DOC resumes so Hide AI tailors interview solutions directly to your background.
                 </p>
               </div>
 
@@ -738,7 +738,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                     No CVs or resumes uploaded
                   </h3>
                   <p className="text-xs sm:text-base text-gray-500 font-medium max-w-md">
-                    Upload your PDF resume to give Anazk AI instant background context.
+                    Upload your PDF resume to give Hide AI instant background context.
                   </p>
                 </div>
 
@@ -870,7 +870,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
           <div className="p-4 sm:p-8 md:p-12 max-w-4xl w-full mx-auto space-y-6 sm:space-y-7">
             <div>
               <h1 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-[#0d2e27] tracking-tight">
-                Getting Started with Anazk AI
+                Getting Started with Hide AI
               </h1>
               <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-600 mt-1">
                 Everything you need to master your stealth AI interview copilot.
@@ -945,7 +945,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-emerald-500/20">
                     <iframe
                       src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
-                      title="Anazk AI Stealth Setup Tutorial"
+                      title="Hide AI Stealth Setup Tutorial"
                       className="w-full h-full border-0"
                       allow="autoplay; fullscreen"
                       allowFullScreen
@@ -984,7 +984,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-inner relative border border-emerald-500/20">
                     <iframe
                       src="https://drive.google.com/file/d/16Z6DhnTilu8fbIba2bQidzM20kWGvslb/preview"
-                      title="Anazk AI Live Problem Solving Demo"
+                      title="Hide AI Live Problem Solving Demo"
                       className="w-full h-full border-0"
                       allow="autoplay; fullscreen"
                       allowFullScreen
@@ -992,10 +992,10 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   </div>
                   <div>
                     <h4 className="font-black text-base sm:text-lg text-gray-900 leading-snug">
-                      Live Coding & Problem Solving with Anazk AI Copilot
+                      Live Coding & Problem Solving with Hide AI Copilot
                     </h4>
                     <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-semibold mt-1">
-                      Watch Anazk AI analyze live problems with OCR capture and provide instantaneous speaking points and clean code.
+                      Watch Hide AI analyze live problems with OCR capture and provide instantaneous speaking points and clean code.
                     </p>
                   </div>
                 </div>
@@ -1032,14 +1032,14 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                 <div className="relative">
                   <img 
                     src="/penguin.jpg" 
-                    alt="Anazk AI Logo" 
+                    alt="Hide AI Logo" 
                     className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-400 object-cover shadow-[0_0_14px_rgba(16,185,129,0.45)]" 
                   />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#0d2e27] rounded-full"></span>
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
-                    Anazk AI Support
+                    Hide AI Support
                     <Sparkles size={13} className="text-emerald-300 animate-pulse" />
                   </h4>
                   <span className="text-[10px] text-emerald-200 font-semibold flex items-center gap-1">
@@ -1066,7 +1066,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                     {msg.sender === 'bot' && (
                       <img 
                         src="/penguin.jpg" 
-                        alt="Anazk AI" 
+                        alt="Hide AI" 
                         className="w-6 h-6 rounded-full border border-emerald-500 object-cover shrink-0 mb-1" 
                       />
                     )}
@@ -1109,7 +1109,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></span>
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                  <span>Anazk AI is typing...</span>
+                  <span>Hide AI is typing...</span>
                 </div>
               )}
               <div ref={chatMessagesEndRef} />
@@ -1122,7 +1122,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
             >
               <input 
                 type="text" 
-                placeholder="Ask anything about Anazk AI..." 
+                placeholder="Ask anything about Hide AI..." 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 className="flex-1 px-3.5 py-2 bg-gray-100/80 focus:bg-white border border-transparent focus:border-emerald-500 rounded-xl text-xs font-semibold outline-none transition-all text-gray-800"
@@ -1266,7 +1266,7 @@ export default function Dashboard({ user, onSignOut, onOpenPricing, onOpenDownlo
               <X size={18} />
             </button>
             <h3 className="font-display font-black text-xl sm:text-2xl text-gray-900 mb-1">Upload Resume (PDF / Doc)</h3>
-            <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-5">Upload your resume file so Anazk AI personalizes answers.</p>
+            <p className="text-xs sm:text-sm text-gray-500 font-semibold mb-5">Upload your resume file so Hide AI personalizes answers.</p>
 
             <form onSubmit={handleSaveResume} className="space-y-4">
               

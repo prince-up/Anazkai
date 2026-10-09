@@ -59,12 +59,12 @@ const AppLoginPage = () => {
           <h2 className="text-white text-xl font-black mb-2">Login Successful!</h2>
           <p className="text-gray-400 text-sm">
             {status === 'redirecting'
-              ? 'Redirecting you back to AnazkAI app...'
+              ? 'Redirecting you back to HideAI app...'
               : 'You can close this tab and return to the app.'}
           </p>
           {status === 'success' && (
             <p className="text-emerald-400 text-xs mt-4 font-bold">
-              ✓ Switch back to the AnazkAI desktop app. You are now logged in!
+              ✓ Switch back to the HideAI desktop app. You are now logged in!
             </p>
           )}
         </div>

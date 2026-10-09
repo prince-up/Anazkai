@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 
-console.log('[AnazkAI] 🚀 Application initializing at', new Date().toISOString());
-console.log('[AnazkAI] Protocol:', window.location?.protocol);
-console.log('[AnazkAI] UserAgent:', window.navigator?.userAgent);
-console.log('[AnazkAI] Electron require available:', !!window.require);
+console.log('[HideAI] 🚀 Application initializing at', new Date().toISOString());
+console.log('[HideAI] Protocol:', window.location?.protocol);
+console.log('[HideAI] UserAgent:', window.navigator?.userAgent);
+console.log('[HideAI] Electron require available:', !!window.require);
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -19,7 +19,7 @@ class GlobalErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[AnazkAI Fatal Error]', error, errorInfo);
+    console.error('[HideAI Fatal Error]', error, errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -50,7 +50,7 @@ class GlobalErrorBoundary extends React.Component {
             width: '100%'
           }}>
             <h2 style={{ color: '#ef4444', fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>
-              ⚠️ AnazkAI Encountered an Error
+              ⚠️ HideAI Encountered an Error
             </h2>
             <p style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '16px' }}>
               {this.state.error?.message || 'Unknown runtime error occurred.'}
@@ -99,11 +99,11 @@ class GlobalErrorBoundary extends React.Component {
 
 // Global window unhandled rejection catcher
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('[AnazkAI Unhandled Promise Rejection]', event.reason);
+  console.error('[HideAI Unhandled Promise Rejection]', event.reason);
 });
 
 window.addEventListener('error', (event) => {
-  console.error('[AnazkAI Window Error]', event.error || event.message);
+  console.error('[HideAI Window Error]', event.error || event.message);
 });
 
 const rootElement = document.getElementById('root');
@@ -116,5 +116,5 @@ if (rootElement) {
     </React.StrictMode>,
   );
 } else {
-  console.error('[AnazkAI] Root element not found!');
+  console.error('[HideAI] Root element not found!');
 }

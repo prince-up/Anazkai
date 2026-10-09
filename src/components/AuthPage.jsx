@@ -23,7 +23,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: isAppLogin ? 'https://anazk.online/app-login' : window.location.origin,
+          redirectTo: isAppLogin ? `${window.location.origin}/app-login` : window.location.origin,
           queryParams: {
             prompt: 'select_account'
           }
@@ -93,7 +93,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
                 }
               ]);
           } catch (profileErr) {
-            console.warn('[Anazk] Profile table note:', profileErr?.message);
+            console.warn('[HideAI] Profile table note:', profileErr?.message);
           }
         }
         
@@ -150,11 +150,11 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
         >
           <img 
             src="/penguin.jpg" 
-            alt="Anazk Logo" 
+            alt="HideAI Logo" 
             className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500/40 shadow-md group-hover:scale-105 transition-transform" 
           />
           <span className="font-display font-black text-2xl tracking-tight text-white flex items-center">
-            Anazk<span className="text-emerald-400 font-extrabold ml-1">AI</span>
+            Hide<span className="text-emerald-400 font-extrabold ml-1">AI</span>
           </span>
         </div>
 
@@ -177,7 +177,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
         {!isModal && (
           <div className="text-center space-y-1.5 mb-6">
             <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#c99a4c] block">
-              ANAZK AI · SECURE ACCESS
+              HIDE AI · SECURE ACCESS
             </span>
             <h1 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
               Login & Signup <span className="text-[#e2b365]">Portal</span>
@@ -373,7 +373,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
             <div className="pt-6 text-xs text-gray-700 font-semibold">
               {isLoginMode ? (
                 <p>
-                  New to ANAZK AI?{' '}
+                  New to HIDE AI?{' '}
                   <button 
                     type="button"
                     onClick={() => { setIsLoginMode(false); setAuthError(''); setAuthSuccess(''); }}
@@ -400,7 +400,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
 
 
           {/* ══════════════════════════════════════════════════════════════════
-              PANEL 2: DARK FOREST GREEN CURVED BLADE PANEL (Verso/Anazk Hero)
+              PANEL 2: DARK FOREST GREEN CURVED BLADE PANEL (Verso/HideAI Hero)
           ══════════════════════════════════════════════════════════════════ */}
           <div className={`w-full md:w-[42%] bg-gradient-to-br from-[#0c3b2e] via-[#08281f] to-[#041611] p-8 sm:p-12 lg:p-14 flex flex-col justify-center text-left relative overflow-hidden transition-all duration-700 ${
             isLoginMode 
@@ -415,7 +415,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
               
               {/* Brand Tag */}
               <span className="text-xs font-black uppercase tracking-[0.25em] text-[#e2b365]">
-                ANAZK AI
+                HIDE AI
               </span>
 
               {/* Hero Dynamic Message */}
@@ -468,7 +468,7 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
       {/* Footer */}
       {!isModal && (
         <footer className="w-full max-w-7xl mx-auto px-6 py-4 text-center text-xs text-gray-500 font-medium relative z-20">
-          © 2026 Anazk AI. All rights reserved. · Safe & Secure Encryption
+          © 2026 Hide AI. All rights reserved. · Safe & Secure Encryption
         </footer>
       )}
 

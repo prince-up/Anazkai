@@ -40,7 +40,7 @@ function LandingPage() {
 
  const getDownloadLink = (type = 'main') => {
     if (isMacUser()) {
-      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg";
+      return "https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg";
     }
     
     // Windows links based on type
@@ -48,7 +48,7 @@ function LandingPage() {
       return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
     }
     
-    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
+    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,7 +69,7 @@ function LandingPage() {
   const candidateReviews = [
     {
       name: "Luffy",
-      review: "Anazk AI is pure magic! During my technical round, it gave me instant bullet points for System Design without breaking a sweat. Cleared the round on the first try!",
+      review: "Hide AI is pure magic! During my technical round, it gave me instant bullet points for System Design without breaking a sweat. Cleared the round on the first try!",
       verified: true
     },
     {
@@ -84,7 +84,7 @@ function LandingPage() {
     },
     {
       name: "Sahil",
-      review: "Tried other tools with costly $70 monthly subscriptions and ditched them. Anazk AI pay-as-you-go credits fit exactly how I interview — no wasted money.",
+      review: "Tried other tools with costly $70 monthly subscriptions and ditched them. Hide AI pay-as-you-go credits fit exactly how I interview — no wasted money.",
       verified: true
     },
     {
@@ -99,7 +99,7 @@ function LandingPage() {
     },
     {
       name: "Aquib",
-      review: "I was super nervous about behavioral and situational questions. Anazk AI framed my answers with the STAR method perfectly in real-time.",
+      review: "I was super nervous about behavioral and situational questions. Hide AI framed my answers with the STAR method perfectly in real-time.",
       verified: true
     },
     {
@@ -217,7 +217,7 @@ function LandingPage() {
         key: keyId,
         amount: data.amount,
         currency: data.currency || 'INR',
-        name: 'Anazk AI',
+        name: 'Hide AI',
         description: '1-on-1 Personal Guidance Session with Mentor',
         order_id: orderId,
         handler: async function (paymentResponse) {
@@ -346,7 +346,7 @@ function LandingPage() {
         key: keyId,
         amount: data.amount,
         currency: data.currency || 'INR',
-        name: 'Anazk AI',
+        name: 'Hide AI',
         description: `${plan.name} Subscription`,
         order_id: orderId,
         handler: async function (response) {
@@ -460,7 +460,7 @@ function LandingPage() {
                 }
               ]);
           } catch (profileErr) {
-            console.warn('[Anazk] Profile table note:', profileErr?.message);
+            console.warn('[HideAI] Profile table note:', profileErr?.message);
           }
         }
         
@@ -640,9 +640,9 @@ function LandingPage() {
             messages: [
               {
                 role: 'system',
-                content: `You are Fin, the official AI support assistant for Anazk AI (anazk.online). You are helpful, friendly, and concise.
-Knowledge Base for Anazk AI:
-- Anazk AI is a real-time AI interview copilot with an undetectable invisible desktop overlay that listens to interviewers via Whisper AI and displays instant, high-scoring answers without switching windows.
+                content: `You are Fin, the official AI support assistant for Hide AI (anazk.online). You are helpful, friendly, and concise.
+Knowledge Base for Hide AI:
+- Hide AI is a real-time AI interview copilot with an undetectable invisible desktop overlay that listens to interviewers via Whisper AI and displays instant, high-scoring answers without switching windows.
 - Invisibility & Stealth: Hardware-level window capture protection ensures it is 100% invisible when sharing screen on Zoom, Google Meet, Microsoft Teams, Webex, and Discord.
 - Pricing & Credits: Only pay-as-you-go credits. 1-hour session is ₹259, 2-hour session is ₹500, and 10 interview sessions is ₹2,500.
 - 1-on-1 Personal Mentor Guidance: ₹500 session fee covering Resume Reviews, Job Portal Optimization, and tailored strategy. Support Email: supportanazkai@gmail.com.
@@ -754,7 +754,7 @@ Format answers cleanly with short bullet points.`
       query.includes('invisible') || query.includes('safe') || query.includes('share')
     ) {
       return {
-        text: "🛡️ **100% Private & Undetectable:**\n\nAnazk AI runs natively at your OS level and intercepts low-level window draw calls:\n• **Screen Share Invisible:** When you share your entire screen on Zoom, Google Meet, Teams, or Discord, interviewers ONLY see your regular desktop—never the Anazk AI overlay.\n• **No Taskbar/Dock Presence:** Operates as a background system service.\n• **Tab-Switch Safe:** Bypasses browser tab-change listeners on HackerRank, LeetCode, and CoderPad.",
+        text: "🛡️ **100% Private & Undetectable:**\n\nHide AI runs natively at your OS level and intercepts low-level window draw calls:\n• **Screen Share Invisible:** When you share your entire screen on Zoom, Google Meet, Teams, or Discord, interviewers ONLY see your regular desktop—never the Hide AI overlay.\n• **No Taskbar/Dock Presence:** Operates as a background system service.\n• **Tab-Switch Safe:** Bypasses browser tab-change listeners on HackerRank, LeetCode, and CoderPad.",
         actions: [
           { label: '🛡️ View Stealth Mode Details', onClick: () => { scrollToSection('privacy'); setChatOpen(false); } }
         ]
@@ -768,7 +768,7 @@ Format answers cleanly with short bullet points.`
       query.includes('setup') || query.includes('exe') || query.includes('dmg')
     ) {
       return {
-        text: "📥 **Anazk AI Desktop App:**\n\n• Available for **Windows 10/11 (.exe)** and **macOS (.dmg / .zip)**.\n• Lightweight and installs in under 30 seconds.\n• Uses global shortcut keys to toggle the assistant quietly during calls.",
+        text: "📥 **Hide AI Desktop App:**\n\n• Available for **Windows 10/11 (.exe)** and **macOS (.dmg / .zip)**.\n• Lightweight and installs in under 30 seconds.\n• Uses global shortcut keys to toggle the assistant quietly during calls.",
         actions: [
           { label: '👉 Go to Pricing Plans', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } }
         ]
@@ -781,7 +781,7 @@ Format answers cleanly with short bullet points.`
       query.includes('code') || query.includes('token')
     ) {
       return {
-        text: "🔑 **License Key & Activation:**\n\n• Once your payment completes, your license key is displayed instantly on screen and linked to your email.\n• Open the Anazk AI Desktop App, go to **Settings → License Key**, paste your key, and you're ready to go!",
+        text: "🔑 **License Key & Activation:**\n\n• Once your payment completes, your license key is displayed instantly on screen and linked to your email.\n• Open the Hide AI Desktop App, go to **Settings → License Key**, paste your key, and you're ready to go!",
         actions: [
           { label: '💳 View Pricing & Get Key', onClick: () => { scrollToSection('pricing'); setChatOpen(false); } }
         ]
@@ -803,7 +803,7 @@ Format answers cleanly with short bullet points.`
 
     // Default response
     return {
-      text: "I'm your Anazk AI website assistant! What would you like help with?",
+      text: "I'm your Hide AI website assistant! What would you like help with?",
       actions: [
         { label: '💳 How to buy credits?', query: 'how to buy credits' },
         { label: '🧭 Guide me around website', query: 'where to go on website' },
@@ -905,7 +905,7 @@ Format answers cleanly with short bullet points.`
       if (q.includes('price') || q.includes('buy') || q.includes('cost')) {
         ans = '"Sandbox Assistant: To purchase credits, head to the Pricing section below! We offer starter credits at ₹259 with instant key delivery. All unused minutes stay valid forever."';
       } else if (q.includes('undetect') || q.includes('zoom') || q.includes('meet') || q.includes('invisible')) {
-        ans = '"Sandbox Assistant: Anazk AI uses custom graphics driver hooks so that its overlay is 100% invisible on Zoom, Teams, and Google Meet screen share sessions. Only you can see it on your screen."';
+        ans = '"Sandbox Assistant: Hide AI uses custom graphics driver hooks so that its overlay is 100% invisible on Zoom, Teams, and Google Meet screen share sessions. Only you can see it on your screen."';
       } else if (q.includes('how') || q.includes('work') || q.includes('app')) {
         ans = '"Sandbox Assistant: The app runs in the background, listening to audio via virtual input devices and capturing IDE screens. It then shows bullet point suggestions directly on your screen."';
       } else {
@@ -1071,16 +1071,16 @@ class Solution {
 
   const faqs = [
     {
-      q: "Is Anazk AI really undetectable on screen sharing platforms?",
-      a: "Yes. Anazk AI uses low-level system APIs to protect its window graphics. When you share your screen via Zoom, Microsoft Teams, Google Meet, or Slack, the overlay window is completely invisible to the audience, while remaining perfectly visible to you."
+      q: "Is Hide AI really undetectable on screen sharing platforms?",
+      a: "Yes. Hide AI uses low-level system APIs to protect its window graphics. When you share your screen via Zoom, Microsoft Teams, Google Meet, or Slack, the overlay window is completely invisible to the audience, while remaining perfectly visible to you."
     },
     {
       q: "Does it capture code from my IDE or browser?",
-      a: "Absolutely. With our screen-capture engine, you can capture full-screen or custom regions. If a coding question is present on your screen, Anazk AI extracts it instantly and generates optimized code solutions."
+      a: "Absolutely. With our screen-capture engine, you can capture full-screen or custom regions. If a coding question is present on your screen, Hide AI extracts it instantly and generates optimized code solutions."
     },
     {
       q: "How does the real-time speech transcription work?",
-      a: "Anazk AI records system audio or microphone input in the background. It transcribes audio immediately using Whisper models, and feeds the context to your assistant model (Groq) for near-instant answers."
+      a: "Hide AI records system audio or microphone input in the background. It transcribes audio immediately using Whisper models, and feeds the context to your assistant model (Groq) for near-instant answers."
     },
     {
       q: "Can I use my own custom AI models or API Keys?",
@@ -1108,7 +1108,7 @@ class Solution {
         <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={22} />
         <div>
           <h2 className="font-bold text-gray-900">Subscription complete</h2>
-          <p className="mt-1 text-sm text-gray-600">Your Anazk AI plan is active. Download the Windows app to get started.</p>
+          <p className="mt-1 text-sm text-gray-600">Your Hide AI plan is active. Download the Windows app to get started.</p>
           <button onClick={() => setShowDownloadModal(true)} className="mt-3 rounded-full bg-gray-900 px-5 py-2 text-sm font-bold text-white">Download Windows app</button>
         </div>
       </div>
@@ -1130,7 +1130,7 @@ class Solution {
           <Check size={32} />
         </div>
         <h2 className="text-2xl font-black text-[#0d2e27] mb-2">Payment Successful!</h2>
-        <p className="text-gray-500 mb-6 text-sm">Here is your License Key. Copy this and paste it into the Anazk Desktop App to start your session.</p>
+        <p className="text-gray-500 mb-6 text-sm">Here is your License Key. Copy this and paste it into the HideAI Desktop App to start your session.</p>
         
         <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center justify-between mb-8">
           <code className="text-emerald-700 font-mono font-bold text-lg select-all">{generatedKey}</code>
@@ -1168,11 +1168,11 @@ class Solution {
           >
             <img 
               src="/penguin.jpg" 
-              alt="Anazk AI Logo" 
+              alt="Hide AI Logo" 
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500/30 object-cover shadow-xs group-hover:scale-105 transition-transform" 
             />
             <span className={`font-display font-black text-xl sm:text-2xl tracking-tight flex items-center ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-              Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+              HideAI<span className="text-emerald-600 font-extrabold ml-1">AI</span>
             </span>
           </div>
 
@@ -1202,7 +1202,7 @@ class Solution {
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
                         <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          Anazk AI Copilot
+                          Hide AI Copilot
                         </h3>
                         <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Real-time AI assistance, invisible screen-share overlay, and intelligent live problem solving.
@@ -1242,7 +1242,7 @@ class Solution {
                           </li>
                           <li>
                             <button onClick={() => scrollToSection('why-anazk')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Why Anazk AI
+                              Why Hide AI
                             </button>
                           </li>
                         </ul>
@@ -1265,7 +1265,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1276,7 +1276,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1325,7 +1325,7 @@ class Solution {
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
                         <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          Anazk AI Pricing
+                          Hide AI Pricing
                         </h3>
                         <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Pay only for what you use. Instant license key generation & lifetime credit validity.
@@ -1411,7 +1411,7 @@ class Solution {
                     <div className="col-span-5 pr-2 space-y-3.5">
                       <div className="space-y-1.5">
                         <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          More from Anazk AI
+                          More from Hide AI
                         </h3>
                         <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
                           Company info, contact, FAQs, and the legal details — everything else in one place.
@@ -1503,7 +1503,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1514,7 +1514,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1625,7 +1625,7 @@ class Solution {
                 <button onClick={() => scrollToSection('features')} className="block py-1 text-left w-full">Features</button>
                 <button onClick={() => scrollToSection('industries')} className="block py-1 text-left w-full">All Industries</button>
                 <button onClick={() => scrollToSection('privacy')} className="block py-1 text-left w-full">Invisible Overlay</button>
-                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">Why Anazk AI</button>
+                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">Why Hide AI</button>
               </div>
             )}
           </div>
@@ -1737,7 +1737,7 @@ class Solution {
           </h1>
 
           <p className={`text-sm sm:text-[18px] lg:text-[20px] max-w-2xl font-semibold leading-relaxed transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
-            Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
+            Stay present in the conversation while Hide AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
           </p>
 
 
@@ -1808,7 +1808,7 @@ class Solution {
                       className="w-full h-full min-h-[240px] border-0 hidden"
                       allow="autoplay"
                       allowFullScreen
-                      title="Anazk AI Live Demo"
+                      title="Hide AI Live Demo"
                     ></iframe>
                   </div>
 
@@ -1847,7 +1847,7 @@ class Solution {
 
                     {/* Pro Tip Card */}
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 text-emerald-900 p-2.5 rounded-xl text-[10px] leading-relaxed font-medium">
-                      🎯 <strong>Stealth guidance:</strong> Anazk AI listens silently and displays talking points in real-time.
+                      🎯 <strong>Stealth guidance:</strong> Hide AI listens silently and displays talking points in real-time.
                     </div>
 
                     {/* Action Controls */}
@@ -1898,13 +1898,13 @@ class Solution {
 
 
 
-      {/* Why Anazk AI Showcase Section */}
+      {/* Why Hide AI Showcase Section */}
       <section id="why-anazk" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1320px] mx-auto space-y-28">
         
         {/* Section Heading */}
         <div className="text-center">
           <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
-            Why Anazk AI?
+            Why Hide AI?
           </h2>
         </div>
 
@@ -1912,7 +1912,7 @@ class Solution {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           <div className="lg:col-span-6 space-y-4 text-left">
             <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
+              WHY HIDE AI
             </span>
             <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
               Job-Winning Interview Answers
@@ -1957,7 +1957,7 @@ class Solution {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
             <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
+              WHY HIDE AI
             </span>
             <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
               Effortless interaction
@@ -1996,7 +1996,7 @@ class Solution {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           <div className="lg:col-span-6 space-y-4 text-left">
             <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
+              WHY HIDE AI
             </span>
             <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
               Robust Privacy
@@ -2074,7 +2074,7 @@ class Solution {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
             <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
+              WHY HIDE AI
             </span>
             <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
               Personalized Experience
@@ -2123,7 +2123,7 @@ class Solution {
               Full Coding Interview Support
             </h3>
             <p className="text-gray-600 text-sm font-medium leading-relaxed">
-              Use Anazk AI for advanced tech assessments. It listens to coding discussions or captures the screen coordinates to read LeetCode-style descriptions, generating highly optimized solutions on the fly.
+              Use Hide AI for advanced tech assessments. It listens to coding discussions or captures the screen coordinates to read LeetCode-style descriptions, generating highly optimized solutions on the fly.
             </p>
           </div>
           <div className="bg-[#0b1227] rounded-2xl p-4 border border-white/5 font-mono text-[10px] text-gray-300">
@@ -2274,7 +2274,7 @@ class Solution {
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Anazk AI Overlay</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Hide AI Overlay</span>
                   </div>
                   {/* What should I say? Blue badge on top right */}
                   <span className="px-3 py-1 bg-[#0b48a3] border border-blue-500/30 text-white font-extrabold text-[10px] rounded-full shadow-xs">
@@ -2396,7 +2396,7 @@ class Solution {
                 100% Private and Undetectable
               </h2>
               <p className="text-emerald-100/80 text-base leading-relaxed font-medium">
-                Anazk AI runs natively on your system and intercepts window draw calls. This ensures that the assistant overlay is invisible to all screen recorders, browsers, and screensharing software.
+                Hide AI runs natively on your system and intercepts window draw calls. This ensures that the assistant overlay is invisible to all screen recorders, browsers, and screensharing software.
               </p>
             </div>
 
@@ -2443,7 +2443,7 @@ class Solution {
                   Works For All Industries
                 </h2>
                 <p className="text-gray-300 font-medium text-sm sm:text-base leading-relaxed">
-                  From first application to final offer, <span className="text-emerald-400 font-bold">Anazk AI</span> empowers job seekers to succeed, faster, smarter, and with confidence.
+                  From first application to final offer, <span className="text-emerald-400 font-bold">Hide AI</span> empowers job seekers to succeed, faster, smarter, and with confidence.
                 </p>
               </div>
 
@@ -2538,12 +2538,12 @@ class Solution {
                       </span>
                     </div>
 
-                    {/* Quiet Anazk AI Overlay Assistant Card */}
+                    {/* Quiet Hide AI Overlay Assistant Card */}
                     <div className="bg-black/85 backdrop-blur-md border border-emerald-400/40 p-3 rounded-xl shadow-lg my-auto z-10 text-left space-y-1.5 animate-in fade-in zoom-in-95 duration-200">
                       <div className="flex items-center justify-between pb-1 border-b border-emerald-500/20">
                         <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
                           <Sparkles size={11} />
-                          Anazk AI Speaking Points ({selectedIndustry})
+                          Hide AI Speaking Points ({selectedIndustry})
                         </span>
                         <span className="text-[9px] text-gray-400 font-mono">Invisible Overlay</span>
                       </div>
@@ -2566,7 +2566,7 @@ class Solution {
                 {/* Bottom Call Controls Strip */}
                 <div className="px-4 py-2.5 bg-black/70 rounded-xl border border-white/10 flex items-center justify-between text-xs text-gray-400">
                   <div className="font-mono text-[11px] text-gray-300 font-semibold">
-                    1:35 PM | Anazk AI Protected Session
+                    1:35 PM | Hide AI Protected Session
                   </div>
                   <div className="flex items-center gap-2 text-white">
                     <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs">🎤</span>
@@ -2601,7 +2601,7 @@ class Solution {
               Real Stories From <span className="text-[#15803d]">Real Interviews</span>
             </h2>
             <p className="text-gray-500 font-semibold text-xs sm:text-sm md:text-base max-w-xl mx-auto">
-              See how Anazk AI helps candidates feel more confident and prepared.
+              See how Hide AI helps candidates feel more confident and prepared.
             </p>
           </div>
 
@@ -2896,7 +2896,7 @@ class Solution {
               </button>
             </div>
 
-            {/* Card 4: Anazk Part 1 for ₹349 */}
+            {/* Card 4: HideAI Part 1 for ₹349 */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#c99a4c]/30 hover:border-[#c99a4c]/60 hover:shadow-xl shadow-sm space-y-5 sm:space-y-6 flex flex-col justify-between transition-all text-left relative">
               {/* New Tag */}
               <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 bg-[#c99a4c] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
@@ -2904,7 +2904,7 @@ class Solution {
               </div>
 
               <div className="space-y-3 sm:space-y-4">
-                <span className="block text-xs sm:text-sm font-extrabold text-[#c99a4c] uppercase tracking-wider">Anazk Part 1</span>
+                <span className="block text-xs sm:text-sm font-extrabold text-[#c99a4c] uppercase tracking-wider">HideAI Part 1</span>
                 <div className="pt-1 sm:pt-2">
                   {appliedCodeData ? (
                     <div className="flex items-baseline gap-2">
@@ -2961,7 +2961,7 @@ class Solution {
               Your Complete Interview Success <span className="text-[#10b981]">Toolkit</span>
             </h2>
             <p className="text-gray-500 font-semibold text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
-              From AI interview assistance to expert career guidance, Anazk AI helps you succeed at every stage of the hiring process.
+              From AI interview assistance to expert career guidance, Hide AI helps you succeed at every stage of the hiring process.
             </p>
           </div>
 
@@ -3053,8 +3053,8 @@ class Solution {
           {/* Top Brand Logo & Tagline */}
           <div className="space-y-3 flex flex-col items-center">
             <div className="flex items-center gap-2.5">
-              <img src="/penguin.jpg" alt="Anazk AI Logo" className="w-10 h-10 rounded-2xl border-2 border-emerald-500/30 object-cover shadow-sm" />
-              <span className="font-display text-2xl font-black tracking-tight text-[#0d2e27]">Anazk AI</span>
+              <img src="/penguin.jpg" alt="Hide AI Logo" className="w-10 h-10 rounded-2xl border-2 border-emerald-500/30 object-cover shadow-sm" />
+              <span className="font-display text-2xl font-black tracking-tight text-[#0d2e27]">Hide AI</span>
             </div>
             <p className="text-gray-600 font-semibold text-xs sm:text-sm max-w-xl mx-auto">
               Real-time AI interview copilot with an invisible overlay. Pay only for the minutes you use.
@@ -3084,8 +3084,8 @@ class Solution {
                 <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
-                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
-                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
+                <li><a href="https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -3163,7 +3163,7 @@ class Solution {
 
           {/* Copyright & Made in India */}
           <div className="space-y-1 text-xs font-bold text-gray-500">
-            <p>© 2026 Anazk AI · All rights reserved</p>
+            <p>© 2026 Hide AI · All rights reserved</p>
             <p className="text-emerald-700 font-extrabold">Made In India 🇮🇳</p>
           </div>
 
@@ -3195,12 +3195,12 @@ class Solution {
             >
               <X size={16} />
             </button>
-            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-2 pr-8">Get Anazk AI</h3>
+            <h3 className="font-display font-black text-xl sm:text-2xl text-[#0d2e27] mb-2 pr-8">Get Hide AI</h3>
             <p className="text-gray-500 text-xs font-semibold mb-5 sm:mb-6">Install our secure desktop client. Bypasses screen captures automatically.</p>
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3229,7 +3229,7 @@ class Solution {
         <path d="M0 3.449L9.75 2.1v9.45H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.1zM11.25 1.899L24 0v11.55H11.25V1.899zM11.25 12.45H24v11.55l-12.75-1.9v-9.65z" />
       </svg>
       <div>
-        <span className="block text-xs sm:text-sm font-extrabold text-white">Download Anazk Part 1</span>
+        <span className="block text-xs sm:text-sm font-extrabold text-white">Download HideAI Part 1</span>
         <span className="block text-[10px] text-emerald-100/90 font-medium">Audio Service (.exe) • Direct Download</span>
       </div>
     </div>
@@ -3237,7 +3237,7 @@ class Solution {
   </a>
 
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
+                href="https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3264,24 +3264,24 @@ class Solution {
                 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 1: Move to Applications</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **AnazkAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **HideAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <span className="text-xs text-gray-800 font-bold block">Step 2: Bypass Gatekeeper / "Damaged" Warnings</span>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    xattr -cr /Applications/AnazkAI.app
+                    xattr -cr /Applications/HideAI.app
                   </div>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    codesign --force --deep --sign - /Applications/AnazkAI.app
+                    codesign --force --deep --sign - /Applications/HideAI.app
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 3: Allow Screen Recording Permissions</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AnazkAI** to **ON** to enable screen overlay/transcriptions.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **HideAI** to **ON** to enable screen overlay/transcriptions.</span>
                 </div>
               </div>
             </div>
@@ -3549,7 +3549,7 @@ class Solution {
 
               <div className="space-y-4 text-sm sm:text-base text-gray-700 font-medium leading-relaxed">
                 <p className="font-semibold text-gray-900">
-                  By using Anazk AI, you agree to the following terms:
+                  By using Hide AI, you agree to the following terms:
                 </p>
 
                 <ul className="space-y-3.5 pl-2">
@@ -3571,7 +3571,7 @@ class Solution {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-emerald-600 font-bold text-lg leading-none mt-1">•</span>
-                    <span>Anazk AI reserves the right to suspend or terminate accounts that violate these terms.</span>
+                    <span>Hide AI reserves the right to suspend or terminate accounts that violate these terms.</span>
                   </li>
                 </ul>
 
@@ -3603,7 +3603,7 @@ class Solution {
             <p className="text-gray-400 text-xs font-semibold mb-3 sm:mb-4">Last Update: August 30, 2024</p>
             
             <div className="flex-1 overflow-y-auto pr-2 text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 no-scrollbar">
-              <p>This Privacy Notice for Anazk AI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at Anazk AI-ai.com, or any website of ours that links to this Privacy Notice.</p>
+              <p>This Privacy Notice for Hide AI d.o.o. (“we,” “us,” or “our”), describes how and why we might access, collect, store, use, and/or share (“process”) your personal information when you use our services (“Services”), including when you visit our website at Hide AI-ai.com, or any website of ours that links to this Privacy Notice.</p>
               
               <div className="font-bold text-gray-800 pt-2 text-sm border-t border-gray-100">SUMMARY OF KEY POINTS</div>
               <p>We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. We do not process sensitive personal information, and we do not collect any information from third parties.</p>
@@ -3638,7 +3638,7 @@ class Solution {
             
             <div className="text-xs text-gray-600 font-medium leading-relaxed space-y-3.5 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
               <p>Yes, we offer a 7-day refund window for accidental purchases or unused purchases. If you haven't used the service (for example, by activating a call session), you can request a full refund within 7 days of purchase via the money refund form in your dashboard.</p>
-              <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because Anazk AI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
+              <p>Our refund policy only covers unused purchases. A purchase is considered "unused" only if no credit from it has been used. Because Hide AI is a digital service that begins delivery immediately when a paid session is activated, we are generally unable to provide refunds once the service has been used.</p>
               <p>If any credit has been used, the purchase is no longer eligible for a refund. We do not issue partial refunds for unused credits.</p>
               <p>We encourage everybody to test the tool thoroughly before purchasing.</p>
               <p className="font-bold text-[#0d2e27]">Important: This applies to one refund per person/user (not per account). If you've already received a refund, later purchases aren't eligible.</p>
@@ -3917,13 +3917,13 @@ class Solution {
           <div className="relative flex items-center justify-center">
             <img 
               src="/penguin.jpg" 
-              alt="Anazk Avatar" 
+              alt="HideAI Avatar" 
               className="w-9 h-9 rounded-full object-cover shadow-sm border border-emerald-400/30 group-hover:border-emerald-400/60 transition-colors"
             />
             <span className="absolute right-0 bottom-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0a1f1a] shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
           </div>
           <span className="font-display font-black text-sm tracking-wide text-white">
-            {chatOpen ? 'Close' : 'Anazk'}
+            {chatOpen ? 'Close' : 'HideAI'}
           </span>
         </button>
       </div>
