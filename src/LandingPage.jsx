@@ -48,7 +48,7 @@ function LandingPage() {
       return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
     }
     
-    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe";
+    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1265,7 +1265,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1503,7 +1503,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
+                              href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -3084,7 +3084,7 @@ class Solution {
                 <li><button onClick={() => setShowSignInModal(true)} className="hover:text-emerald-600 transition-colors text-left cursor-pointer">Free Trial</button></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
-                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
+                <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
                 <li><a href="https://github.com/prince-up/HideAIai/releases/download/v1.0.6/AudioService-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
@@ -3200,7 +3200,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/HideAI.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
