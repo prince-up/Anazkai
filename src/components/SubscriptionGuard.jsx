@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient';
 const FREE_TRIAL_DURATION_MINUTES = 5;
 const FREE_TRIAL_DURATION_MS = FREE_TRIAL_DURATION_MINUTES * 60 * 1000;
 
-const WEBSITE_LOGIN_URL = 'https://anazk.online/app-login';
+const WEBSITE_LOGIN_URL = 'https://anazkai.vercel.app/app-login';
 const RAZORPAY_KEY_ID = 'rzp_live_TQP7ZivrFvZ5cE';
 
 const VIP_EMAILS = [
@@ -201,7 +201,7 @@ const SubscriptionGuard = ({ children }) => {
               setPlanType('free');
               setIsAuthorized(false);
               setTimeRemaining(0);
-              setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
+              setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
             }
           } else {
             // Fresh trial — start now
@@ -216,7 +216,7 @@ const SubscriptionGuard = ({ children }) => {
           setPlanType('free');
           setIsAuthorized(false);
           setTimeRemaining(0);
-          setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
+          setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
         }
       }
 
@@ -244,7 +244,7 @@ const SubscriptionGuard = ({ children }) => {
         setTimeRemaining(credits);
         if (credits <= 0 && planType === 'paid') {
           setIsAuthorized(false);
-          setError('Your account is out of credits. Please purchase more minutes at anazk.online');
+          setError('Your account is out of credits. Please purchase more minutes at anazkai.vercel.app');
         }
       }
     } catch (e) {}
@@ -267,7 +267,7 @@ const SubscriptionGuard = ({ children }) => {
           setIsAuthorized(false);
           setPlanType('free');
           setTimeRemaining(0);
-          setError('Free trial ended. Please log in and purchase minutes at anazk.online');
+          setError('Free trial ended. Please log in and purchase minutes at anazkai.vercel.app');
           return;
         }
         setTimeRemaining(Math.ceil(remaining / 60000));
@@ -295,7 +295,7 @@ const SubscriptionGuard = ({ children }) => {
           setIsAuthorized(false);
           setPlanType('free');
           setTimeRemaining(0);
-          setError('Your 5-min free trial has ended. Please purchase minutes at anazk.online');
+          setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
           return;
         }
         setTimeRemaining(Math.ceil(remaining / 60000));
@@ -454,7 +454,7 @@ const SubscriptionGuard = ({ children }) => {
         currency: 'INR',
         name: 'HideAI',
         description: 'Lifetime Access — One Time Payment',
-        image: 'https://anazk.online/favicon.ico',
+        image: 'https://anazkai.vercel.app/favicon.ico',
         prefill: {
           email: currentUser?.email || '',
           name: currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '',
@@ -491,7 +491,7 @@ const SubscriptionGuard = ({ children }) => {
       script.onerror = () => {
         // Fallback: open website pricing in browser
         if (ipcRenderer) {
-          ipcRenderer.send('open-external-url', 'https://anazk.online/#pricing');
+          ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
         }
         setError('Payment page failed to load. Opening website instead...');
       };
@@ -568,7 +568,7 @@ const SubscriptionGuard = ({ children }) => {
 
             {isValidating && (
               <p className="text-[#c99a4c] text-[11px] font-bold text-center mb-3 animate-pulse">
-                ⏳ Waiting for browser login... come back after signing in on anazk.online
+                ⏳ Waiting for browser login... come back after signing in on anazkai.vercel.app
               </p>
             )}
 
@@ -692,7 +692,7 @@ const SubscriptionGuard = ({ children }) => {
         )}
 
         <p className="mt-4 text-[10px] text-[#0d2e27]/50 font-bold text-center">
-          Buy at <span className="text-[#c99a4c]">anazk.online</span> or pay below
+          Buy at <span className="text-[#c99a4c]">anazkai.vercel.app</span> or pay below
         </p>
 
         {/* Buy Now Button — always visible if user is logged in */}
