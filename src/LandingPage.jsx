@@ -45,10 +45,10 @@ function LandingPage() {
     
     // Windows links based on type
     if (type === 'audio') {
-      return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
+      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
     }
     
-    return "https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe";
+    return "https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
