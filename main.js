@@ -40,7 +40,7 @@ function createWindow() {
     icon: path.join(__dirname, 'dist', 'penguin.jpg'),
     alwaysOnTop: true,   // Will be set to 'screen-saver' level after creation
     resizable: true,
-    show: false,         // Start hidden then showInactive so NO focus switch is triggered
+    show: true,          // Start visible immediately
     skipTaskbar: true,   // ── STEALTH: Hide from taskbar / Alt-Tab / Task Switcher ──
     hiddenInMissionControl: true, // MacOS: Hide from Mission Control & Spaces overview
     transparent: true,   // Make background transparent
@@ -56,11 +56,8 @@ function createWindow() {
     }
   });
 
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.showInactive();
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  });
+  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   // Prevent web page title from changing the window title to "Hide AI"
   mainWindow.on('page-title-updated', (e) => {
@@ -100,30 +97,15 @@ function createWindow() {
     }, 100);
   });
 
-  // If SEB tries to hide → immediately show again (unless user initiated)
-  mainWindow.on('hide', () => {
-    if (isUserHiding) {
-      isUserHiding = false;
-      return;
-    }
-    setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.showInactive();
-        mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      }
-    }, 100);
-  });
-
-  // Pulse watchdog every 800ms — keeps re-asserting screen-saver level
+  // Pulse watchdog every 1000ms — keeps re-asserting screen-saver level when visible
   const sebWatchdog = setInterval(() => {
-    if (mainWindow && !mainWindow.isDestroyed() && sebWatchdogActive) {
-      // Only re-assert if window should be visible (not user-hidden via F2)
+    if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isVisible()) {
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       }
     }
-  }, 800);
+  }, 1000);
 
   // Expose watchdog toggle via IPC so F2 hide/show still works smoothly
   ipcMain.on('seb-watchdog-pause', () => { sebWatchdogActive = false; });
@@ -239,23 +221,22 @@ app.whenReady().then(() => {
     }
   });
 
-  // F2: Toggle visibility — pause watchdog during hide so it doesn't fight us
-  globalShortcut.register('F2', () => {
-    if (mainWindow) {
+  // F2 / Cmd+F2 / Cmd+Opt+H: Toggle visibility reliably on both macOS and Windows
+  const toggleVisibility = () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isVisible()) {
-        // User wants to hide → pause watchdog so it doesn't immediately show again
-        mainWindow.webContents.send('seb-watchdog-pause-renderer'); // notify renderer
-        sebWatchdogActive = false; // pause internal watchdog
-        isUserHiding = true; // Set user action flag
         mainWindow.hide();
       } else {
-        // User wants to show → resume watchdog WITHOUT stealing focus from Chrome/Safari!
-        mainWindow.showInactive();
+        mainWindow.show();
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
-        sebWatchdogActive = true; // resume internal watchdog
+        mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       }
     }
-  });
+  };
+
+  globalShortcut.register('F2', toggleVisibility);
+  globalShortcut.register('CommandOrControl+F2', toggleVisibility);
+  globalShortcut.register('CommandOrControl+Alt+H', toggleVisibility);
 
   globalShortcut.register('F3', () => {
     if (mainWindow) {
