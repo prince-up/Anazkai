@@ -3264,24 +3264,24 @@ class Solution {
                 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 1: Move to Applications</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **HideAI** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **AudioService** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <span className="text-xs text-gray-800 font-bold block">Step 2: Bypass Gatekeeper / "Damaged" Warnings</span>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    xattr -cr /Applications/HideAI.app
+                    xattr -cr /Applications/AudioService.app
                   </div>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    codesign --force --deep --sign - /Applications/HideAI.app
+                    codesign --force --deep --sign - /Applications/AudioService.app
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 3: Allow Screen Recording Permissions</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **HideAI** to **ON** to enable screen overlay/transcriptions.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AudioService** to **ON** to enable screen overlay/transcriptions.</span>
                 </div>
               </div>
             </div>
