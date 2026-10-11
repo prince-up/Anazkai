@@ -45,10 +45,10 @@ function LandingPage() {
     
     // Windows links based on type
     if (type === 'audio') {
-      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
+      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent.Setup.1.0.0.exe";
     }
     
-    return "https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe";
+    return "https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -3200,7 +3200,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3218,7 +3218,7 @@ class Solution {
                 <Download size={18} />
               </a>
               <a 
-    href="https://github.com/prince-up/Anazkai/releases/download/v1.0.0/AudioService.Setup.1.0.0.exe" 
+    href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent.Setup.1.0.0.exe" 
     target="_blank"
     rel="noopener noreferrer"
     onClick={() => setShowDownloadModal(false)}
