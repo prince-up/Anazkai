@@ -40,15 +40,15 @@ function LandingPage() {
 
  const getDownloadLink = (type = 'main') => {
     if (isMacUser()) {
-      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent-1.0.0-arm64.dmg";
+      return "https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent-1.0.0-arm64.dmg";
     }
     
     // Windows links based on type
     if (type === 'audio') {
-      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent.Setup.1.0.0.exe";
+      return "https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent.Setup.1.0.0.exe";
     }
     
-    return "https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent.Setup.1.0.0.exe";
+    return "https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1276,7 +1276,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1514,7 +1514,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -3085,7 +3085,7 @@ class Solution {
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
                 <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
-                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
+                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -3200,7 +3200,7 @@ class Solution {
             
             <div className="space-y-3.5 sm:space-y-4">
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent.Setup.1.0.0.exe" 
+                href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent.Setup.1.0.0.exe" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3218,7 +3218,7 @@ class Solution {
                 <Download size={18} />
               </a>
               <a 
-    href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent.Setup.1.0.0.exe" 
+    href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent.Setup.1.0.0.exe" 
     target="_blank"
     rel="noopener noreferrer"
     onClick={() => setShowDownloadModal(false)}
@@ -3237,7 +3237,7 @@ class Solution {
   </a>
 
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.9/CoreServicesUIAgent-1.0.0-arm64.dmg" 
+                href="https://github.com/prince-up/Anazkai/releases/download/v1.1.0/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}

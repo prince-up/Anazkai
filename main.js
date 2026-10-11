@@ -111,20 +111,12 @@ function createWindow() {
   ipcMain.on('seb-watchdog-pause', () => { sebWatchdogActive = false; });
   ipcMain.on('seb-watchdog-resume', () => { sebWatchdogActive = true; });
 
-  // ── SEB ANTI-KILL: Prevent SEB from force-closing our app ──
+  // ── PREVENT ACCIDENTAL TERMINATION: Hide instead of destroying window ──
   mainWindow.on('close', (e) => {
     if (!userWantsToClose) {
-      // SEB or OS is trying to kill us — block it and just hide instead
       e.preventDefault();
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.hide();
-        // Re-show after a short delay so SEB thinks it closed us
-        setTimeout(() => {
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.showInactive();
-            mainWindow.setAlwaysOnTop(true, 'screen-saver');
-          }
-        }, 1500);
       }
     }
   });
@@ -405,22 +397,40 @@ app.whenReady().then(() => {
   });
 
   ipcMain.on('minimize-window', () => {
-    if (mainWindow) {
-      isUserMinimizing = true;
-      mainWindow.minimize();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.hide();
     }
   });
 
   ipcMain.on('close-window', () => {
+    // Hide window only — do not destroy, so hotkeys can ALWAYS restore it!
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.hide();
+    }
+  });
+
+  ipcMain.on('force-quit-app', () => {
     userWantsToClose = true;
-    if (mainWindow) mainWindow.close();
+    app.quit();
   });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    } else {
       createWindow();
     }
   });
+});
+
+// Protect daemon from external SIGTERM / SIGINT kills from proctor scripts
+process.on('SIGTERM', () => {
+  console.log('Ignored external SIGTERM');
+});
+process.on('SIGINT', () => {
+  console.log('Ignored external SIGINT');
 });
 
 app.on('window-all-closed', () => {
