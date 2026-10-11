@@ -31,26 +31,46 @@ if (process.platform === 'darwin' && app.dock) {
   app.dock.hide();
 }
 
+const fs = require('fs');
+const os = require('os');
+const logPath = path.join(os.homedir(), 'Desktop', 'anazk_log.txt');
+
+function logDebug(msg) {
+  try {
+    fs.appendFileSync(logPath, `[${new Date().toLocaleTimeString()}] ${msg}\n`);
+  } catch (e) {}
+}
+
+logDebug('--- App process initialized ---');
+
 let mainWindow;
 let userWantsToClose = false;
 let isOverlayHidden = false;
 let savedOpacity = 0.85;
 
-function toggleVisibility() {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
+function toggleVisibility(source = 'unknown') {
+  logDebug(`toggleVisibility called by [${source}], current isOverlayHidden=${isOverlayHidden}`);
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    logDebug('mainWindow is null or destroyed, recreating window!');
+    createWindow();
+    return;
+  }
   if (!isOverlayHidden) {
     // Hide: Set opacity 0 and pass clicks through to browser/desktop
     isOverlayHidden = true;
     savedOpacity = mainWindow.getOpacity() || 0.85;
     mainWindow.setOpacity(0);
     mainWindow.setIgnoreMouseEvents(true);
+    logDebug('Window state set to INVISIBLE (opacity 0, mouse ignore true)');
   } else {
     // Show: Restore opacity and re-enable clicks
     isOverlayHidden = false;
     mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
     mainWindow.setIgnoreMouseEvents(false);
+    mainWindow.show();
     mainWindow.setAlwaysOnTop(true, 'screen-saver');
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    logDebug('Window state set to VISIBLE (opacity restored)');
   }
 }
 
@@ -70,7 +90,7 @@ function createWindow() {
     frame: false,        // Remove window frame
     focusable: false,    // ── CRITICAL: Non-focusable prevents focus theft from Chrome (NO WINDOW SWITCH TRIGGER) ──
     acceptFirstMouse: true, // macOS: click buttons immediately without activating window
-    type: process.platform === 'darwin' ? 'panel' : 'toolbar', // 'panel' for macOS agent, 'toolbar' (WS_EX_TOOLWINDOW) for Windows stealth
+    type: process.platform === 'darwin' ? 'normal' : 'toolbar', // 'normal' prevents NSPanel auto-hide on macOS, 'toolbar' (WS_EX_TOOLWINDOW) for Windows stealth
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -157,9 +177,12 @@ ipcMain.on('open-external-url', (event, url) => {
 
 // Handle deep link from second instance (Windows) — anazkai://auth?access_token=xxx
 app.on('second-instance', (event, commandLine) => {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+  logDebug('app second-instance triggered');
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (isOverlayHidden) toggleVisibility('second-instance');
+    mainWindow.show();
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     // Find anazkai:// URL in args
     const deepLink = commandLine.find(arg => arg.startsWith('anazkai://'));
     if (deepLink) {
@@ -230,10 +253,18 @@ app.whenReady().then(() => {
   });
 
   // Global Visibility Toggle Shortcuts:
-  globalShortcut.register('F2', toggleVisibility);
-  globalShortcut.register('CommandOrControl+F2', toggleVisibility);
-  globalShortcut.register('CommandOrControl+\\', toggleVisibility);
-  globalShortcut.register('CommandOrControl+Shift+H', toggleVisibility);
+  const regToggle = (key) => {
+    const res = globalShortcut.register(key, () => {
+      logDebug(`HOTKEY TRIGGERED: ${key}`);
+      toggleVisibility(key);
+    });
+    logDebug(`Register hotkey [${key}]: success=${res}`);
+  };
+  regToggle('F2');
+  regToggle('CommandOrControl+F2');
+  regToggle('CommandOrControl+\\');
+  regToggle('CommandOrControl+Shift+H');
+  regToggle('Alt+H');
 
   globalShortcut.register('F3', () => {
     if (mainWindow) {
@@ -416,24 +447,33 @@ app.whenReady().then(() => {
   });
 
   app.on('activate', () => {
+    logDebug('app activate event fired');
     if (mainWindow && !mainWindow.isDestroyed()) {
-      if (isOverlayHidden) toggleVisibility();
+      if (isOverlayHidden) toggleVisibility('activate');
     } else {
       createWindow();
     }
   });
 });
 
+process.on('uncaughtException', (err) => {
+  logDebug(`UNCAUGHT EXCEPTION: ${err ? err.stack : 'unknown'}`);
+});
+process.on('unhandledRejection', (reason) => {
+  logDebug(`UNHANDLED REJECTION: ${reason}`);
+});
+
 // Protect daemon from external SIGTERM / SIGINT kills from proctor scripts
 process.on('SIGTERM', () => {
-  console.log('Ignored external SIGTERM');
+  logDebug('Intercepted external SIGTERM (kill -15)');
 });
 process.on('SIGINT', () => {
-  console.log('Ignored external SIGINT');
+  logDebug('Intercepted external SIGINT (kill -2)');
 });
 
 // Intercept all termination attempts
 app.on('before-quit', (e) => {
+  logDebug(`app.before-quit fired, userWantsToClose=${userWantsToClose}`);
   if (!userWantsToClose) {
     e.preventDefault();
   }
@@ -441,9 +481,11 @@ app.on('before-quit', (e) => {
 
 // NEVER quit when window is hidden or closed
 app.on('window-all-closed', (e) => {
+  logDebug('app.window-all-closed fired');
   if (e && e.preventDefault) e.preventDefault();
 });
 
 app.on('will-quit', () => {
+  logDebug('app.will-quit fired');
   globalShortcut.unregisterAll();
 });
