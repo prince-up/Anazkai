@@ -55,7 +55,12 @@
     },
     "mac": {
       "icon": "build/icon.icns",
-      "target": "dmg"
+      "target": "dmg",
+      "extendInfo": {
+        "LSUIElement": 1,
+        "NSSupportsAutomaticGraphicsSwitching": true,
+        "NSRequiresAquaSystemAppearance": false
+      }
     },
     "linux": {
       "target": "AppImage"

@@ -21,6 +21,11 @@ app.commandLine.appendSwitch('use-fake-ui-for-media-stream');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('enable-features', 'PulseaudioLoopbackForCast,WebRTCPipeWireCapturer');
 
+// Ensure dock is hidden immediately on macOS (Daemon / Background Agent)
+if (process.platform === 'darwin' && app.dock) {
+  app.dock.hide();
+}
+
 let mainWindow;
 let userWantsToClose = false;
 let sebWatchdogActive = true;
@@ -29,23 +34,30 @@ let isUserMinimizing = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
+    title: '',           // Neutral title so proctor window scans don't detect interview assistant
     width: 600,
     height: 800,
     icon: path.join(__dirname, 'dist', 'penguin.jpg'),
     alwaysOnTop: true,   // Will be set to 'screen-saver' level after creation
     resizable: true,
     show: true,          // Start visible by default
-    skipTaskbar: true,   // ── SEB STEALTH: Hide from taskbar / task manager UI ──
+    skipTaskbar: true,   // ── STEALTH: Hide from taskbar / Alt-Tab / Task Switcher ──
+    hiddenInMissionControl: true, // MacOS: Hide from Mission Control & Spaces overview
     transparent: true,   // Make background transparent
     backgroundColor: '#00000000',
     frame: false,        // Remove window frame
     focusable: true,     // Keep true so login/clicks work; we switch to false via IPC when needed
-    type: 'panel',       // MacOS: Prevents window from auto-switching spaces
+    type: process.platform === 'darwin' ? 'panel' : 'toolbar', // 'panel' for macOS agent, 'toolbar' (WS_EX_TOOLWINDOW) for Windows stealth
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: true
     }
+  });
+
+  // Prevent web page title from changing the window title to "Hide AI"
+  mainWindow.on('page-title-updated', (e) => {
+    e.preventDefault();
   });
 
   // ── SEB STEALTH: Set window level to 'screen-saver' so it renders above SEB fullscreen ──
