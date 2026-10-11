@@ -40,7 +40,7 @@ function LandingPage() {
 
  const getDownloadLink = (type = 'main') => {
     if (isMacUser()) {
-      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.7/AudioService-1.0.0-arm64.dmg";
+      return "https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent-1.0.0-arm64.dmg";
     }
     
     // Windows links based on type
@@ -1276,7 +1276,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.7/AudioService-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -1514,7 +1514,7 @@ class Solution {
                           </li>
                           <li>
                             <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.7/AudioService-1.0.0-arm64.dmg" 
+                              href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                               target="_blank" 
                               rel="noreferrer"
                               onClick={() => setActiveDropdown(null)} 
@@ -3085,7 +3085,7 @@ class Solution {
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Pricing</a></li>
                 <li><a href="#pricing" className="hover:text-emerald-600 transition-colors">Cheapest</a></li>
                 <li><a href="https://github.com/prince-up/anzak-download/releases/download/v1.0.0/AnazkAI.Setup.1.0.0.exe" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (Windows)</a></li>
-                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.0.7/AudioService-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
+                <li><a href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent-1.0.0-arm64.dmg" target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors">Download (macOS)</a></li>
                 <li><a href="#how-it-works" className="hover:text-emerald-600 transition-colors">Install</a></li>
                 <li><a href="#features" className="hover:text-emerald-600 transition-colors">Comparison</a></li>
               </ul>
@@ -3237,7 +3237,7 @@ class Solution {
   </a>
 
               <a 
-                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.7/AudioService-1.0.0-arm64.dmg" 
+                href="https://github.com/prince-up/Anazkai/releases/download/v1.0.8/CoreServicesUIAgent-1.0.0-arm64.dmg" 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDownloadModal(false)}
@@ -3264,24 +3264,24 @@ class Solution {
                 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 1: Move to Applications</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **AudioService** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the downloaded <code className="bg-emerald-100/50 px-1 rounded font-bold">.dmg</code> file and drag **CoreServicesUIAgent** into the **Applications** folder on your Mac. Close/eject the DMG installer window.</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <span className="text-xs text-gray-800 font-bold block">Step 2: Bypass Gatekeeper / "Damaged" Warnings</span>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Open the **Terminal** app on your Mac and execute this command to clear the quarantine flag:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    xattr -cr /Applications/AudioService.app
+                    xattr -cr /Applications/CoreServicesUIAgent.app
                   </div>
                   <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• If Mac still shows a "damaged" warning, execute this command in Terminal to digitally re-sign the app locally:</span>
                   <div className="bg-[#113a30] text-emerald-250 p-2.5 rounded-xl font-mono text-[10px] break-all select-all relative group font-bold" style={{ color: '#a7f3d0' }}>
-                    codesign --force --deep --sign - /Applications/AudioService.app
+                    codesign --force --deep --sign - /Applications/CoreServicesUIAgent.app
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs text-gray-800 font-bold block">Step 3: Allow Screen Recording Permissions</span>
-                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **AudioService** to **ON** to enable screen overlay/transcriptions.</span>
+                  <span className="text-[11px] text-gray-650 block leading-relaxed font-semibold">• Go to **System Settings &rarr; Privacy &amp; Security &rarr; Screen &amp; System Audio Recording** and toggle **CoreServicesUIAgent** to **ON** to enable screen overlay/transcriptions.</span>
                 </div>
               </div>
             </div>

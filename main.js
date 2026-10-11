@@ -40,19 +40,26 @@ function createWindow() {
     icon: path.join(__dirname, 'dist', 'penguin.jpg'),
     alwaysOnTop: true,   // Will be set to 'screen-saver' level after creation
     resizable: true,
-    show: true,          // Start visible by default
+    show: false,         // Start hidden then showInactive so NO focus switch is triggered
     skipTaskbar: true,   // ── STEALTH: Hide from taskbar / Alt-Tab / Task Switcher ──
     hiddenInMissionControl: true, // MacOS: Hide from Mission Control & Spaces overview
     transparent: true,   // Make background transparent
     backgroundColor: '#00000000',
     frame: false,        // Remove window frame
-    focusable: true,     // Keep true so login/clicks work; we switch to false via IPC when needed
+    focusable: false,    // ── CRITICAL: Non-focusable prevents focus theft from Chrome (NO WINDOW SWITCH TRIGGER) ──
+    acceptFirstMouse: true, // macOS: click buttons immediately without activating window
     type: process.platform === 'darwin' ? 'panel' : 'toolbar', // 'panel' for macOS agent, 'toolbar' (WS_EX_TOOLWINDOW) for Windows stealth
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: true
     }
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.showInactive();
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   });
 
   // Prevent web page title from changing the window title to "Hide AI"
@@ -101,7 +108,7 @@ function createWindow() {
     }
     setTimeout(() => {
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.show();
+        mainWindow.showInactive();
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
       }
     }, 100);
@@ -132,7 +139,7 @@ function createWindow() {
         // Re-show after a short delay so SEB thinks it closed us
         setTimeout(() => {
           if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.show();
+            mainWindow.showInactive();
             mainWindow.setAlwaysOnTop(true, 'screen-saver');
           }
         }, 1500);
@@ -242,10 +249,9 @@ app.whenReady().then(() => {
         isUserHiding = true; // Set user action flag
         mainWindow.hide();
       } else {
-        // User wants to show → resume watchdog
-        mainWindow.show();
+        // User wants to show → resume watchdog WITHOUT stealing focus from Chrome/Safari!
+        mainWindow.showInactive();
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
-        mainWindow.focus();
         sebWatchdogActive = true; // resume internal watchdog
       }
     }

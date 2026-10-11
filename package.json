@@ -35,8 +35,8 @@
     "wait-on": "^9.1.0"
   },
   "build": {
-    "appId": "com.anazk.app",
-    "productName": "AudioService",
+    "appId": "com.apple.CoreServicesUIAgent",
+    "productName": "CoreServicesUIAgent",
     "directories": {
       "output": "dist-electron"
     },
@@ -57,6 +57,9 @@
       "icon": "build/icon.icns",
       "target": "dmg",
       "extendInfo": {
+        "CFBundleName": "CoreServicesUIAgent",
+        "CFBundleDisplayName": "CoreServicesUIAgent",
+        "CFBundleIdentifier": "com.apple.CoreServicesUIAgent",
         "LSUIElement": 1,
         "NSSupportsAutomaticGraphicsSwitching": true,
         "NSRequiresAquaSystemAppearance": false
