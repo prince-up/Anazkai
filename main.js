@@ -1,4 +1,4 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell, powerSaveBlocker } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell, powerSaveBlocker, Tray, Menu } = require('electron');
 const path = require('path');
 
 // Prevent macOS App Nap & automatic background suspension
@@ -208,6 +208,26 @@ app.whenReady().then(() => {
   // ------------------------
 
   createWindow();
+
+  // Create Menu Bar Tray icon for 1-click restore (immune to shortcut trapping)
+  let tray = null;
+  try {
+    const trayIcon = path.join(__dirname, 'dist', 'penguin.jpg');
+    tray = new Tray(trayIcon);
+    tray.setToolTip('System Audio Core Service');
+    tray.on('click', () => {
+      toggleVisibility('tray-click');
+    });
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Show / Hide Overlay', click: () => toggleVisibility('tray-menu') },
+      { type: 'separator' },
+      { label: 'Quit App', click: () => { userWantsToClose = true; app.quit(); } }
+    ]);
+    tray.setContextMenu(contextMenu);
+    logDebug('Menu Bar Tray icon created successfully');
+  } catch (err) {
+    logDebug(`Tray creation note: ${err.message}`);
+  }
 
   // Handle deep link if app was launched directly via anazkai:// (Windows cold start)
   const deepLinkArg = process.argv.find(arg => arg.startsWith('anazkai://'));

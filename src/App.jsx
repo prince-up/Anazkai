@@ -191,6 +191,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
+  const [isCompactMode, setIsCompactMode] = useState(false);
 
   // Resume State (Persistent & Compactly Cached for Zero Latency)
   const [resumeText, setResumeText] = useState(() => localStorage.getItem('user_resume_text') || '');
@@ -1015,10 +1016,7 @@ Guidelines:
   };
 
   const handleMinimize = () => {
-    if (window.require) {
-      const { ipcRenderer } = window.require('electron');
-      ipcRenderer.send('minimize-window');
-    }
+    setIsCompactMode(!isCompactMode);
   };
 
   const handleClose = () => {
@@ -1027,6 +1025,20 @@ Guidelines:
       ipcRenderer.send('close-window');
     }
   };
+
+  if (isCompactMode) {
+    return (
+      <div 
+        onClick={() => setIsCompactMode(false)}
+        className="fixed top-3 right-3 z-50 bg-[#070b19]/90 hover:bg-[#070b19] backdrop-blur-xl text-emerald-400 text-[11px] font-black px-3.5 py-1.5 rounded-full border border-emerald-500/30 shadow-2xl cursor-pointer flex items-center gap-2 transition-all select-none hover:scale-105 active:scale-95"
+        style={{ WebkitAppRegion: 'no-drag' }}
+        title="HideAI is Snoozed — Click to Expand"
+      >
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>HideAI (Click to Open)</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-black/60 backdrop-blur-xl text-gray-100 p-3 font-sans select-none relative overflow-hidden rounded-2xl border border-white/5 shadow-2xl">
