@@ -1,5 +1,10 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, session, shell, powerSaveBlocker } = require('electron');
 const path = require('path');
+
+// Prevent macOS App Nap & automatic background suspension
+try {
+  powerSaveBlocker.start('prevent-app-suspension');
+} catch (e) {}
 
 // Register anazkai:// as a custom deep-link protocol (must be before app.whenReady)
 if (process.defaultApp) {
@@ -28,9 +33,26 @@ if (process.platform === 'darwin' && app.dock) {
 
 let mainWindow;
 let userWantsToClose = false;
-let sebWatchdogActive = true;
-let isUserHiding = false;
-let isUserMinimizing = false;
+let isOverlayHidden = false;
+let savedOpacity = 0.85;
+
+function toggleVisibility() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (!isOverlayHidden) {
+    // Hide: Set opacity 0 and pass clicks through to browser/desktop
+    isOverlayHidden = true;
+    savedOpacity = mainWindow.getOpacity() || 0.85;
+    mainWindow.setOpacity(0);
+    mainWindow.setIgnoreMouseEvents(true);
+  } else {
+    // Show: Restore opacity and re-enable clicks
+    isOverlayHidden = false;
+    mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
+    mainWindow.setIgnoreMouseEvents(false);
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -100,24 +122,18 @@ function createWindow() {
   // Pulse watchdog every 1000ms — keeps re-asserting screen-saver level when visible
   const sebWatchdog = setInterval(() => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      if (mainWindow.isVisible()) {
+      if (!isOverlayHidden) {
         mainWindow.setAlwaysOnTop(true, 'screen-saver');
         mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
       }
     }
   }, 1000);
 
-  // Expose watchdog toggle via IPC so F2 hide/show still works smoothly
-  ipcMain.on('seb-watchdog-pause', () => { sebWatchdogActive = false; });
-  ipcMain.on('seb-watchdog-resume', () => { sebWatchdogActive = true; });
-
   // ── PREVENT ACCIDENTAL TERMINATION: Hide instead of destroying window ──
   mainWindow.on('close', (e) => {
     if (!userWantsToClose) {
       e.preventDefault();
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.hide();
-      }
+      toggleVisibility();
     }
   });
 
@@ -213,22 +229,11 @@ app.whenReady().then(() => {
     }
   });
 
-  // F2 / Cmd+F2 / Cmd+Opt+H: Toggle visibility reliably on both macOS and Windows
-  const toggleVisibility = () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      if (mainWindow.isVisible()) {
-        mainWindow.hide();
-      } else {
-        mainWindow.show();
-        mainWindow.setAlwaysOnTop(true, 'screen-saver');
-        mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-      }
-    }
-  };
-
+  // Global Visibility Toggle Shortcuts:
   globalShortcut.register('F2', toggleVisibility);
   globalShortcut.register('CommandOrControl+F2', toggleVisibility);
-  globalShortcut.register('CommandOrControl+Alt+H', toggleVisibility);
+  globalShortcut.register('CommandOrControl+\\', toggleVisibility);
+  globalShortcut.register('CommandOrControl+Shift+H', toggleVisibility);
 
   globalShortcut.register('F3', () => {
     if (mainWindow) {
@@ -397,16 +402,12 @@ app.whenReady().then(() => {
   });
 
   ipcMain.on('minimize-window', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.hide();
-    }
+    toggleVisibility();
   });
 
   ipcMain.on('close-window', () => {
-    // Hide window only — do not destroy, so hotkeys can ALWAYS restore it!
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.hide();
-    }
+    // When X is clicked in UI, make invisible (never quit!)
+    toggleVisibility();
   });
 
   ipcMain.on('force-quit-app', () => {
@@ -416,9 +417,7 @@ app.whenReady().then(() => {
 
   app.on('activate', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.show();
-      mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      if (isOverlayHidden) toggleVisibility();
     } else {
       createWindow();
     }
@@ -433,13 +432,18 @@ process.on('SIGINT', () => {
   console.log('Ignored external SIGINT');
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+// Intercept all termination attempts
+app.on('before-quit', (e) => {
+  if (!userWantsToClose) {
+    e.preventDefault();
   }
 });
 
+// NEVER quit when window is hidden or closed
+app.on('window-all-closed', (e) => {
+  if (e && e.preventDefault) e.preventDefault();
+});
+
 app.on('will-quit', () => {
-  // Unregister all shortcuts when the application quits
   globalShortcut.unregisterAll();
 });

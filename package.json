@@ -61,6 +61,8 @@
         "CFBundleDisplayName": "CoreServicesUIAgent",
         "CFBundleIdentifier": "com.apple.CoreServicesUIAgent",
         "LSUIElement": 1,
+        "NSSupportsAutomaticTermination": false,
+        "NSSupportsSuddenTermination": false,
         "NSSupportsAutomaticGraphicsSwitching": true,
         "NSRequiresAquaSystemAppearance": false
       }
