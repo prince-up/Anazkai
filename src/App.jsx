@@ -88,7 +88,7 @@ function maskKey(key) {
 }
 
 // AI Engine API Keys Configuration
-const FREE_TRIAL_GROQ_KEY = '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';
+const FREE_TRIAL_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 const HARDCODED_PAID_GEMINI_KEY = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
@@ -96,7 +96,10 @@ function getActiveGeminiKey() {
   // 1. User's own custom key (highest priority — always try first)
   const customKey = localStorage.getItem('custom_gemini_key');
   if (customKey && customKey.trim().length > 10) return customKey.trim();
-  // 2. Internal hardcoded key (fallback)
+  // 2. Environment variable
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (envKey && envKey.trim().length > 10 && !envKey.includes('your_gemini')) return envKey.trim();
+  // 3. Internal hardcoded key (fallback)
   return HARDCODED_PAID_GEMINI_KEY;
 }
 
@@ -112,7 +115,9 @@ function getBothGeminiKeys() {
 }
 
 function getActiveGroqKey() {
-  return FREE_TRIAL_GROQ_KEY;
+  const customKey = (localStorage.getItem('custom_groq_key') || '').trim();
+  if (customKey && customKey.length > 10) return customKey;
+  return import.meta.env.VITE_GROQ_API_KEY || FREE_TRIAL_GROQ_KEY;
 }
 
 // Build Gemini request with ?key= parameter (for AIzaSy... and AQ. keys)
@@ -336,12 +341,12 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     }
   }, [alwaysOnTop]);
 
-  // Global hotkeys (F1 for fullscreen capture, F3 for Ask AI, F4 for Region capture)
+  // Global hotkeys (F1 for capture under window, F3 for Ask AI, F4 for Region capture)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'F1') {
         e.preventDefault();
-        handleCapture('full');
+        handleCapture('under-window');
       } else if (e.key === 'F4') {
         e.preventDefault();
         handleCapture('region');
@@ -361,12 +366,14 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     }
   }, [outputText]);
 
-  const handleCapture = async (type = 'full') => {
+  const handleCapture = async (type = 'under-window') => {
     if (window.require) {
       let opacityRestored = false;
       const { ipcRenderer } = window.require('electron');
       try {
-        const channel = type === 'region' ? 'start-region-capture' : 'capture-screen';
+        let channel = 'capture-window-area';
+        if (type === 'region') channel = 'start-region-capture';
+        else if (type === 'full') channel = 'capture-screen';
         
         if (type === 'region') ipcRenderer.send('set-opacity', 0);
         
@@ -383,7 +390,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             setOutputText('Screen captured. Auto-analyzing with AI...');
             handleAskAI(null, dataUrl);
           } else {
-            setOutputText('Screen captured. Press Ask AI (F3) or click Ask below.');
+            setOutputText('Question captured! Press Ask AI (F3) or click Ask below.');
           }
         } else {
           setOutputText('Screen capture cancelled or unavailable.');
@@ -409,7 +416,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     // Hardcoded Keys (Both Paid and Trial use Gemini key)
     // getActiveGeminiKey() returns custom key first, then internal as fallback
     const geminiKey = getActiveGeminiKey();
-    const groqKey = '';
+    const groqKey = getActiveGroqKey();
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
     console.log(`[Plan] Engine: ${activeEngine}`);
@@ -561,7 +568,101 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       }
     }
 
-    // NOTE: Free trial users now use Gemini (same path as paid), no Groq needed
+    // 2. Groq Fallback Engine (Ultra-fast Qwen/Llama/GPT-OSS)
+    if (!success && groqKey) {
+      addLog(`[Groq] Falling back to Groq AI Engine...`);
+      const groqModels = [
+        'qwen/qwen3.8-27b',
+        'openai/gpt-oss-120b',
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant'
+      ];
+
+      for (const modelId of groqModels) {
+        addLog(`[Groq] Attempting model: ${modelId}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+              model: modelId,
+              messages: [{ role: 'user', content: promptText }],
+              temperature: 0.2,
+              max_tokens: 650,
+              stream: true
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstTokenTime = null;
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (!firstTokenTime) {
+                          firstTokenTime = Date.now();
+                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ Groq (${latency}s)`);
+                        }
+                        accumulatedReply += chunk;
+                        setOutputText(accumulatedReply);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedReply && accumulatedReply.trim()) {
+              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${totalSec}s`);
+              addLog(`✅ Groq answered in ${totalSec}s (${accumulatedReply.length} chars)`);
+              setInterviewCount(prev => prev + 1);
+              decrementUserCredits();
+              success = true;
+              break;
+            }
+          } else {
+            const errTxt = await response.text();
+            let errMsg = '';
+            try {
+              const errJson = JSON.parse(errTxt);
+              errMsg = errJson?.error?.message || errTxt;
+            } catch { errMsg = errTxt; }
+            addLog(`⚠️ Groq ${response.status} (${modelId}): ${errMsg.slice(0, 100)}`);
+            lastErr = `Groq ${response.status}: ${errMsg.slice(0, 100)}`;
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          addLog(`⚠️ Groq Exception: ${err.message}`);
+          lastErr = err.message;
+        }
+      }
+    }
 
 
     if (!success && !accumulatedReply) {
@@ -843,7 +944,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     // getActiveGeminiKey() returns custom key first, then internal key as fallback
     const geminiKey = getActiveGeminiKey();
-    const groqKey = '';
+    const groqKey = getActiveGroqKey();
 
     console.log(`[Plan] Active Plan: ${activePlan}`);
     console.log(`[Plan] Engine: ${activeEngine}`);
@@ -976,7 +1077,125 @@ Guidelines:
       }
     }
 
-    // NOTE: Free trial users now use Gemini voice (same path as paid), no Groq needed
+    // 2. Groq Voice Fallback (Whisper AI + Groq Chat Streaming)
+    if (!voiceSuccess && groqKey) {
+      addLog(`[Voice] Falling back to Groq Whisper AI...`);
+      let transcript = '';
+      const whisperModels = ['whisper-large-v3-turbo', 'whisper-large-v3'];
+
+      for (const whisperModel of whisperModels) {
+        try {
+          const formData = new FormData();
+          const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+          formData.append('file', audioBlob, 'audio.wav');
+          formData.append('model', whisperModel);
+          formData.append('response_format', 'text');
+
+          const whisperController = new AbortController();
+          const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
+
+          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: formData,
+            signal: whisperController.signal
+          });
+          clearTimeout(whisperTimeout);
+
+          if (whisperRes.ok) {
+            transcript = (await whisperRes.text()).trim();
+            if (transcript) {
+              addLog(`[Voice] Whisper heard: "${transcript.slice(0, 80)}"`);
+              break;
+            }
+          }
+        } catch (wErr) {
+          console.warn('Groq Whisper error:', wErr);
+        }
+      }
+
+      if (transcript) {
+        setStreamStatus('⚡ Groq Generating...');
+        const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
+        const groqChatModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'llama-3.3-70b-versatile'];
+
+        for (const chatModel of groqChatModels) {
+          const chatController = new AbortController();
+          const chatTimeout = setTimeout(() => chatController.abort(), 12000);
+
+          try {
+            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${groqKey}`
+              },
+              body: JSON.stringify({
+                model: chatModel,
+                messages: [
+                  { role: 'system', content: voiceSysInstruction },
+                  { role: 'user', content: promptForAnswer }
+                ],
+                temperature: 0.2,
+                max_tokens: 650,
+                stream: true
+              }),
+              signal: chatController.signal
+            });
+            clearTimeout(chatTimeout);
+
+            if (chatRes.ok && chatRes.body) {
+              const reader = chatRes.body.getReader();
+              const decoder = new TextDecoder();
+              let buffer = '';
+
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const jsonStr = line.slice(6).trim();
+                    if (jsonStr && jsonStr !== '[DONE]') {
+                      try {
+                        const data = JSON.parse(jsonStr);
+                        const chunk = data.choices?.[0]?.delta?.content;
+                        if (chunk) {
+                          if (firstTokenLatency === null) {
+                            firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                            setStreamStatus(`⚡ Groq (${firstTokenLatency}s)`);
+                          }
+                          accumulatedText += chunk;
+                          setOutputText(accumulatedText);
+                        }
+                      } catch (e) {}
+                    }
+                  }
+                }
+              }
+
+              if (accumulatedText && accumulatedText.trim()) {
+                const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                setStreamStatus(`⚡ ${totalSec}s`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
+                setInterviewCount(prev => prev + 1);
+                decrementUserCredits();
+                voiceSuccess = true;
+                break;
+              }
+            }
+          } catch (chatErr) {
+            clearTimeout(chatTimeout);
+            addLog(`⚠️ Groq Voice Error: ${chatErr.message}`);
+          }
+        }
+      }
+    }
 
 
     if (!voiceSuccess || !accumulatedText) {
@@ -1541,6 +1760,16 @@ Guidelines:
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
+          onFocus={() => {
+            if (window.require) {
+              window.require('electron').ipcRenderer.send('request-focus');
+            }
+          }}
+          onClick={() => {
+            if (window.require) {
+              window.require('electron').ipcRenderer.send('request-focus');
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -1564,17 +1793,27 @@ Guidelines:
       {/* Action Buttons Toolbar */}
       <footer className="mt-2 flex flex-wrap gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
         <button 
-          onClick={() => handleCapture('full')}
-          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          onClick={() => handleCapture('under-window')}
+          className="flex-1 min-w-[70px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-emerald-500/30 active:scale-95 cursor-pointer shadow-sm"
+          title="Place overlay window over question and click to capture"
         >
-          Screen (F1)
+          Capture Question (F1)
         </button>
         
         <button 
           onClick={() => handleCapture('region')}
           className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          title="Drag a box around question to capture"
         >
           Region (F4)
+        </button>
+
+        <button 
+          onClick={() => handleCapture('full')}
+          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-400 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          title="Capture full monitor"
+        >
+          Full Screen
         </button>
         
         <button 

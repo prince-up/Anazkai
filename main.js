@@ -88,7 +88,7 @@ function createWindow() {
     transparent: true,   // Make background transparent
     backgroundColor: '#00000000',
     frame: false,        // Remove window frame
-    focusable: false,    // ── CRITICAL: Non-focusable prevents focus theft from Chrome (NO WINDOW SWITCH TRIGGER) ──
+    focusable: true,     // Allow typing in text inputs (use F9 to toggle stealth non-focusable mode if needed)
     acceptFirstMouse: true, // macOS: click buttons immediately without activating window
     type: process.platform === 'darwin' ? 'normal' : 'toolbar', // 'normal' prevents NSPanel auto-hide on macOS, 'toolbar' (WS_EX_TOOLWINDOW) for Windows stealth
     webPreferences: {
@@ -344,9 +344,74 @@ app.whenReady().then(() => {
     }
   });
 
+  // Request focus from renderer (for text inputs)
+  ipcMain.on('request-focus', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setFocusable(true);
+      mainWindow.focus();
+    }
+  });
+
+  // Handle IPC request for capturing the area directly under the overlay window
+  ipcMain.handle('capture-window-area', async () => {
+    try {
+      if (process.platform === 'darwin' && mainWindow && !mainWindow.isDestroyed()) {
+        const bounds = mainWindow.getBounds();
+        const tmpFile = path.join(os.tmpdir(), `anazk_win_${Date.now()}.png`);
+        
+        // Briefly make window transparent so the question underneath is clearly visible
+        const oldOpacity = mainWindow.getOpacity();
+        mainWindow.setOpacity(0);
+        await new Promise(r => setTimeout(r, 60));
+        
+        try {
+          const { execSync } = require('child_process');
+          execSync(`screencapture -x -R ${Math.round(bounds.x)},${Math.round(bounds.y)},${Math.round(bounds.width)},${Math.round(bounds.height)} "${tmpFile}"`);
+        } finally {
+          mainWindow.setOpacity(oldOpacity);
+        }
+        
+        if (fs.existsSync(tmpFile)) {
+          const imgBuffer = fs.readFileSync(tmpFile);
+          try { fs.unlinkSync(tmpFile); } catch (e) {}
+          return `data:image/png;base64,${imgBuffer.toString('base64')}`;
+        }
+      }
+    } catch (e) {
+      console.error('Window area capture error:', e);
+    }
+    // Fallback to desktopCapturer if screencapture not available
+    try {
+      const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1920, height: 1080 } });
+      return sources[0]?.thumbnail.toDataURL() || null;
+    } catch (err) {
+      return null;
+    }
+  });
+
   // Handle IPC request for full screen capture
   ipcMain.handle('capture-screen', async () => {
     try {
+      if (process.platform === 'darwin') {
+        const tmpFile = path.join(os.tmpdir(), `anazk_full_${Date.now()}.png`);
+        const oldOpacity = mainWindow ? mainWindow.getOpacity() : 1;
+        if (mainWindow) mainWindow.setOpacity(0);
+        await new Promise(r => setTimeout(r, 60));
+        
+        try {
+          const { execSync } = require('child_process');
+          execSync(`screencapture -x "${tmpFile}"`);
+        } finally {
+          if (mainWindow) mainWindow.setOpacity(oldOpacity);
+        }
+        
+        if (fs.existsSync(tmpFile)) {
+          const imgBuffer = fs.readFileSync(tmpFile);
+          try { fs.unlinkSync(tmpFile); } catch (e) {}
+          return `data:image/png;base64,${imgBuffer.toString('base64')}`;
+        }
+      }
+
       const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1920, height: 1080 } });
       const primaryDisplay = sources[0]; // Usually the first one is the primary screen
       if (primaryDisplay) {
@@ -417,6 +482,20 @@ app.whenReady().then(() => {
     }
     
     try {
+      if (process.platform === 'darwin' && bounds) {
+        const tmpFile = path.join(os.tmpdir(), `anazk_reg_${Date.now()}.png`);
+        const { execSync } = require('child_process');
+        execSync(`screencapture -x -R ${Math.round(bounds.x)},${Math.round(bounds.y)},${Math.round(bounds.width)},${Math.round(bounds.height)} "${tmpFile}"`);
+        if (fs.existsSync(tmpFile)) {
+          const imgBuffer = fs.readFileSync(tmpFile);
+          try { fs.unlinkSync(tmpFile); } catch (e) {}
+          if (capturePromiseResolve) {
+            capturePromiseResolve(`data:image/png;base64,${imgBuffer.toString('base64')}`);
+          }
+          return;
+        }
+      }
+
       const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1920, height: 1080 } });
       const primaryDisplay = sources[0];
       
