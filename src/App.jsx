@@ -6,13 +6,14 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import LandingPage from './LandingPage';
 import SubscriptionGuard from './components/SubscriptionGuard';
 import AppLoginPage from './pages/AppLoginPage';
 import { supabase } from './supabaseClient';
 
-// Configure pdfjs worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '3.11.174'}/pdf.worker.min.js`;
+// Configure pdfjs worker with bundled local asset for offline / file:// protocol compatibility
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // Audio WAV Encoder & Downsampler Helper Utilities
 function encodeWAV(samples, sampleRate) {
@@ -149,11 +150,23 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [streamStatus, setStreamStatus] = useState('');
+  const [hasScreenPermission, setHasScreenPermission] = useState(true);
   const outputScrollRef = useRef(null);
   
   // Debug Logs State
   const [debugLogs, setDebugLogs] = useState([]);
   const [showLogs, setShowLogs] = useState(false);
+
+  useEffect(() => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.invoke('check-screen-permission').then((status) => {
+        if (status === 'denied' || status === 'not-determined') {
+          setHasScreenPermission(false);
+        }
+      }).catch(() => {});
+    }
+  }, []);
 
   const addLog = (msg) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -205,7 +218,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const resumeFileInputRef = useRef(null);
 
-  // Helper to generate & cache an ultra-compact 2-3 line resume summary for zero-latency AI injection
+  // Helper to generate & cache a high-impact candidate profile for zero-latency AI injection
   const generateAndCacheResumeSummary = async (fullText, fileName) => {
     if (!fullText || !fullText.trim()) {
       setResumeSummary('');
@@ -213,13 +226,53 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       return;
     }
 
-    // Default fast local fallback summary
+    // Default immediate local summary
     const cleanLines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    const quickSummary = cleanLines.slice(0, 5).join(', ').slice(0, 280);
+    const quickSummary = cleanLines.slice(0, 15).join('\n');
     setResumeSummary(quickSummary);
     localStorage.setItem('user_resume_summary', quickSummary);
 
-    // Asynchronously generate an AI compressed profile once on upload
+    // AI Profile Generation via Groq (priority) or Gemini
+    const groqKey = getActiveGroqKey();
+    if (groqKey && fullText.length > 50) {
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+          },
+          body: JSON.stringify({
+            model: 'qwen/qwen3.8-27b',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are an AI interview coach. Distill this resume into a structured Candidate Profile for answering interview questions: 1) Candidate Name & Target Role, 2) Core Technical Skills & Languages, 3) Key Projects (technologies used, purpose, achievements), 4) Work Experience (roles, companies, key contributions).'
+              },
+              {
+                role: 'user',
+                content: `Resume Content:\n${fullText.slice(0, 8000)}`
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 600
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const structuredProfile = data.choices?.[0]?.message?.content?.trim();
+          if (structuredProfile) {
+            setResumeSummary(structuredProfile);
+            localStorage.setItem('user_resume_summary', structuredProfile);
+            addLog(`✅ Resume structured via Groq AI (${structuredProfile.length} chars).`);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Groq resume profiling error:', e);
+      }
+    }
+
     const geminiKey = getActiveGeminiKey();
     if (geminiKey && fullText.length > 150) {
       try {
@@ -230,19 +283,18 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: `Compress this resume into a short 2-sentence Candidate Profile (Role/Title, Top 5 Skills, Key 2 Projects) for quick interview context:\n\n${fullText.slice(0, 3000)}`
+                text: `Compress this resume into a structured Candidate Profile (Role/Title, Top 5 Skills, Key 3 Projects, Work History) for interview answering:\n\n${fullText.slice(0, 5000)}`
               }]
             }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+            generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
           })
         });
         const data = await res.json();
         const aiSummary = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
         if (aiSummary) {
-          const compact = aiSummary.replace(/\n+/g, ' ').slice(0, 300);
-          setResumeSummary(compact);
-          localStorage.setItem('user_resume_summary', compact);
-          addLog(`✅ Resume summary cached for fast AI calls (${compact.length} chars).`);
+          setResumeSummary(aiSummary);
+          localStorage.setItem('user_resume_summary', aiSummary);
+          addLog(`✅ Resume summary cached for fast AI calls (${aiSummary.length} chars).`);
         }
       } catch (e) {
         console.warn('Async resume summary note:', e);
@@ -259,21 +311,39 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     try {
       let extractedText = '';
-      if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
-        const arrayBuffer = await file.arrayBuffer();
-        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
-        const pdf = await loadingTask.promise;
-        let text = '';
-        for (let i = 1; i <= Math.min(pdf.numPages, 4); i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items.map(item => item.str).join(' ');
-          text += pageText + '\n';
+      const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+      
+      if (isPdf) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const loadingTask = pdfjsLib.getDocument({ 
+            data: new Uint8Array(arrayBuffer),
+            useSystemFonts: true,
+            isEvalSupported: false
+          });
+          const pdf = await loadingTask.promise;
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            text += pageText + '\n\n';
+          }
+          extractedText = text.trim();
+        } catch (pdfErr) {
+          console.warn('PDF.js parse warning:', pdfErr);
         }
-        extractedText = text.trim();
-      } else {
-        const text = await file.text();
-        extractedText = text.trim();
+      }
+
+      // If text is still empty (e.g. non-pdf or fallback)
+      if (!extractedText) {
+        const rawText = await file.text();
+        // Filter out binary null bytes if user uploaded binary file
+        extractedText = rawText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ' ').trim();
+      }
+
+      if (!extractedText || extractedText.length < 20) {
+        throw new Error('Could not extract readable text from this file. Please paste your resume text below.');
       }
 
       setResumeText(extractedText);
@@ -283,16 +353,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       await generateAndCacheResumeSummary(extractedText, file.name);
     } catch (err) {
       console.error('Resume upload error:', err);
-      try {
-        const text = await file.text();
-        const cleaned = text.trim();
-        setResumeText(cleaned);
-        localStorage.setItem('user_resume_text', cleaned);
-        localStorage.setItem('user_resume_filename', file.name);
-        await generateAndCacheResumeSummary(cleaned, file.name);
-      } catch (e) {
-        addLog(`❌ Failed to read file: ${e.message}`);
-      }
+      addLog(`⚠️ ${err.message || 'Error reading resume file'}`);
+      setOutputText(`⚠️ Resume Upload Notice: Could not extract text from "${file.name}". You can paste your resume text directly into the text box in Settings!`);
     } finally {
       setIsLoadingResume(false);
     }
@@ -366,28 +428,26 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     }
   }, [outputText]);
 
-  const handleCapture = async (type = 'under-window') => {
+  const handleCapture = async (type = 'region') => {
     if (window.require) {
-      let opacityRestored = false;
       const { ipcRenderer } = window.require('electron');
       try {
-        let channel = 'capture-window-area';
-        if (type === 'region') channel = 'start-region-capture';
+        let channel = 'interactive-snip';
+        if (type === 'under-window') channel = 'capture-window-area';
         else if (type === 'full') channel = 'capture-screen';
         
-        if (type === 'region') ipcRenderer.send('set-opacity', 0);
+        if (type === 'region') {
+          setOutputText('✂️ Drag crosshairs around the question on your screen (Esc to cancel)...');
+        } else {
+          setOutputText('📸 Capturing question...');
+        }
         
         const dataUrl = await ipcRenderer.invoke(channel);
-        
-        if (type === 'region') {
-          ipcRenderer.send('set-opacity', parseFloat(opacity));
-          opacityRestored = true;
-        }
 
         if (dataUrl) {
           setScreenshotData(dataUrl);
           if (autoAsk) {
-            setOutputText('Screen captured. Auto-analyzing with AI...');
+            setOutputText('Question captured. Auto-analyzing with AI...');
             handleAskAI(null, dataUrl);
           } else {
             setOutputText('Question captured! Press Ask AI (F3) or click Ask below.');
@@ -398,10 +458,6 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       } catch (err) {
         console.error('Capture error:', err);
         setOutputText('Error during screen capture.');
-      } finally {
-        if (type === 'region' && !opacityRestored) {
-          ipcRenderer.send('set-opacity', parseFloat(opacity));
-        }
       }
     }
   };
@@ -437,14 +493,24 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     setStreamStatus('⚡ Processing...');
     setOutputText('');
 
-    let promptText = `Direct live interview copilot. Answer in 2-3 punchy bullet points designed to be spoken. Bold key terms. If coding, give optimal code only with Time/Space complexity.`;
+    const candidateProfile = resumeSummary || resumeText;
 
-    const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 300) : '');
-    if (candidateProfile.trim()) {
-      promptText += `\n[Candidate Profile: ${candidateProfile.trim()}]`;
+    let sysInstruction = `You are a real-time live interview copilot assisting a candidate during an actual job interview.
+Deliver articulate, complete, high-scoring answers tailored to be spoken naturally.
+
+RULES FOR USING CANDIDATE RESUME:
+1. CANDIDATE-SPECIFIC QUESTIONS: If the question is about the candidate's personal background, projects, work experience, tech stack, or skills (e.g. "Tell me about yourself", "Walk me through your resume", "What projects have you worked on?", "Tell me about a time you used React/Python/SQL", "What was your role at X?"):
+   - ALWAYS answer from the FIRST PERSON perspective ("I am...", "In my recent project, I built...", "I have worked with...") strictly reflecting the details, projects, technologies, and achievements in the Candidate Resume below.
+2. GENERAL / OUTSIDE-RESUME QUESTIONS: If the question is a general technical question, coding problem, system design challenge, or theoretical concept (whether mentioned in the resume or outside it):
+   - Provide the complete, optimal, industry-standard answer (including optimal code, time/space complexity, trade-offs where applicable).
+   - If relevant, naturally mention how the candidate has applied this concept according to their resume.
+3. FORMAT: 2-4 punchy, high-impact bullet points. Bold key technical terms. Never give fragments or truncated responses.`;
+
+    if (candidateProfile && candidateProfile.trim()) {
+      sysInstruction += `\n\n[CANDIDATE RESUME / PROFILE]:\n${candidateProfile.trim().slice(0, 6000)}`;
     }
 
-    promptText += `\n\n[Question / Context]:\n${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
+    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
 
     let success = false;
     let accumulatedReply = '';
@@ -592,7 +658,10 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             },
             body: JSON.stringify({
               model: modelId,
-              messages: [{ role: 'user', content: promptText }],
+              messages: [
+                { role: 'system', content: sysInstruction },
+                { role: 'user', content: textToSend || 'Analyze the provided question and provide the direct spoken interview answer.' }
+              ],
               temperature: 0.2,
               max_tokens: 650,
               stream: true
@@ -953,18 +1022,19 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     addLog(`[Voice] Engine: ${activeEngine}`);
     addLog(`[Voice] Keys: Gemini: ${geminiKey ? maskKey(geminiKey) : 'SKIP'} | Groq: ${groqKey ? maskKey(groqKey) : 'SKIP'}`);
 
-    const candidateProfile = resumeSummary || (resumeText ? resumeText.slice(0, 160) : '');
+    const candidateProfile = resumeSummary || resumeText;
     let voiceSysInstruction = `You are a real-time live interview copilot assisting a candidate.
 Deliver a complete, articulate, high-scoring interview response tailored to be spoken naturally.
-Guidelines:
-- Start directly with the core definition/concept in 1 crisp sentence.
-- Provide 3-5 structured, punchy bullet points covering key mechanics, real-world examples, and best practices/trade-offs.
-- Bold essential technical keywords for easy scanning.
-- If it's a coding or design question, include the optimal approach and Time/Space complexity.
-- Never give one-line or truncated fragments. Keep it complete, professional, and directly usable in the interview.`;
 
-    if (candidateProfile.trim()) {
-      voiceSysInstruction += `\n[Candidate Profile: ${candidateProfile.trim()}]`;
+RULES FOR USING CANDIDATE RESUME:
+1. If the question is about the candidate's background, projects, work experience, or skills (e.g. "Tell me about yourself", "Walk me through your projects", "Have you used X?"):
+   - ALWAYS answer from the FIRST PERSON perspective ("I am...", "In my recent project, I built...") strictly reflecting the details and achievements in the Candidate Resume below.
+2. If the question is general technical, coding, system design, or theoretical (whether in or outside resume):
+   - Provide the complete, optimal spoken answer with core definition, 2-3 punchy bullet points, optimal approach, and complexity.
+3. Bold essential technical keywords for easy scanning.`;
+
+    if (candidateProfile && candidateProfile.trim()) {
+      voiceSysInstruction += `\n\n[CANDIDATE RESUME / PROFILE]:\n${candidateProfile.trim().slice(0, 6000)}`;
     }
 
     let voiceSuccess = false;
@@ -1666,6 +1736,24 @@ Guidelines:
         </div>
       )}
 
+      {/* Screen Recording Permission Alert (macOS only) */}
+      {!hasScreenPermission && (
+        <div className="mb-2 p-2.5 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-[11px] flex items-center justify-between gap-2 shrink-0" style={{ WebkitAppRegion: 'no-drag' }}>
+          <div>
+            <p className="font-bold text-amber-300 text-[11px]">⚠️ Screen Permission Required</p>
+            <p className="text-[10px] text-amber-200/80">macOS only captures wallpaper until Screen Recording is enabled for this app.</p>
+          </div>
+          <button 
+            onClick={() => {
+              if (window.require) window.require('electron').ipcRenderer.send('open-screen-permission-settings');
+            }}
+            className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-black font-bold rounded-lg text-[10px] shrink-0 cursor-pointer shadow-sm"
+          >
+            Fix in Settings
+          </button>
+        </div>
+      )}
+
       {/* Main Unified Response Viewport (No split double boxes) */}
       <main className="flex-1 flex flex-col min-h-0 relative bg-black/40 rounded-xl overflow-hidden shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
         
@@ -1793,24 +1881,24 @@ Guidelines:
       {/* Action Buttons Toolbar */}
       <footer className="mt-2 flex flex-wrap gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
         <button 
+          onClick={() => handleCapture('region')}
+          className="flex-1 min-w-[75px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-emerald-500/30 active:scale-95 cursor-pointer shadow-sm flex items-center justify-center gap-1"
+          title="Drag crosshairs directly around the question on screen"
+        >
+          <span>✂️ Snip Question (F4)</span>
+        </button>
+
+        <button 
           onClick={() => handleCapture('under-window')}
-          className="flex-1 min-w-[70px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-emerald-500/30 active:scale-95 cursor-pointer shadow-sm"
+          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
           title="Place overlay window over question and click to capture"
         >
-          Capture Question (F1)
-        </button>
-        
-        <button 
-          onClick={() => handleCapture('region')}
-          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
-          title="Drag a box around question to capture"
-        >
-          Region (F4)
+          Under Window (F1)
         </button>
 
         <button 
           onClick={() => handleCapture('full')}
-          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-400 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          className="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-400 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
           title="Capture full monitor"
         >
           Full Screen

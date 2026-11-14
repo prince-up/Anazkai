@@ -352,6 +352,58 @@ app.whenReady().then(() => {
     }
   });
 
+  // Check macOS Screen Recording Permission
+  ipcMain.handle('check-screen-permission', async () => {
+    if (process.platform === 'darwin') {
+      try {
+        const { systemPreferences } = require('electron');
+        return systemPreferences.getMediaAccessStatus ? systemPreferences.getMediaAccessStatus('screen') : 'granted';
+      } catch (e) {
+        return 'unknown';
+      }
+    }
+    return 'granted';
+  });
+
+  // Open macOS Privacy & Security -> Screen Recording settings
+  ipcMain.on('open-screen-permission-settings', () => {
+    if (process.platform === 'darwin') {
+      shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    }
+  });
+
+  // Native interactive snip on macOS (Crosshair box selection)
+  ipcMain.handle('interactive-snip', async () => {
+    if (process.platform === 'darwin') {
+      const tmpFile = path.join(os.tmpdir(), `anazk_snip_${Date.now()}.png`);
+      const oldOpacity = mainWindow ? (mainWindow.getOpacity() || savedOpacity) : 0.85;
+      
+      // Temporarily hide overlay window so user can clearly see and select the question
+      if (mainWindow) mainWindow.setOpacity(0);
+      await new Promise(r => setTimeout(r, 120));
+
+      try {
+        const { execSync } = require('child_process');
+        // screencapture -i launches native interactive selection cursor
+        execSync(`screencapture -i "${tmpFile}"`);
+      } catch (e) {
+        // User cancelled selection with Esc
+      } finally {
+        if (mainWindow) mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
+      }
+
+      if (fs.existsSync(tmpFile)) {
+        const imgBuffer = fs.readFileSync(tmpFile);
+        try { fs.unlinkSync(tmpFile); } catch (e) {}
+        if (imgBuffer.length > 500) {
+          return `data:image/png;base64,${imgBuffer.toString('base64')}`;
+        }
+      }
+      return null;
+    }
+    return null;
+  });
+
   // Handle IPC request for capturing the area directly under the overlay window
   ipcMain.handle('capture-window-area', async () => {
     try {
@@ -359,16 +411,15 @@ app.whenReady().then(() => {
         const bounds = mainWindow.getBounds();
         const tmpFile = path.join(os.tmpdir(), `anazk_win_${Date.now()}.png`);
         
-        // Briefly make window transparent so the question underneath is clearly visible
-        const oldOpacity = mainWindow.getOpacity();
+        // Hide window completely so WindowServer renders the underlying question
         mainWindow.setOpacity(0);
-        await new Promise(r => setTimeout(r, 60));
+        await new Promise(r => setTimeout(r, 120));
         
         try {
           const { execSync } = require('child_process');
           execSync(`screencapture -x -R ${Math.round(bounds.x)},${Math.round(bounds.y)},${Math.round(bounds.width)},${Math.round(bounds.height)} "${tmpFile}"`);
         } finally {
-          mainWindow.setOpacity(oldOpacity);
+          mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
         }
         
         if (fs.existsSync(tmpFile)) {
