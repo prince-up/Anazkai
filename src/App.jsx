@@ -797,19 +797,49 @@ RULES FOR USING CANDIDATE RESUME:
                   if (jsonStr) {
                     try {
                       const data = JSON.parse(jsonStr);
-                      const chunk = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                      if (chunk) {
+                      const parts = data.candidates?.[0]?.content?.parts || [];
+                      let textChunk = '';
+                      for (const part of parts) {
+                        if (part.text) {
+                          textChunk += part.text;
+                        }
+                      }
+                      if (textChunk) {
                         if (!firstTokenTime) {
                           firstTokenTime = Date.now();
                           const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
                           setStreamStatus(`⚡ AI (${latency}s)`);
                         }
-                        accumulatedReply += chunk;
+                        accumulatedReply += textChunk;
                         setOutputText(accumulatedReply);
                       }
                     } catch (e) {}
                   }
                 }
+              }
+            }
+
+            // Fallback to non-streaming if stream closed with empty output
+            if (!accumulatedReply || !accumulatedReply.trim()) {
+              addLog(`⚠️ SSE stream empty for ${modelId}. Trying direct generateContent...`);
+              try {
+                const { url: directUrl, headers: directHeaders } = buildGeminiRequestConfig(geminiKey, modelId, false);
+                const directRes = await fetch(directUrl, {
+                  method: 'POST',
+                  headers: directHeaders,
+                  body: JSON.stringify(geminiBody)
+                });
+                if (directRes.ok) {
+                  const data = await directRes.json();
+                  const parts = data.candidates?.[0]?.content?.parts || [];
+                  const fullAnswer = parts.map(p => p.text || '').join('');
+                  if (fullAnswer && fullAnswer.trim()) {
+                    accumulatedReply = fullAnswer;
+                    setOutputText(accumulatedReply);
+                  }
+                }
+              } catch (directErr) {
+                addLog(`Direct generateContent error: ${directErr.message}`);
               }
             }
 
