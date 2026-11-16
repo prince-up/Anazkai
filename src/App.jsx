@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power, Crop, Keyboard, Play, Pause, Square
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power, Crop, Keyboard, Play, Pause, Square, Eye, EyeOff
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -172,6 +172,10 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     return localStorage.getItem('auto_type_after_response') === 'true';
   });
 
+  const [autoTypeSpeed, setAutoTypeSpeed] = useState(() => {
+    return localStorage.getItem('auto_type_speed') || 'natural';
+  });
+
   // Extract pure code block (ignoring approaches & explanations)
   const extractCodeOnly = (text) => {
     if (!text || typeof text !== 'string') return '';
@@ -198,9 +202,9 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     if (window.require) {
       const { ipcRenderer } = window.require('electron');
-      addLog(`⚡ Starting Auto-Typer (${rawCode.length} chars, countdown: ${countdown}s)...`);
+      addLog(`⚡ Starting Auto-Typer (${rawCode.length} chars, speed: ${autoTypeSpeed}, countdown: ${countdown}s)...`);
       try {
-        await ipcRenderer.invoke('auto-typer:start', { code: rawCode, countdown });
+        await ipcRenderer.invoke('auto-typer:start', { code: rawCode, countdown, speed: autoTypeSpeed });
       } catch (err) {
         addLog(`❌ Auto-Typer error: ${err.message}`);
       }
@@ -508,6 +512,13 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         e.preventDefault();
         e.stopPropagation();
         handleStopAutoType();
+        return;
+      }
+
+      if (e.key === 'F2' || e.code === 'F2') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleClose();
         return;
       }
 
@@ -1864,6 +1875,34 @@ RULES FOR USING CANDIDATE RESUME:
                   <span>Start / Resume: <span className="text-cyan-300 font-bold">Cmd+Shift+T</span></span>
                   <span>Stop: <span className="text-red-300 font-bold">Cmd+Shift+S</span></span>
                 </div>
+
+                {/* Typing Speed Control */}
+                <div className="pt-2 border-t border-white/5 space-y-1.5">
+                  <span className="text-[10px] text-gray-300 font-bold block">Typing Speed (Human Cadence):</span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'chill', label: 'Chill (~45 WPM)' },
+                      { id: 'natural', label: 'Natural (~70 WPM)' },
+                      { id: 'fast', label: 'Fast (~95 WPM)' }
+                    ].map(preset => (
+                      <button
+                        key={preset.id}
+                        onClick={() => {
+                          setAutoTypeSpeed(preset.id);
+                          localStorage.setItem('auto_type_speed', preset.id);
+                          addLog(`Typing speed set to: ${preset.id}`);
+                        }}
+                        className={`py-1 px-1 rounded-lg border text-center transition-all cursor-pointer ${
+                          autoTypeSpeed === preset.id 
+                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-xs' 
+                            : 'bg-white/[0.03] border-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <div className="text-[9px] font-bold">{preset.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -2128,6 +2167,14 @@ RULES FOR USING CANDIDATE RESUME:
                   title="Stop typing (Cmd+Shift+S)"
                 >
                   <Square size={9} />
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="p-0.5 text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 rounded transition-colors flex items-center gap-0.5 px-1 cursor-pointer"
+                  title="Hide overlay & free mouse (F2)"
+                >
+                  <EyeOff size={8} />
+                  <span className="text-[8px]">Hide</span>
                 </button>
               </div>
             ) : (

@@ -58,12 +58,13 @@ function toggleVisibility(source = 'unknown') {
     return;
   }
   if (!isOverlayHidden) {
-    // Hide: Set opacity 0 and pass clicks through to browser/desktop
+    // Hide: Set opacity 0, forward all mouse events to desktop, blur focus
     isOverlayHidden = true;
     savedOpacity = mainWindow.getOpacity() || 0.85;
     mainWindow.setOpacity(0);
-    mainWindow.setIgnoreMouseEvents(true);
-    logDebug('Window state set to INVISIBLE (opacity 0, mouse ignore true)');
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    try { mainWindow.blur(); } catch (e) {}
+    logDebug('Window state set to INVISIBLE (opacity 0, mouse ignore true with forward, blurred)');
   } else {
     // Show: Restore opacity and re-enable clicks
     isOverlayHidden = false;
@@ -457,9 +458,9 @@ app.whenReady().then(() => {
     }
   };
 
-  ipcMain.handle('auto-typer:start', async (event, { code, countdown = 2 }) => {
-    logDebug(`[AutoTyper] IPC start called, code length: ${code ? code.length : 0}`);
-    return autoTyper.start(code, { countdown }, {
+  ipcMain.handle('auto-typer:start', async (event, { code, countdown = 2, speed = 'natural' }) => {
+    logDebug(`[AutoTyper] IPC start called, code length: ${code ? code.length : 0}, speed: ${speed}`);
+    return autoTyper.start(code, { countdown, speed }, {
       onProgress: (prog) => sendAutoTypeStatus({ ...autoTyper.getStatus(), ...prog }),
       onStatus: (status) => sendAutoTypeStatus(status)
     });
@@ -749,13 +750,26 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.on('toggle-visibility', () => {
+    toggleVisibility('ipc');
+  });
+
+  ipcMain.on('release-mouse', (event, ignore = true) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setIgnoreMouseEvents(ignore, { forward: true });
+      if (ignore) {
+        try { mainWindow.blur(); } catch (e) {}
+      }
+    }
+  });
+
   ipcMain.on('minimize-window', () => {
-    toggleVisibility();
+    toggleVisibility('minimize');
   });
 
   ipcMain.on('close-window', () => {
     // When X is clicked in UI, make invisible (never quit!)
-    toggleVisibility();
+    toggleVisibility('close');
   });
 
   ipcMain.on('force-quit-app', () => {

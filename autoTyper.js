@@ -100,46 +100,80 @@ class AutoTyper {
     }
   }
 
-  // Generate an AppleScript script for macOS that types the sequence in a single process
+  // Generate an AppleScript script for macOS that types the sequence in a single process with realistic human cadence
   buildAppleScript(code, startIndex = 0, options = {}) {
-    const minDelay = options.minDelay || 0.018;
-    const maxDelay = options.maxDelay || 0.042;
+    // Realistic human typing presets:
+    // 'chill': ~45 WPM (110-180ms delay, longer pauses)
+    // 'natural' (default): ~65-75 WPM (70-130ms delay, realistic micro-pauses)
+    // 'fast': ~95 WPM (40-75ms delay)
+    const speed = options.speed || 'natural';
+    let baseMin = 0.070;
+    let baseMax = 0.130;
+    if (speed === 'chill') {
+      baseMin = 0.110;
+      baseMax = 0.180;
+    } else if (speed === 'fast') {
+      baseMin = 0.040;
+      baseMax = 0.075;
+    }
 
     const lines = [];
     lines.push('tell application "System Events"');
+
+    let charsSincePause = 0;
 
     for (let i = startIndex; i < code.length; i++) {
       const char = code[i];
       const charIndex = i + 1;
 
-      // Realistic human variance
-      const delay = (Math.random() * (maxDelay - minDelay) + minDelay).toFixed(3);
+      // Realistic human variance with slight Gaussian jitter
+      const delay = (Math.random() * (baseMax - baseMin) + baseMin);
 
       if (char === '\n') {
         lines.push('  key code 36');
-        lines.push(`  delay ${(parseFloat(delay) + 0.08).toFixed(3)}`);
+        // Thoughtful human pause after finishing a line of code (350ms - 550ms)
+        const linePause = (Math.random() * 0.20 + 0.35).toFixed(3);
+        lines.push(`  delay ${linePause}`);
         lines.push(`  log "P:${charIndex}"`);
+        charsSincePause = 0;
       } else if (char === '\t') {
         lines.push('  key code 48');
-        lines.push(`  delay ${delay}`);
+        lines.push(`  delay ${(delay + 0.06).toFixed(3)}`);
+      } else if (char === ' ') {
+        lines.push('  keystroke " "');
+        // Slight pause between words (90ms - 160ms)
+        lines.push(`  delay ${(delay + 0.04).toFixed(3)}`);
+        charsSincePause++;
       } else if (char === '"') {
         lines.push('  keystroke quote');
-        lines.push(`  delay ${delay}`);
+        lines.push(`  delay ${(delay + 0.05).toFixed(3)}`);
+        charsSincePause++;
       } else if (char === '\\') {
         lines.push('  keystroke "\\\\"');
-        lines.push(`  delay ${delay}`);
+        lines.push(`  delay ${(delay + 0.05).toFixed(3)}`);
+        charsSincePause++;
       } else {
         const escaped = char.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         lines.push(`  keystroke "${escaped}"`);
-        if ([';', '{', '}', '(', ')'].includes(char)) {
-          lines.push(`  delay ${(parseFloat(delay) + 0.04).toFixed(3)}`);
+
+        // Punctuation & bracket hesitation (semicolons, curly braces, colons, arrows)
+        if ([';', '{', '}', '(', ')', '[', ']', ':', '=', '<', '>'].includes(char)) {
+          lines.push(`  delay ${(delay + 0.07).toFixed(3)}`);
         } else {
-          lines.push(`  delay ${delay}`);
+          lines.push(`  delay ${delay.toFixed(3)}`);
         }
+        charsSincePause++;
       }
 
-      // Stream progress checkpoint every 8 characters or at end
-      if (charIndex % 8 === 0 || charIndex === code.length) {
+      // Occasional human "thinking" micro-pause every 30-50 characters (~350ms - 550ms)
+      if (charsSincePause > 35 && Math.random() < 0.12 && char !== '\n') {
+        const thinkPause = (Math.random() * 0.20 + 0.35).toFixed(3);
+        lines.push(`  delay ${thinkPause}`);
+        charsSincePause = 0;
+      }
+
+      // Stream progress checkpoint every 4 characters or at end
+      if (charIndex % 4 === 0 || charIndex === code.length) {
         lines.push(`  log "P:${charIndex}"`);
       }
     }
@@ -150,31 +184,52 @@ class AutoTyper {
 
   // Generate a PowerShell script for Windows that types the sequence in a single process
   buildPowerShellScript(code, startIndex = 0, options = {}) {
-    const minDelayMs = options.minDelayMs || 20;
-    const maxDelayMs = options.maxDelayMs || 45;
+    const speed = options.speed || 'natural';
+    let baseMinMs = 70;
+    let baseMaxMs = 130;
+    if (speed === 'chill') {
+      baseMinMs = 110;
+      baseMaxMs = 180;
+    } else if (speed === 'fast') {
+      baseMinMs = 40;
+      baseMaxMs = 75;
+    }
 
     const lines = [];
     lines.push('Add-Type -AssemblyName System.Windows.Forms;');
     lines.push('[Console]::OutputEncoding = [System.Text.Encoding]::UTF8;');
 
+    let charsSincePause = 0;
+
     for (let i = startIndex; i < code.length; i++) {
       const char = code[i];
       const charIndex = i + 1;
-      const delay = Math.floor(Math.random() * (maxDelayMs - minDelayMs + 1)) + minDelayMs;
+      const delay = Math.floor(Math.random() * (baseMaxMs - baseMinMs + 1)) + baseMinMs;
 
       if (char === '\n') {
-        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{ENTER}'); Start-Sleep -Milliseconds ${delay + 80};`);
+        const linePause = Math.floor(Math.random() * 200) + 350;
+        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{ENTER}'); Start-Sleep -Milliseconds ${linePause};`);
         lines.push(`[Console]::Error.WriteLine("P:${charIndex}");`);
+        charsSincePause = 0;
       } else if (char === '\t') {
-        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{TAB}'); Start-Sleep -Milliseconds ${delay};`);
+        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{TAB}'); Start-Sleep -Milliseconds ${delay + 60};`);
       } else if (['+', '^', '%', '~', '(', ')', '{', '}', '[', ']'].includes(char)) {
-        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{${char}}'); Start-Sleep -Milliseconds ${delay};`);
+        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('{${char}}'); Start-Sleep -Milliseconds ${delay + 70};`);
+        charsSincePause++;
       } else {
         const escaped = char.replace(/'/g, "''");
-        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('${escaped}'); Start-Sleep -Milliseconds ${delay};`);
+        let extra = [' ', ';', '{', '}', ':', '='].includes(char) ? 50 : 0;
+        lines.push(`[System.Windows.Forms.SendKeys]::SendWait('${escaped}'); Start-Sleep -Milliseconds ${delay + extra};`);
+        charsSincePause++;
       }
 
-      if (charIndex % 8 === 0 || charIndex === code.length) {
+      if (charsSincePause > 35 && Math.random() < 0.12 && char !== '\n') {
+        const thinkPause = Math.floor(Math.random() * 200) + 350;
+        lines.push(`Start-Sleep -Milliseconds ${thinkPause};`);
+        charsSincePause = 0;
+      }
+
+      if (charIndex % 4 === 0 || charIndex === code.length) {
         lines.push(`[Console]::Error.WriteLine("P:${charIndex}");`);
       }
     }
