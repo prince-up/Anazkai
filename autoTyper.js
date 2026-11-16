@@ -265,8 +265,9 @@ class AutoTyper {
   // Start auto-typing with countdown delay
   async start(rawCodeOrText, options = {}, callbacks = {}) {
     if (this.isTyping) {
-      console.log('[AutoTyper] Already typing. Stop current session first.');
-      return { success: false, message: 'Already typing' };
+      console.log('[AutoTyper] Session already active. Stopping previous session to restart fresh.');
+      this.stop();
+      await new Promise((r) => setTimeout(r, 120));
     }
 
     const code = AutoTyper.extractCode(rawCodeOrText);
