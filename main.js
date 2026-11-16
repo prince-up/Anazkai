@@ -391,20 +391,38 @@ app.whenReady().then(() => {
   });
 
   // ── EMERGENCY PANIC KILL SWITCH: Instantly terminates app & all background processes ──
-  const emergencyPanicKill = () => {
-    logDebug('EMERGENCY PANIC KILL TRIGGERED! Exiting app immediately.');
+  const emergencyPanicKill = (src = 'unknown') => {
+    logDebug(`EMERGENCY PANIC KILL TRIGGERED by [${src}]! Terminating app immediately.`);
     userWantsToClose = true;
     try {
       globalShortcut.unregisterAll();
+    } catch (e) {}
+    try {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.destroy();
       }
     } catch (e) {}
-    app.exit(0);
+    process.exit(0);
   };
 
-  globalShortcut.register('F10', emergencyPanicKill);
-  globalShortcut.register('CommandOrControl+Shift+Q', emergencyPanicKill);
+  const regPanic = (key) => {
+    try {
+      const res = globalShortcut.register(key, () => {
+        emergencyPanicKill(`hotkey:${key}`);
+      });
+      logDebug(`Register PANIC hotkey [${key}]: success=${res}`);
+    } catch (err) {
+      logDebug(`Failed to register PANIC hotkey [${key}]: ${err.message}`);
+    }
+  };
+
+  regPanic('F10');
+  regPanic('CommandOrControl+F10');
+  regPanic('CommandOrControl+Q');
+  regPanic('CommandOrControl+Shift+Q');
+  regPanic('CommandOrControl+Shift+X');
+  regPanic('Alt+Q');
+  regPanic('Alt+F4');
 
   // Request focus from renderer (for text inputs)
   ipcMain.on('request-focus', () => {
@@ -685,11 +703,13 @@ app.whenReady().then(() => {
     logDebug('Emergency force-quit-app received. Terminating process immediately.');
     try {
       globalShortcut.unregisterAll();
+    } catch (e) {}
+    try {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.destroy();
       }
     } catch (e) {}
-    app.exit(0);
+    process.exit(0);
   });
 
   app.on('activate', () => {

@@ -405,9 +405,23 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     }
   }, [alwaysOnTop]);
 
-  // Global hotkeys (F1 for capture under window, F3 for Ask AI, F4 for Region capture)
+  // Global hotkeys (F1 for capture under window, F3 for Ask AI, F4 for Region capture, F10 for panic kill)
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Panic / Force Quit shortcuts (F10, Fn+F10, Cmd+Q, Cmd+Shift+Q, Ctrl+Q)
+      if (
+        e.key === 'F10' || 
+        e.code === 'F10' || 
+        ((e.metaKey || e.ctrlKey) && (e.key === 'q' || e.key === 'Q')) ||
+        ((e.metaKey || e.ctrlKey) && (e.key === 'F10' || e.code === 'F10')) ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleForceQuit();
+        return;
+      }
+
       if (e.key === 'F1') {
         e.preventDefault();
         handleCapture('under-window');
@@ -419,8 +433,34 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         handleAskAI();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    // Also listen to IPC shortcut triggers from Electron Main process
+    let removeIpc = null;
+    if (window.require) {
+      try {
+        const { ipcRenderer } = window.require('electron');
+        const handleIpcShortcut = (event, shortcut) => {
+          if (shortcut === 'F10' || shortcut === 'FORCE_QUIT') {
+            handleForceQuit();
+          } else if (shortcut === 'F1') {
+            handleCapture('under-window');
+          } else if (shortcut === 'F4') {
+            handleCapture('region');
+          } else if (shortcut === 'F3') {
+            handleAskAI();
+          }
+        };
+        ipcRenderer.on('shortcut-triggered', handleIpcShortcut);
+        removeIpc = () => ipcRenderer.removeListener('shortcut-triggered', handleIpcShortcut);
+      } catch (err) {}
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (removeIpc) removeIpc();
+    };
   }, [screenshotData, inputText, isLoading, opacity, alwaysOnTop, autoAsk]);
 
   // Auto scroll output
