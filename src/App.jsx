@@ -80,6 +80,37 @@ function arrayBufferToBase64(buffer) {
   return window.btoa(binary);
 }
 
+// Helper to compress and optimize heavy Retina screenshots to clean ~200KB JPEGs
+function compressImage(dataUrl, maxDim = 1600, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) {
+      return resolve(dataUrl);
+    }
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 // Mask API Key for safe console debugging
 function maskKey(key) {
   if (!key) return 'None';
@@ -601,12 +632,16 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         const dataUrl = await ipcRenderer.invoke(channel);
 
         if (dataUrl) {
-          setScreenshotData(dataUrl);
+          addLog(`📸 Captured raw screenshot: ${(dataUrl.length / 1024).toFixed(0)} KB`);
+          setOutputText('Processing image for AI vision...');
+          const optimizedDataUrl = await compressImage(dataUrl, 1600, 0.85);
+          addLog(`⚡ Optimized image: ${(optimizedDataUrl.length / 1024).toFixed(0)} KB`);
+          setScreenshotData(optimizedDataUrl);
           if (autoAsk) {
             setOutputText('Question captured. Auto-analyzing with AI...');
-            handleAskAI(null, dataUrl);
+            handleAskAI(null, optimizedDataUrl);
           } else {
-            setOutputText('Question captured! Press Ask AI (F3) or click Ask below.');
+            setOutputText('📸 Question captured! Press Ask AI (F3) or click Ask below.');
           }
         } else {
           setOutputText('Screen capture cancelled or unavailable.');
@@ -713,18 +748,24 @@ RULES FOR USING CANDIDATE RESUME:
         try {
           const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
           
-          const contentParts = [{ text: promptText }];
+          const contentParts = [];
           if (imageBase64) {
             contentParts.push({
-              inlineData: {
-                mimeType: imageMime,
+              inline_data: {
+                mime_type: imageMime,
                 data: imageBase64
               }
             });
           }
+          contentParts.push({ text: promptText });
 
           const geminiBody = { 
-            contents: [{ parts: contentParts }],
+            contents: [
+              {
+                role: 'user',
+                parts: contentParts
+              }
+            ],
             generationConfig: {
               temperature: 0.1,
               maxOutputTokens: 4096
