@@ -1937,7 +1937,7 @@ RULES FOR USING CANDIDATE RESUME:
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
               <Sparkles size={10} />
-              <span>{geminiKey ? 'Gemini 3.5 Flash' : (groqKey ? 'Groq Llama 3' : 'AI Copilot')}</span>
+              <span>{getActiveGeminiKey() ? 'Gemini 3.5 Flash' : (getActiveGroqKey() ? 'Groq Llama 3' : 'AI Copilot')}</span>
             </span>
             {streamStatus && (
               <span className="text-[9px] text-teal-300 font-mono font-semibold bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 animate-pulse">
