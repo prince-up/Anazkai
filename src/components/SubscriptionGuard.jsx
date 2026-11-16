@@ -91,37 +91,70 @@ const SubscriptionGuard = ({ children }) => {
       }
     });
 
+    // Process deep link URL from website redirect
+    const processDeepLinkUrl = async (url) => {
+      if (!url || typeof url !== 'string') return;
+      try {
+        setIsValidating(true);
+        setError('');
+        
+        let accessToken = null;
+        let refreshToken = null;
+
+        try {
+          const urlObj = new URL(url);
+          accessToken = urlObj.searchParams.get('access_token');
+          refreshToken = urlObj.searchParams.get('refresh_token');
+        } catch (e) {}
+
+        // Fallback for hash fragments (#access_token=...)
+        if (!accessToken && url.includes('#')) {
+          const hashParams = new URLSearchParams(url.split('#')[1]);
+          accessToken = hashParams.get('access_token');
+          refreshToken = hashParams.get('refresh_token');
+        }
+
+        // Fallback for raw regex matching
+        if (!accessToken) {
+          const matchAccess = url.match(/[?&#]access_token=([^&#]+)/);
+          const matchRefresh = url.match(/[?&#]refresh_token=([^&#]+)/);
+          if (matchAccess) accessToken = decodeURIComponent(matchAccess[1]);
+          if (matchRefresh) refreshToken = decodeURIComponent(matchRefresh[1]);
+        }
+
+        if (accessToken) {
+          const { data, error: sessionErr } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || accessToken
+          });
+
+          if (sessionErr) throw sessionErr;
+          if (data?.user) {
+            setCurrentUser(data.user);
+            await fetchProfileAndAuthorize(data.user);
+          }
+        } else {
+          setError('Login link was missing authentication token. Please try again or sign in with email.');
+        }
+      } catch (err) {
+        console.error('Deep link auth error:', err.message);
+        setError('Login failed: ' + (err.message || 'Unknown error'));
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
     // Listen for deep link auth token from main process (Electron)
     if (ipcRenderer) {
       ipcRenderer.on('auth-deep-link', async (event, url) => {
-        try {
-          setIsValidating(true);
-          setError('');
-          const urlObj = new URL(url);
-          const accessToken = urlObj.searchParams.get('access_token');
-          const refreshToken = urlObj.searchParams.get('refresh_token');
-
-          if (accessToken && refreshToken) {
-            const { data, error: sessionErr } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken
-            });
-
-            if (sessionErr) throw sessionErr;
-            if (data?.user) {
-              setCurrentUser(data.user);
-              await fetchProfileAndAuthorize(data.user);
-            }
-          } else {
-            setError('Login failed. Invalid redirect link. Please try again.');
-          }
-        } catch (err) {
-          console.error('Deep link auth error:', err.message);
-          setError('Login failed: ' + (err.message || 'Unknown error'));
-        } finally {
-          setIsValidating(false);
-        }
+        processDeepLinkUrl(url);
       });
+      // Retrieve any deep link that arrived before component mounted
+      ipcRenderer.invoke('get-pending-auth-url').then((pendingUrl) => {
+        if (pendingUrl) {
+          processDeepLinkUrl(pendingUrl);
+        }
+      }).catch(() => {});
     }
 
     return () => {
@@ -306,13 +339,6 @@ const SubscriptionGuard = ({ children }) => {
   // 5. Start Free Trial
   const handleStartFreeTrial = () => {
     const deviceId = getDeviceId();
-    const isUsed = localStorage.getItem(`anazk_free_trial_used_${deviceId}`);
-
-    if (isUsed === 'true') {
-      setError('Free trial already used on this device. Please log in to continue.');
-      return;
-    }
-
     const now = Date.now();
     localStorage.setItem(`anazk_free_trial_start_${deviceId}`, now.toString());
     localStorage.setItem('anazk_plan_type', 'free_trial');
@@ -579,18 +605,13 @@ const SubscriptionGuard = ({ children }) => {
               <div className="flex-1 h-[1px] bg-[#0d2e27]/10"></div>
             </div>
 
-            {/* Free Trial */}
+            {/* Free Trial / Instant Start */}
             <button
               onClick={handleStartFreeTrial}
-              disabled={freeTrialUsed}
-              className={`w-full py-2.5 px-4 mb-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all border shadow-lg ${
-                freeTrialUsed
-                  ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-white hover:bg-gray-50 border-[#c99a4c]/50 text-[#c99a4c] hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
-              }`}
+              className="w-full py-2.5 px-4 mb-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all border shadow-lg bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-700 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
-              <Gift size={14} className={freeTrialUsed ? 'text-gray-400' : 'text-[#c99a4c]'} />
-              <span>{freeTrialUsed ? '🚫 Free Trial Already Used' : '🎁 Start 5-Min Free Trial'}</span>
+              <Gift size={14} className="text-emerald-600" />
+              <span>🎁 Enter App Directly (Free Trial / Test)</span>
             </button>
 
             {/* Email fallback toggle */}

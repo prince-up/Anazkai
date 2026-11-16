@@ -175,28 +175,67 @@ ipcMain.on('open-external-url', (event, url) => {
   shell.openExternal(url);
 });
 
+// Pending auth URL holder (ensures cold start deep links are never dropped)
+let pendingAuthUrl = null;
+
+function sendAuthDeepLink(url) {
+  if (!url || !url.startsWith('anazkai://')) return;
+  pendingAuthUrl = url;
+  logDebug(`sendAuthDeepLink: ${url}`);
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    isOverlayHidden = false;
+    mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
+    mainWindow.setIgnoreMouseEvents(false);
+    mainWindow.show();
+    mainWindow.focus();
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+    const deliver = () => {
+      try {
+        mainWindow.webContents.send('auth-deep-link', url);
+        logDebug(`Dispatched auth-deep-link to renderer`);
+      } catch (e) {
+        logDebug(`Failed to dispatch auth-deep-link: ${e.message}`);
+      }
+    };
+
+    if (mainWindow.webContents.isLoading()) {
+      mainWindow.webContents.once('did-finish-load', deliver);
+    } else {
+      deliver();
+      // Backup retry after 400ms in case React listener was mounting
+      setTimeout(deliver, 400);
+    }
+  }
+}
+
 // Handle deep link from second instance (Windows) — anazkai://auth?access_token=xxx
 app.on('second-instance', (event, commandLine) => {
   logDebug('app second-instance triggered');
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  const deepLink = commandLine.find(arg => arg.startsWith('anazkai://'));
+  if (deepLink) {
+    sendAuthDeepLink(deepLink);
+  } else if (mainWindow && !mainWindow.isDestroyed()) {
     if (isOverlayHidden) toggleVisibility('second-instance');
     mainWindow.show();
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    // Find anazkai:// URL in args
-    const deepLink = commandLine.find(arg => arg.startsWith('anazkai://'));
-    if (deepLink) {
-      mainWindow.webContents.send('auth-deep-link', deepLink);
-    }
+    mainWindow.focus();
   }
 });
 
 // Handle deep link on macOS (open-url event)
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  if (mainWindow && url.startsWith('anazkai://')) {
-    mainWindow.webContents.send('auth-deep-link', url);
-  }
+  logDebug(`app open-url triggered: ${url}`);
+  sendAuthDeepLink(url);
+});
+
+// Allow renderer to request any pending deep link that arrived before component mount
+ipcMain.handle('get-pending-auth-url', () => {
+  const url = pendingAuthUrl;
+  pendingAuthUrl = null;
+  return url;
 });
 
 app.whenReady().then(() => {
@@ -208,6 +247,15 @@ app.whenReady().then(() => {
   // ------------------------
 
   createWindow();
+
+  // If a deep link arrived before window creation, dispatch when window finishes loading
+  if (pendingAuthUrl) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      if (pendingAuthUrl) {
+        sendAuthDeepLink(pendingAuthUrl);
+      }
+    });
+  }
 
   // Create Menu Bar Tray icon for 1-click restore (immune to shortcut trapping)
   let tray = null;
@@ -232,9 +280,7 @@ app.whenReady().then(() => {
   // Handle deep link if app was launched directly via anazkai:// (Windows cold start)
   const deepLinkArg = process.argv.find(arg => arg.startsWith('anazkai://'));
   if (deepLinkArg) {
-    mainWindow.webContents.once('did-finish-load', () => {
-      mainWindow.webContents.send('auth-deep-link', deepLinkArg);
-    });
+    sendAuthDeepLink(deepLinkArg);
   }
 
 
@@ -369,6 +415,33 @@ app.whenReady().then(() => {
   ipcMain.on('open-screen-permission-settings', () => {
     if (process.platform === 'darwin') {
       shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    }
+  });
+
+  // Check & request macOS Microphone Permission
+  ipcMain.handle('check-microphone-permission', async () => {
+    if (process.platform === 'darwin') {
+      try {
+        const { systemPreferences } = require('electron');
+        if (systemPreferences.getMediaAccessStatus) {
+          const status = systemPreferences.getMediaAccessStatus('microphone');
+          if (status !== 'granted' && systemPreferences.askForMediaAccess) {
+            const granted = await systemPreferences.askForMediaAccess('microphone');
+            return granted ? 'granted' : 'denied';
+          }
+          return status;
+        }
+      } catch (e) {
+        return 'unknown';
+      }
+    }
+    return 'granted';
+  });
+
+  // Open macOS Privacy & Security -> Microphone settings
+  ipcMain.on('open-microphone-permission-settings', () => {
+    if (process.platform === 'darwin') {
+      shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone');
     }
   });
 

@@ -96,17 +96,17 @@ const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 function getActiveGeminiKey() {
   // 1. User's own custom key (highest priority — always try first)
   const customKey = localStorage.getItem('custom_gemini_key');
-  if (customKey && customKey.trim().length > 10) return customKey.trim();
+  if (customKey && customKey.trim().length > 10) return customKey.replace(/["']/g, '').trim();
   // 2. Environment variable
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (envKey && envKey.trim().length > 10 && !envKey.includes('your_gemini')) return envKey.trim();
+  if (envKey && envKey.trim().length > 10 && !envKey.includes('your_gemini')) return envKey.replace(/["']/g, '').trim();
   // 3. Internal hardcoded key (fallback)
   return HARDCODED_PAID_GEMINI_KEY;
 }
 
 // Returns both keys so we can retry with the other if one fails
 function getBothGeminiKeys() {
-  const customKey = (localStorage.getItem('custom_gemini_key') || '').trim();
+  const customKey = (localStorage.getItem('custom_gemini_key') || '').replace(/["']/g, '').trim();
   const internalKey = HARDCODED_PAID_GEMINI_KEY;
   // Return unique keys in priority order
   const keys = [];
@@ -116,20 +116,21 @@ function getBothGeminiKeys() {
 }
 
 function getActiveGroqKey() {
-  const customKey = (localStorage.getItem('custom_groq_key') || '').trim();
+  const customKey = (localStorage.getItem('custom_groq_key') || '').replace(/["']/g, '').trim();
   if (customKey && customKey.length > 10) return customKey;
   return import.meta.env.VITE_GROQ_API_KEY || FREE_TRIAL_GROQ_KEY;
 }
 
-// Build Gemini request with ?key= parameter (for AIzaSy... and AQ. keys)
+// Build Gemini request with ?key= parameter and x-goog-api-key header (for AIzaSy... and AQ. keys)
 function buildGeminiRequestConfig(geminiKey, modelId, isStream = true) {
-  const cleanKey = (geminiKey || '').trim();
+  const cleanKey = (geminiKey || '').replace(/["']/g, '').trim();
   const isBearer = cleanKey.startsWith('ya29.') || cleanKey.startsWith('Bearer ');
   let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:${isStream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`;
   const headers = { 'Content-Type': 'application/json' };
   if (isBearer) {
     headers['Authorization'] = cleanKey.startsWith('Bearer ') ? cleanKey : `Bearer ${cleanKey}`;
   } else if (cleanKey) {
+    headers['x-goog-api-key'] = cleanKey;
     url += `${isStream ? '&' : '?'}key=${cleanKey}`;
   }
   return { url, headers };
@@ -210,6 +211,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
   const [isCompactMode, setIsCompactMode] = useState(false);
+  const [keyTestStatus, setKeyTestStatus] = useState('');
 
   // Resume State (Persistent & Compactly Cached for Zero Latency)
   const [resumeText, setResumeText] = useState(() => localStorage.getItem('user_resume_text') || '');
@@ -276,7 +278,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const geminiKey = getActiveGeminiKey();
     if (geminiKey && fullText.length > 150) {
       try {
-        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-flash-latest', false);
+        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-3.5-flash', false);
         const res = await fetch(url, {
           method: 'POST',
           headers,
@@ -495,35 +497,44 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const candidateProfile = resumeSummary || resumeText;
 
-    let sysInstruction = `You are a real-time live interview copilot assisting a candidate during an actual job interview.
-Deliver articulate, complete, high-scoring answers tailored to be spoken naturally.
+    let sysInstruction = `You are an expert coding and live technical interview copilot assisting a candidate.
+
+RULES FOR CODING QUESTIONS & SCREEN CAPTURES:
+1. COMPLETE, 100% WORKING CODE:
+   - Always give the **COMPLETE, FULLY WORKING CODE**. Never give partial, pseudo-code, truncated, or half solutions. Never leave "// TODO" or incomplete methods.
+   - Include all necessary imports, class definitions, helper functions, and full logic ready to copy and run.
+   - Make the code clean, optimal, and interview-ready.
+2. EXACT PROGRAMMING LANGUAGE:
+   - Detect the exact programming language requested in the question (Java, Python, C++, JavaScript, TypeScript, Go, C#, SQL, etc.).
+   - If the candidate explicitly mentions or types a language in the question, write the solution in that EXACT language.
+   - If no specific language is requested or visible, default to Python.
+3. OUTPUT STRUCTURE:
+   - First: A very short approach (3-5 concise bullet points: intuition, optimal algorithm, Time and Space Complexity).
+   - Second: The **COMPLETE working code** enclosed inside a clean Markdown code block with language identifier (\`\`\`language ... \`\`\`).
+   - If it is an MCQ or theoretical question, clearly state the correct option and a concise explanation.
 
 RULES FOR USING CANDIDATE RESUME:
-1. CANDIDATE-SPECIFIC QUESTIONS: If the question is about the candidate's personal background, projects, work experience, tech stack, or skills (e.g. "Tell me about yourself", "Walk me through your resume", "What projects have you worked on?", "Tell me about a time you used React/Python/SQL", "What was your role at X?"):
-   - ALWAYS answer from the FIRST PERSON perspective ("I am...", "In my recent project, I built...", "I have worked with...") strictly reflecting the details, projects, technologies, and achievements in the Candidate Resume below.
-2. GENERAL / OUTSIDE-RESUME QUESTIONS: If the question is a general technical question, coding problem, system design challenge, or theoretical concept (whether mentioned in the resume or outside it):
-   - Provide the complete, optimal, industry-standard answer (including optimal code, time/space complexity, trade-offs where applicable).
-   - If relevant, naturally mention how the candidate has applied this concept according to their resume.
-3. FORMAT: 2-4 punchy, high-impact bullet points. Bold key technical terms. Never give fragments or truncated responses.`;
+- If the question is about the candidate's personal background, projects, or work history ("Tell me about yourself", "Walk me through your projects"):
+  ALWAYS answer from the FIRST PERSON perspective ("I am...", "In my recent project, I built...") strictly reflecting the details in the Candidate Resume below.`;
 
     if (candidateProfile && candidateProfile.trim()) {
       sysInstruction += `\n\n[CANDIDATE RESUME / PROFILE]:\n${candidateProfile.trim().slice(0, 6000)}`;
     }
 
-    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'Analyze the provided screen capture and provide the direct interview answer.'}`;
+    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'Analyze the provided screen capture. If it is a coding question, detect the language and provide the short approach followed by the COMPLETE 100% working code.'}`;
 
     let success = false;
     let accumulatedReply = '';
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. Gemini Models (For both Paid and Free Trial)
-    if (activePlan === 'paid' || activePlan === 'free_trial') {
+    // 1. Gemini Models (Active when user provides an AIzaSy... key or valid token)
+    const hasValidGeminiKey = geminiKey && (geminiKey.startsWith('AIzaSy') || geminiKey.startsWith('ya29.'));
+    if ((activePlan === 'paid' || activePlan === 'free_trial') && hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-3.7-flash',
-        'gemini-3.6-flash',
         'gemini-3.5-flash',
-        'gemini-flash-latest'
+        'gemini-3.7-flash',
+        'gemini-3.5-flash-lite'
       ];
       
       let imageBase64 = null;
@@ -543,7 +554,7 @@ RULES FOR USING CANDIDATE RESUME:
         console.log(`[Plan] Model being used: ${modelId}`);
         addLog(`[Gemini] Attempting model: ${modelId}`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         try {
           const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
@@ -562,7 +573,7 @@ RULES FOR USING CANDIDATE RESUME:
             contents: [{ parts: contentParts }],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 500
+              maxOutputTokens: 4096
             }
           };
 
@@ -638,10 +649,9 @@ RULES FOR USING CANDIDATE RESUME:
     if (!success && groqKey) {
       addLog(`[Groq] Falling back to Groq AI Engine...`);
       const groqModels = [
-        'qwen/qwen3.8-27b',
         'openai/gpt-oss-120b',
-        'llama-3.3-70b-versatile',
-        'llama-3.1-8b-instant'
+        'qwen/qwen3.8-27b',
+        'openai/gpt-oss-20b'
       ];
 
       for (const modelId of groqModels) {
@@ -663,7 +673,7 @@ RULES FOR USING CANDIDATE RESUME:
                 { role: 'user', content: textToSend || 'Analyze the provided question and provide the direct spoken interview answer.' }
               ],
               temperature: 0.2,
-              max_tokens: 650,
+              max_tokens: 4096,
               stream: true
             }),
             signal: controller.signal
@@ -759,6 +769,7 @@ RULES FOR USING CANDIDATE RESUME:
   // Audio Context & Native PCM Recording References
   const audioContextRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const systemStreamRef = useRef(null);
   const processorRef = useRef(null);
   const pcmAudioChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
@@ -807,6 +818,12 @@ RULES FOR USING CANDIDATE RESUME:
         mediaStreamRef.current.getTracks().forEach(t => t.stop());
       } catch (e) {}
       mediaStreamRef.current = null;
+    }
+    if (systemStreamRef.current) {
+      try {
+        systemStreamRef.current.getTracks().forEach(t => t.stop());
+      } catch (e) {}
+      systemStreamRef.current = null;
     }
     if (audioContextRef.current) {
       try {
@@ -877,6 +894,19 @@ RULES FOR USING CANDIDATE RESUME:
       setSilenceWarning(false);
       setRecordingSeconds(0);
 
+      // Check macOS Microphone Permission before requesting stream
+      if (window.require) {
+        try {
+          const { ipcRenderer } = window.require('electron');
+          const micStatus = await ipcRenderer.invoke('check-microphone-permission');
+          if (micStatus === 'denied') {
+            addLog('❌ Microphone access denied by macOS');
+            setOutputText('⚠️ Microphone access is denied. Please enable Microphone permissions in macOS System Settings -> Privacy & Security -> Microphone.');
+            return;
+          }
+        } catch (e) {}
+      }
+
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
@@ -884,21 +914,6 @@ RULES FOR USING CANDIDATE RESUME:
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
-
-      const constraints = {
-        audio: {
-          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: true,
-          channelCount: 1
-        }
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      mediaStreamRef.current = stream;
-
-      const source = audioContext.createMediaStreamSource(stream);
 
       // Dedicated audio processor for sample-accurate PCM recording
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
@@ -929,12 +944,48 @@ RULES FOR USING CANDIDATE RESUME:
         }
       };
 
-      source.connect(processor);
       const muteGain = audioContext.createGain();
       muteGain.gain.value = 0;
       processor.connect(muteGain);
       muteGain.connect(audioContext.destination);
       processorRef.current = processor;
+
+      // 1. Microphone Audio Stream
+      const constraints = {
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: true,
+          channelCount: 1
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      mediaStreamRef.current = stream;
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(processor);
+
+      // 2. System Audio Loopback (Interviewer Audio from computer speakers/headphones)
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+          const sysStream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: true
+          });
+          if (sysStream && sysStream.getAudioTracks().length > 0) {
+            systemStreamRef.current = sysStream;
+            const sysSource = audioContext.createMediaStreamSource(sysStream);
+            sysSource.connect(processor);
+            addLog('🔊 System Audio (Interviewer Loopback) attached');
+          }
+          if (sysStream) {
+            sysStream.getVideoTracks().forEach(t => t.stop());
+          }
+        }
+      } catch (sysErr) {
+        // Normal if loopback cancelled or unselected; mic continues
+      }
 
       let sec = 0;
       recordingTimerRef.current = setInterval(() => {
@@ -994,6 +1045,14 @@ RULES FOR USING CANDIDATE RESUME:
       return;
     }
 
+    if (maxVolumeRef.current < 1 && totalLength > 4000) {
+      setIsLoading(false);
+      setStreamStatus('');
+      addLog(`[${new Date().toLocaleTimeString()}] ⚠️ Audio volume 0% (Silent mic).`);
+      setOutputText("⚠️ No sound was detected from your microphone (0% volume).\n\nPlease check:\n1. Is your microphone muted or input level too low?\n2. Is Microphone permission enabled in macOS System Settings -> Privacy & Security -> Microphone?\n3. Select the correct audio input device in Settings.");
+      return;
+    }
+
     const merged = new Float32Array(totalLength);
     let offset = 0;
     for (let i = 0; i < chunks.length; i++) {
@@ -1042,33 +1101,32 @@ RULES FOR USING CANDIDATE RESUME:
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. Gemini Voice Engine (For both Paid and Free Trial)
-    if (activePlan === 'paid' || activePlan === 'free_trial') {
+    // 1. Gemini Voice Engine (Active when user provides an AIzaSy... key or valid token)
+    const hasValidGeminiKey = geminiKey && (geminiKey.startsWith('AIzaSy') || geminiKey.startsWith('ya29.'));
+    if ((activePlan === 'paid' || activePlan === 'free_trial') && hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-3.7-flash',
-        'gemini-3.6-flash',
         'gemini-3.5-flash',
-        'gemini-flash-latest'
+        'gemini-3.7-flash',
+        'gemini-3.5-flash-lite'
       ];
 
       for (const modelId of geminiModels) {
         console.log(`[Plan] Model being used: ${modelId}`);
         addLog(`[Voice] Attempting Gemini model: ${modelId}`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         try {
           const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
+          const voicePrompt = `${voiceSysInstruction}\n\n[TASK]: Listen to the interview audio recording below. Transcribe what was asked and provide the complete, direct, spoken-style interview answer.`;
+
           const response = await fetch(url, {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              systemInstruction: {
-                parts: [{ text: voiceSysInstruction }]
-              },
               contents: [{
                 parts: [
-                  { text: "Transcribe spoken interview question and provide the direct, complete spoken interview answer." },
+                  { text: voicePrompt },
                   {
                     inlineData: {
                       mimeType: 'audio/wav',
@@ -1079,7 +1137,7 @@ RULES FOR USING CANDIDATE RESUME:
               }],
               generationConfig: {
                 temperature: 0.2,
-                maxOutputTokens: 650
+                maxOutputTokens: 1000
               }
             }),
             signal: controller.signal
@@ -1189,7 +1247,7 @@ RULES FOR USING CANDIDATE RESUME:
       if (transcript) {
         setStreamStatus('⚡ Groq Generating...');
         const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
-        const groqChatModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'llama-3.3-70b-versatile'];
+        const groqChatModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
 
         for (const chatModel of groqChatModels) {
           const chatController = new AbortController();
@@ -1272,7 +1330,11 @@ RULES FOR USING CANDIDATE RESUME:
       setIsLoading(false);
       setStreamStatus('');
       addLog(`[${new Date().toLocaleTimeString()}] Voice processing ended: ${lastErr || 'No speech detected'}`);
-      setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      if (!hasValidGeminiKey) {
+        setOutputText("⚠️ Gemini API Key Required: Please open Settings (Gear Icon ⚙️), paste your Google AI Studio API Key (starts with AIzaSy...), and click 'Test Key'.");
+      } else {
+        setOutputText(lastErr ? `⚠️ Voice recognition notice (${lastErr}). Please speak closer to your microphone and try again.` : "⚠️ Could not detect speech clearly. Please speak closer to your microphone and click Voice again.");
+      }
     } else {
       setIsLoading(false);
     }
@@ -1525,26 +1587,67 @@ RULES FOR USING CANDIDATE RESUME:
                     </span>
                   )}
                 </div>
-                <input
-                  type="password"
-                  value={customGeminiKey}
-                  onChange={(e) => {
-                    setCustomGeminiKey(e.target.value);
-                    if (e.target.value.trim()) {
-                      localStorage.setItem('custom_gemini_key', e.target.value.trim());
-                    } else {
-                      localStorage.removeItem('custom_gemini_key');
-                    }
-                  }}
-                  placeholder="AIzaSy... (Google AI Studio Key)"
-                  className="w-full bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2 text-xs outline-none focus:border-emerald-500/40 font-mono placeholder-gray-600"
-                />
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="password"
+                    value={customGeminiKey}
+                    onChange={(e) => {
+                      setCustomGeminiKey(e.target.value);
+                      if (e.target.value.trim()) {
+                        localStorage.setItem('custom_gemini_key', e.target.value.trim());
+                      } else {
+                        localStorage.removeItem('custom_gemini_key');
+                      }
+                    }}
+                    placeholder="AIzaSy... (Google AI Studio Key)"
+                    className="flex-1 bg-black/60 border border-white/10 text-gray-200 rounded-lg p-2 text-xs outline-none focus:border-emerald-500/40 font-mono placeholder-gray-600"
+                  />
+                  <button
+                    onClick={async () => {
+                      const keyToTest = (customGeminiKey || '').replace(/["']/g, '').trim();
+                      if (!keyToTest) {
+                        alert('Please enter a Gemini API Key first.');
+                        return;
+                      }
+                      setKeyTestStatus('Testing...');
+                      try {
+                        const { url, headers } = buildGeminiRequestConfig(keyToTest, 'gemini-3.5-flash', false);
+                        const res = await fetch(url, {
+                          method: 'POST',
+                          headers,
+                          body: JSON.stringify({
+                            contents: [{ parts: [{ text: 'Ping' }] }]
+                          })
+                        });
+                        if (res.ok) {
+                          setKeyTestStatus('✅ Key is Valid!');
+                          setTimeout(() => setKeyTestStatus(''), 4000);
+                        } else {
+                          const errData = await res.json().catch(() => ({}));
+                          const msg = errData?.error?.message || `HTTP ${res.status}`;
+                          setKeyTestStatus(`❌ Error: ${msg.slice(0, 50)}`);
+                        }
+                      } catch (err) {
+                        setKeyTestStatus(`❌ ${err.message}`);
+                      }
+                    }}
+                    className="px-2.5 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-semibold whitespace-nowrap transition-all"
+                  >
+                    Test Key
+                  </button>
+                </div>
+                {keyTestStatus && (
+                  <p className={`text-[11px] font-medium ${keyTestStatus.startsWith('✅') ? 'text-emerald-400' : keyTestStatus === 'Testing...' ? 'text-amber-400' : 'text-red-400'}`}>
+                    {keyTestStatus}
+                  </p>
+                )}
                 <p className="text-[10px] text-gray-500 flex justify-between">
                   <span>Get key free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-emerald-400 underline">aistudio.google.com</a></span>
                   {customGeminiKey && (
                     <button
                       onClick={() => {
                         setCustomGeminiKey('');
+                        setKeyTestStatus('');
                         localStorage.removeItem('custom_gemini_key');
                       }}
                       className="text-red-400 hover:text-red-300 font-bold"
