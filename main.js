@@ -458,8 +458,14 @@ app.whenReady().then(() => {
     }
   };
 
-  ipcMain.handle('auto-typer:start', async (event, { code, countdown = 2, speed = 'natural' }) => {
+  ipcMain.handle('auto-typer:start', async (event, { code, countdown = 3, speed = 'normal' }) => {
     logDebug(`[AutoTyper] IPC start called, code length: ${code ? code.length : 0}, speed: ${speed}`);
+    
+    // Release focus from Electron window so clicking immediately focuses the editor window
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try { mainWindow.blur(); } catch (e) {}
+    }
+
     return autoTyper.start(code, { countdown, speed }, {
       onProgress: (prog) => sendAutoTypeStatus({ ...autoTyper.getStatus(), ...prog }),
       onStatus: (status) => sendAutoTypeStatus(status)

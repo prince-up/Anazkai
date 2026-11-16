@@ -162,10 +162,12 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [autoTypeState, setAutoTypeState] = useState({
     isTyping: false,
     isPaused: false,
+    isStopped: false,
     countdown: 0,
     progress: 0,
-    currentIndex: 0,
-    totalChars: 0
+    currentLine: 0,
+    totalLines: 0,
+    statusText: ''
   });
 
   const [autoTypeAfterResponse, setAutoTypeAfterResponse] = useState(() => {
@@ -173,7 +175,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   });
 
   const [autoTypeSpeed, setAutoTypeSpeed] = useState(() => {
-    return localStorage.getItem('auto_type_speed') || 'natural';
+    return localStorage.getItem('auto_type_speed') || 'normal';
   });
 
   // Extract pure code block (ignoring approaches & explanations)
@@ -193,7 +195,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     return text.trim();
   };
 
-  const handleStartAutoType = async (codeToType = null, countdown = 2) => {
+  const handleStartAutoType = async (codeToType = null, countdown = 3) => {
     const rawCode = codeToType || extractCodeOnly(outputText);
     if (!rawCode || rawCode.trim().length === 0) {
       addLog('⚠️ No code found in response to auto-type.');
@@ -1884,12 +1886,12 @@ RULES FOR USING CANDIDATE RESUME:
 
                 {/* Typing Speed Control */}
                 <div className="pt-2 border-t border-white/5 space-y-1.5">
-                  <span className="text-[10px] text-gray-300 font-bold block">Typing Speed (Human Cadence):</span>
+                  <span className="text-[10px] text-gray-300 font-bold block">Typing Speed:</span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { id: 'chill', label: 'Chill (~45 WPM)' },
-                      { id: 'natural', label: 'Natural (~70 WPM)' },
-                      { id: 'fast', label: 'Fast (~95 WPM)' }
+                      { id: 'slow', label: 'Slow (400ms)' },
+                      { id: 'normal', label: 'Normal (220ms)' },
+                      { id: 'fast', label: 'Fast (110ms)' }
                     ].map(preset => (
                       <button
                         key={preset.id}
@@ -2124,7 +2126,7 @@ RULES FOR USING CANDIDATE RESUME:
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
               <Sparkles size={10} />
-              <span>{getActiveGeminiKey() ? 'Gemini 3.5 Flash' : (getActiveGroqKey() ? 'Groq Llama 3' : 'AI Copilot')}</span>
+              <span>{getActiveGeminiKey() ? 'Gemini 2.0 Flash' : (getActiveGroqKey() ? 'Groq Llama 3' : 'AI Copilot')}</span>
             </span>
             {streamStatus && (
               <span className="text-[9px] text-teal-300 font-mono font-semibold bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 animate-pulse">
@@ -2138,49 +2140,49 @@ RULES FOR USING CANDIDATE RESUME:
             {autoTypeState.countdown > 0 ? (
               <button
                 onClick={handleStopAutoType}
-                className="bg-amber-500/20 hover:bg-red-500/30 text-amber-300 hover:text-red-300 border border-amber-500/40 px-2 py-0.5 rounded-md text-[9px] font-bold flex items-center gap-1 animate-pulse transition-all cursor-pointer shadow-xs"
+                className="bg-amber-500/25 hover:bg-red-500/30 text-amber-300 hover:text-red-300 border border-amber-500/50 px-2 py-0.5 rounded-md text-[9px] font-bold flex items-center gap-1.5 animate-pulse transition-all cursor-pointer shadow-md"
                 title="Cancel countdown (Cmd+Shift+S)"
               >
-                <Clock size={10} />
-                <span>Typing in {autoTypeState.countdown}s... (Cancel)</span>
+                <Clock size={11} className="animate-spin text-amber-400" />
+                <span>🎯 Click Editor! Starts in {autoTypeState.countdown}s (Cancel)</span>
               </button>
             ) : autoTypeState.isTyping ? (
-              <div className="flex items-center gap-1 bg-cyan-950/60 border border-cyan-500/30 px-1.5 py-0.5 rounded-md shadow-xs">
-                <span className="text-[9px] font-mono font-bold text-cyan-300 flex items-center gap-1 pr-1">
-                  <Keyboard size={10} className="animate-bounce text-cyan-400" />
+              <div className="flex items-center gap-1.5 bg-cyan-950/80 border border-cyan-400/40 px-2 py-0.5 rounded-md shadow-sm">
+                <span className="text-[9px] font-mono font-bold text-cyan-300 flex items-center gap-1">
+                  <Keyboard size={10} className="animate-pulse text-cyan-400" />
                   <span>{autoTypeState.progress}%</span>
                 </span>
                 {autoTypeState.isPaused ? (
                   <button
                     onClick={handleResumeAutoType}
-                    className="p-0.5 text-emerald-400 hover:text-white bg-white/10 rounded transition-colors"
+                    className="p-1 text-emerald-400 hover:text-white bg-white/10 rounded transition-colors"
                     title="Resume typing (Cmd+Shift+T)"
                   >
-                    <Play size={9} />
+                    <Play size={10} />
                   </button>
                 ) : (
                   <button
                     onClick={handlePauseAutoType}
-                    className="p-0.5 text-amber-400 hover:text-white bg-white/10 rounded transition-colors"
+                    className="p-1 text-amber-400 hover:text-white bg-white/10 rounded transition-colors"
                     title="Pause typing"
                   >
-                    <Pause size={9} />
+                    <Pause size={10} />
                   </button>
                 )}
                 <button
                   onClick={handleStopAutoType}
-                  className="p-0.5 text-red-400 hover:text-white bg-red-500/20 hover:bg-red-600 rounded transition-colors"
-                  title="Stop typing (Cmd+Shift+S)"
+                  className="px-1.5 py-0.5 text-[9px] font-bold text-white bg-red-500 hover:bg-red-600 active:scale-95 rounded flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+                  title="Force Stop typing immediately (Cmd+Shift+S)"
                 >
-                  <Square size={9} />
+                  <Square size={8} fill="currentColor" />
+                  <span>Stop</span>
                 </button>
                 <button
                   onClick={handleClose}
-                  className="p-0.5 text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 rounded transition-colors flex items-center gap-0.5 px-1 cursor-pointer"
+                  className="p-1 text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 rounded transition-colors flex items-center gap-0.5 px-1 cursor-pointer"
                   title="Hide overlay & free mouse (F2)"
                 >
-                  <EyeOff size={8} />
-                  <span className="text-[8px]">Hide</span>
+                  <EyeOff size={9} />
                 </button>
               </div>
             ) : (
