@@ -1,7 +1,7 @@
 export const SUBSCRIPTION_PLANS = [
   {
     id: '1-hour',
-    name: 'HideAI 1 Hour',
+    name: 'Anazk AI 1 Hour',
     priceInr: 259,
     interval: 'day',
     displayPrice: '₹259',
@@ -10,7 +10,7 @@ export const SUBSCRIPTION_PLANS = [
   },
   {
     id: '2-hour',
-    name: 'HideAI 2 Hours',
+    name: 'Anazk AI 2 Hours',
     priceInr: 500,
     interval: 'day',
     displayPrice: '₹500',
@@ -20,7 +20,7 @@ export const SUBSCRIPTION_PLANS = [
   },
   {
     id: '10-sessions',
-    name: 'HideAI 10 Sessions',
+    name: 'Anazk AI 10 Sessions',
     priceInr: 2500,
     interval: 'day',
     displayPrice: '₹2,500',
@@ -29,7 +29,7 @@ export const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'lifetime-349',
-    name: 'HideAI Lifetime Access',
+    name: 'Anazk AI Lifetime Access',
     priceInr: 349,
     interval: 'one-time',
     displayPrice: '₹349',

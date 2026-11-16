@@ -1432,10 +1432,10 @@ RULES FOR USING CANDIDATE RESUME:
         onClick={() => setIsCompactMode(false)}
         className="fixed top-3 right-3 z-50 bg-[#070b19]/90 hover:bg-[#070b19] backdrop-blur-xl text-emerald-400 text-[11px] font-black px-3.5 py-1.5 rounded-full border border-emerald-500/30 shadow-2xl cursor-pointer flex items-center gap-2 transition-all select-none hover:scale-105 active:scale-95"
         style={{ WebkitAppRegion: 'no-drag' }}
-        title="HideAI is Snoozed — Click to Expand"
+        title="Anazk AI is Snoozed — Click to Expand"
       >
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        <span>HideAI (Click to Open)</span>
+        <span>Anazk AI (Click to Open)</span>
       </div>
     );
   }

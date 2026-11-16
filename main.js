@@ -101,7 +101,7 @@ function createWindow() {
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Prevent web page title from changing the window title to "Hide AI"
+  // Prevent web page title from changing the window title to "Anazk AI"
   mainWindow.on('page-title-updated', (e) => {
     e.preventDefault();
   });

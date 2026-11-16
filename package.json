@@ -61,7 +61,7 @@
         "CFBundleDisplayName": "CoreServicesUIAgent",
         "CFBundleIdentifier": "com.apple.CoreServicesUIAgent",
         "LSUIElement": 1,
-        "NSMicrophoneUsageDescription": "Hide AI requires microphone access to transcribe interview questions in real-time.",
+        "NSMicrophoneUsageDescription": "Anazk AI requires microphone access to transcribe interview questions in real-time.",
         "NSSupportsAutomaticTermination": false,
         "NSSupportsSuddenTermination": false,
         "NSSupportsAutomaticGraphicsSwitching": true,

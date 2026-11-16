@@ -378,7 +378,7 @@ const SubscriptionGuard = ({ children }) => {
           setCurrentUser({ 
             id: 'premium-friend-id', 
             email: cleanEmail, 
-            user_metadata: { full_name: 'HideAI Premium VIP' } 
+            user_metadata: { full_name: 'Anazk AI Premium VIP' } 
           });
           setTimeRemaining('UNLIMITED');
           setPlanType('vip');
@@ -478,7 +478,7 @@ const SubscriptionGuard = ({ children }) => {
         key: RAZORPAY_KEY_ID,
         amount: 34900, // ₹349 in paise
         currency: 'INR',
-        name: 'HideAI',
+        name: 'Anazk AI',
         description: 'Lifetime Access — One Time Payment',
         image: 'https://anazkai.vercel.app/favicon.ico',
         prefill: {
@@ -562,13 +562,13 @@ const SubscriptionGuard = ({ children }) => {
         {/* Logo */}
         <img
           src="dist/penguin.jpg"
-          alt="HideAI Logo"
+          alt="Anazk AI Logo"
           className="w-14 h-14 rounded-2xl object-cover border border-[#c99a4c]/30 mb-3.5 shadow-lg"
           onError={(e) => { e.target.src = 'penguin.jpg'; }}
         />
 
         <h2 className="text-xl font-black mb-1 bg-gradient-to-r from-[#0d2e27] to-[#14473d] bg-clip-text text-transparent text-center">
-          HideAI Stealth HUD
+          Anazk AI Stealth HUD
         </h2>
         <p className="text-[#0d2e27]/60 text-xs text-center font-bold mb-5">
           Sign in to access your interview minutes
