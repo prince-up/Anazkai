@@ -680,9 +680,27 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
       return;
     }
 
+    if (overrideText === null) {
+      setInputText('');
+    }
+
     setIsLoading(true);
     setStreamStatus('⚡ Processing...');
     setOutputText('');
+
+    // Extract image data upfront
+    let imageBase64 = null;
+    let imageMime = 'image/jpeg';
+    if (imageToSend) {
+      const parts = imageToSend.split(',');
+      if (parts.length === 2) {
+        const match = parts[0].match(/:(.*?);/);
+        if (match) imageMime = match[1];
+        imageBase64 = parts[1];
+      } else {
+        imageBase64 = imageToSend;
+      }
+    }
 
     const candidateProfile = resumeSummary || resumeText;
 
@@ -710,7 +728,18 @@ RULES FOR USING CANDIDATE RESUME:
       sysInstruction += `\n\n[CANDIDATE RESUME / PROFILE]:\n${candidateProfile.trim().slice(0, 6000)}`;
     }
 
-    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'This is a coding interview question from the attached screen capture. Read the image carefully, extract the problem statement, detect the required programming language, and output the short approach followed by the COMPLETE 100% working code immediately. Do NOT ask for more details or clarification — solve the exact question shown in the screenshot.'}`;
+    const userQuery = (textToSend || '').trim();
+    let promptText = '';
+
+    if (imageBase64) {
+      if (userQuery) {
+        promptText = `${sysInstruction}\n\n[USER INSTRUCTION]:\n${userQuery}\n\n[ATTACHED SCREENSHOT]:\nThe user has attached a screenshot of the coding interview question/screen. Carefully inspect the attached screenshot, extract the problem statement, constraints, example test cases, and detect the target programming language. Follow the user's instructions and output: 1. A short approach (3-5 concise bullets with Time/Space complexity). 2. The COMPLETE 100% working code solution inside markdown code blocks. Do not say you cannot see the image; the screenshot is attached.`;
+      } else {
+        promptText = `${sysInstruction}\n\n[ATTACHED SCREENSHOT]:\nThis is a coding interview question from the attached screen capture. Read the image carefully, extract the problem statement, detect the required programming language, and output the short approach followed by the COMPLETE 100% working code immediately. Do NOT ask for more details or clarification — solve the exact question shown in the screenshot.`;
+      }
+    } else {
+      promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${userQuery || 'Please solve this coding problem.'}`;
+    }
 
     let success = false;
     let accumulatedReply = '';
@@ -725,19 +754,6 @@ RULES FOR USING CANDIDATE RESUME:
         'gemini-1.5-flash',
         'gemini-1.5-pro'
       ];
-      
-      let imageBase64 = null;
-      let imageMime = 'image/png';
-      if (imageToSend) {
-        const parts = imageToSend.split(',');
-        if (parts.length === 2) {
-          const match = parts[0].match(/:(.*?);/);
-          if (match) imageMime = match[1];
-          imageBase64 = parts[1];
-        } else {
-          imageBase64 = imageToSend;
-        }
-      }
 
       for (const modelId of geminiModels) {
         console.log(`[Plan] Model being used: ${modelId}`);
@@ -751,8 +767,8 @@ RULES FOR USING CANDIDATE RESUME:
           const contentParts = [];
           if (imageBase64) {
             contentParts.push({
-              inline_data: {
-                mime_type: imageMime,
+              inlineData: {
+                mimeType: imageMime || 'image/jpeg',
                 data: imageBase64
               }
             });
