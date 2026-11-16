@@ -1360,9 +1360,132 @@ RULES FOR USING CANDIDATE RESUME:
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. Gemini Voice Engine
+    // 1. Ultra-Fast Groq Whisper Turbo Engine (<150ms transcription + 500 tok/s streaming)
+    if (groqKey) {
+      addLog(`[Voice] Fast transcribing via Groq Whisper Turbo...`);
+      let transcript = '';
+      const whisperModels = ['whisper-large-v3-turbo', 'whisper-large-v3'];
+
+      for (const whisperModel of whisperModels) {
+        try {
+          const formData = new FormData();
+          const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+          formData.append('file', audioBlob, 'audio.wav');
+          formData.append('model', whisperModel);
+          formData.append('response_format', 'text');
+
+          const whisperController = new AbortController();
+          const whisperTimeout = setTimeout(() => whisperController.abort(), 8000);
+
+          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: formData,
+            signal: whisperController.signal
+          });
+          clearTimeout(whisperTimeout);
+
+          if (whisperRes.ok) {
+            transcript = (await whisperRes.text()).trim();
+            if (transcript) {
+              const transTime = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+              addLog(`[Voice] Whisper heard in ${transTime}s: "${transcript.slice(0, 80)}"`);
+              break;
+            }
+          }
+        } catch (wErr) {
+          console.warn('Groq Whisper error:', wErr);
+        }
+      }
+
+      if (transcript) {
+        setStreamStatus('⚡ Generating answer...');
+        setOutputText(`🎙️ **Heard:** "${transcript}"\n\n⚡ Generating optimal answer...`);
+        const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
+        const groqChatModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
+
+        for (const chatModel of groqChatModels) {
+          const chatController = new AbortController();
+          const chatTimeout = setTimeout(() => chatController.abort(), 12000);
+
+          try {
+            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${groqKey}`
+              },
+              body: JSON.stringify({
+                model: chatModel,
+                messages: [
+                  { role: 'system', content: voiceSysInstruction },
+                  { role: 'user', content: promptForAnswer }
+                ],
+                temperature: 0.2,
+                max_tokens: 650,
+                stream: true
+              }),
+              signal: chatController.signal
+            });
+            clearTimeout(chatTimeout);
+
+            if (chatRes.ok && chatRes.body) {
+              const reader = chatRes.body.getReader();
+              const decoder = new TextDecoder();
+              let buffer = '';
+              accumulatedText = `🎙️ **Heard:** "${transcript}"\n\n`;
+
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const jsonStr = line.slice(6).trim();
+                    if (jsonStr && jsonStr !== '[DONE]') {
+                      try {
+                        const data = JSON.parse(jsonStr);
+                        const chunk = data.choices?.[0]?.delta?.content;
+                        if (chunk) {
+                          if (firstTokenLatency === null) {
+                            firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                            setStreamStatus(`⚡ First word: ${firstTokenLatency}s`);
+                          }
+                          accumulatedText += chunk;
+                          setOutputText(accumulatedText);
+                        }
+                      } catch (e) {}
+                    }
+                  }
+                }
+              }
+
+              if (accumulatedText && accumulatedText.trim().length > transcript.length + 15) {
+                const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
+                setStreamStatus(`⚡ ${firstTokenLatency || totalSec}s`);
+                addLog(`[${new Date().toLocaleTimeString()}] ✅ Fast Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
+                setInterviewCount(prev => prev + 1);
+                decrementUserCredits();
+                voiceSuccess = true;
+                break;
+              }
+            }
+          } catch (chatErr) {
+            clearTimeout(chatTimeout);
+            addLog(`⚠️ Groq Voice Error: ${chatErr.message}`);
+          }
+        }
+      }
+    }
+
+    // 2. Gemini Voice Engine Fallback
     const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
-    if (hasValidGeminiKey) {
+    if (!voiceSuccess && hasValidGeminiKey) {
       const geminiModels = [
         'gemini-3.5-flash',
         'gemini-3.8-flash',
@@ -1372,7 +1495,7 @@ RULES FOR USING CANDIDATE RESUME:
 
       for (const modelId of geminiModels) {
         console.log(`[Plan] Model being used: ${modelId}`);
-        addLog(`[Voice] Attempting Gemini model: ${modelId}`);
+        addLog(`[Voice] Attempting Gemini model fallback: ${modelId}`);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 20000);
 
@@ -1461,126 +1584,6 @@ RULES FOR USING CANDIDATE RESUME:
           clearTimeout(timeoutId);
           addLog(`⚠️ Gemini Voice Stream exception: ${gErr.message}`);
           lastErr = gErr.message;
-        }
-      }
-    }
-
-    // 2. Groq Voice Fallback (Whisper AI + Groq Chat Streaming)
-    if (!voiceSuccess && groqKey) {
-      addLog(`[Voice] Falling back to Groq Whisper AI...`);
-      let transcript = '';
-      const whisperModels = ['whisper-large-v3-turbo', 'whisper-large-v3'];
-
-      for (const whisperModel of whisperModels) {
-        try {
-          const formData = new FormData();
-          const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-          formData.append('file', audioBlob, 'audio.wav');
-          formData.append('model', whisperModel);
-          formData.append('response_format', 'text');
-
-          const whisperController = new AbortController();
-          const whisperTimeout = setTimeout(() => whisperController.abort(), 10000);
-
-          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${groqKey}`
-            },
-            body: formData,
-            signal: whisperController.signal
-          });
-          clearTimeout(whisperTimeout);
-
-          if (whisperRes.ok) {
-            transcript = (await whisperRes.text()).trim();
-            if (transcript) {
-              addLog(`[Voice] Whisper heard: "${transcript.slice(0, 80)}"`);
-              break;
-            }
-          }
-        } catch (wErr) {
-          console.warn('Groq Whisper error:', wErr);
-        }
-      }
-
-      if (transcript) {
-        setStreamStatus('⚡ Groq Generating...');
-        const promptForAnswer = `Interview Question: "${transcript}"\nProvide the complete, direct, spoken-style interview answer.`;
-        const groqChatModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
-
-        for (const chatModel of groqChatModels) {
-          const chatController = new AbortController();
-          const chatTimeout = setTimeout(() => chatController.abort(), 12000);
-
-          try {
-            const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${groqKey}`
-              },
-              body: JSON.stringify({
-                model: chatModel,
-                messages: [
-                  { role: 'system', content: voiceSysInstruction },
-                  { role: 'user', content: promptForAnswer }
-                ],
-                temperature: 0.2,
-                max_tokens: 650,
-                stream: true
-              }),
-              signal: chatController.signal
-            });
-            clearTimeout(chatTimeout);
-
-            if (chatRes.ok && chatRes.body) {
-              const reader = chatRes.body.getReader();
-              const decoder = new TextDecoder();
-              let buffer = '';
-
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                  if (line.startsWith('data: ')) {
-                    const jsonStr = line.slice(6).trim();
-                    if (jsonStr && jsonStr !== '[DONE]') {
-                      try {
-                        const data = JSON.parse(jsonStr);
-                        const chunk = data.choices?.[0]?.delta?.content;
-                        if (chunk) {
-                          if (firstTokenLatency === null) {
-                            firstTokenLatency = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                            setStreamStatus(`⚡ Groq (${firstTokenLatency}s)`);
-                          }
-                          accumulatedText += chunk;
-                          setOutputText(accumulatedText);
-                        }
-                      } catch (e) {}
-                    }
-                  }
-                }
-              }
-
-              if (accumulatedText && accumulatedText.trim()) {
-                const totalSec = ((Date.now() - speechEndTime) / 1000).toFixed(2);
-                setStreamStatus(`⚡ ${totalSec}s`);
-                addLog(`[${new Date().toLocaleTimeString()}] ✅ Groq Voice streamed in ${totalSec}s (${accumulatedText.length} chars)`);
-                setInterviewCount(prev => prev + 1);
-                decrementUserCredits();
-                voiceSuccess = true;
-                break;
-              }
-            }
-          } catch (chatErr) {
-            clearTimeout(chatTimeout);
-            addLog(`⚠️ Groq Voice Error: ${chatErr.message}`);
-          }
         }
       }
     }
