@@ -356,7 +356,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const geminiKey = getActiveGeminiKey();
     if (geminiKey && fullText.length > 150) {
       try {
-        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-3.5-flash', false);
+        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-2.0-flash', false);
         const res = await fetch(url, {
           method: 'POST',
           headers,
@@ -673,20 +673,20 @@ RULES FOR USING CANDIDATE RESUME:
       sysInstruction += `\n\n[CANDIDATE RESUME / PROFILE]:\n${candidateProfile.trim().slice(0, 6000)}`;
     }
 
-    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'Analyze the provided screen capture. If it is a coding question, detect the language and provide the short approach followed by the COMPLETE 100% working code.'}`;
+    let promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${textToSend || 'This is a coding interview question from the attached screen capture. Read the image carefully, extract the problem statement, detect the required programming language, and output the short approach followed by the COMPLETE 100% working code immediately. Do NOT ask for more details or clarification — solve the exact question shown in the screenshot.'}`;
 
     let success = false;
     let accumulatedReply = '';
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. Gemini Models (Active when user provides an AIzaSy... key or valid token)
-    const hasValidGeminiKey = geminiKey && (geminiKey.startsWith('AIzaSy') || geminiKey.startsWith('ya29.'));
-    if ((activePlan === 'paid' || activePlan === 'free_trial') && hasValidGeminiKey) {
+    // 1. Gemini Multimodal Vision & Coding Engine
+    const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
+    if (hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
-        'gemini-3.5-flash-lite'
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-pro'
       ];
       
       let imageBase64 = null;
@@ -799,6 +799,13 @@ RULES FOR USING CANDIDATE RESUME:
 
     // 2. Groq Fallback Engine (Ultra-fast Qwen/Llama/GPT-OSS)
     if (!success && groqKey) {
+      if (!textToSend && imageToSend) {
+        addLog(`⚠️ Screenshot requires Gemini Multimodal Vision API key.`);
+        setOutputText(`⚠️ **Screenshot Analysis Requires a Free Gemini API Key**\n\nGroq does not support image analysis. To get instant complete code directly from screenshots:\n\n1. Click **Settings ⚙️** (top right).\n2. Paste your free Google Gemini API Key (starts with \`AIzaSy...\`) from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey).\n3. Click **Done** and press **F3 / Ask**!\n\n*(Alternatively, copy and paste the question text into the input box below and press Enter).*`);
+        setIsLoading(false);
+        setStreamStatus('');
+        return;
+      }
       addLog(`[Groq] Falling back to Groq AI Engine...`);
       const groqModels = [
         'openai/gpt-oss-120b',
@@ -1262,13 +1269,12 @@ RULES FOR USING CANDIDATE RESUME:
     let lastErr = null;
     let firstTokenLatency = null;
 
-    // 1. Gemini Voice Engine (Active when user provides an AIzaSy... key or valid token)
-    const hasValidGeminiKey = geminiKey && (geminiKey.startsWith('AIzaSy') || geminiKey.startsWith('ya29.'));
-    if ((activePlan === 'paid' || activePlan === 'free_trial') && hasValidGeminiKey) {
+    // 1. Gemini Voice Engine
+    const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
+    if (hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-3.5-flash',
-        'gemini-3.7-flash',
-        'gemini-3.5-flash-lite'
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
       ];
 
       for (const modelId of geminiModels) {
@@ -1783,7 +1789,7 @@ RULES FOR USING CANDIDATE RESUME:
                       }
                       setKeyTestStatus('Testing...');
                       try {
-                        const { url, headers } = buildGeminiRequestConfig(keyToTest, 'gemini-3.5-flash', false);
+                        const { url, headers } = buildGeminiRequestConfig(keyToTest, 'gemini-2.0-flash', false);
                         const res = await fetch(url, {
                           method: 'POST',
                           headers,
