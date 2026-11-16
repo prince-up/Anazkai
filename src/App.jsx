@@ -121,7 +121,7 @@ function maskKey(key) {
 
 // AI Engine API Keys Configuration
 const FREE_TRIAL_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
-const HARDCODED_PAID_GEMINI_KEY = 'AQ.Ab8RN6KBXFzpGWdSWFmXeVMxUr7cxExYay-IS_yLm3hFAwSU0Q';
+const HARDCODED_PAID_GEMINI_KEY = '';
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
 
 function getActiveGeminiKey() {
@@ -131,7 +131,7 @@ function getActiveGeminiKey() {
   // 2. Environment variable
   const envKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (envKey && envKey.trim().length > 10 && !envKey.includes('your_gemini')) return envKey.replace(/["']/g, '').trim();
-  // 3. Internal hardcoded key (fallback)
+  // 3. Fallback
   return HARDCODED_PAID_GEMINI_KEY;
 }
 
@@ -888,9 +888,9 @@ RULES FOR USING CANDIDATE RESUME:
 
     // 2. Groq Fallback Engine (Ultra-fast Qwen/Llama/GPT-OSS)
     if (!success && groqKey) {
-      if (!textToSend && imageToSend) {
+      if (imageToSend) {
         addLog(`⚠️ Screenshot requires Gemini Multimodal Vision API key.`);
-        setOutputText(`⚠️ **Screenshot Analysis Requires a Free Gemini API Key**\n\nGroq does not support image analysis. To get instant complete code directly from screenshots:\n\n1. Click **Settings ⚙️** (top right).\n2. Paste your free Google Gemini API Key (starts with \`AIzaSy...\`) from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey).\n3. Click **Done** and press **F3 / Ask**!\n\n*(Alternatively, copy and paste the question text into the input box below and press Enter).*`);
+        setOutputText(`⚠️ **Screenshot Analysis Requires a Free Gemini API Key**\n\nThe built-in Groq engine handles text and voice questions, but **screenshot recognition requires Google Gemini Multimodal Vision**.\n\n### How to enable instant screenshot coding answers (100% Free):\n1. Go to [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) and click **Create API Key**.\n2. In this app, click **Settings (⚙️ Gear Icon)** at the top right.\n3. Paste your key (starts with \`AIzaSy...\`) into **Gemini API Key** and click **Test Key**.\n4. Close Settings and click **Ask (F3)**!\n\n*(Voice and text questions work automatically without any key).*`);
         setIsLoading(false);
         setStreamStatus('');
         return;
@@ -1849,8 +1849,8 @@ RULES FOR USING CANDIDATE RESUME:
                       Active
                     </span>
                   ) : (
-                    <span className="text-[10px] text-gray-400 font-medium">
-                      Built-in Fast AI
+                    <span className="text-[10px] text-amber-400 font-medium">
+                      Key Required for Screenshots
                     </span>
                   )}
                 </div>
