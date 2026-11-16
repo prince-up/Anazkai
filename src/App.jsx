@@ -389,7 +389,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
     const geminiKey = getActiveGeminiKey();
     if (geminiKey && fullText.length > 150) {
       try {
-        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-2.0-flash', false);
+        const { url, headers } = buildGeminiRequestConfig(geminiKey, 'gemini-3.5-flash', false);
         const res = await fetch(url, {
           method: 'POST',
           headers,
@@ -750,7 +750,9 @@ RULES FOR USING CANDIDATE RESUME:
     const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
     if (hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-2.0-flash',
+        'gemini-3.5-flash',
+        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
         'gemini-1.5-flash',
         'gemini-1.5-pro'
       ];
@@ -1362,7 +1364,9 @@ RULES FOR USING CANDIDATE RESUME:
     const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
     if (hasValidGeminiKey) {
       const geminiModels = [
-        'gemini-2.0-flash',
+        'gemini-3.5-flash',
+        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
         'gemini-1.5-flash'
       ];
 
@@ -1878,21 +1882,34 @@ RULES FOR USING CANDIDATE RESUME:
                       }
                       setKeyTestStatus('Testing...');
                       try {
-                        const { url, headers } = buildGeminiRequestConfig(keyToTest, 'gemini-2.0-flash', false);
-                        const res = await fetch(url, {
-                          method: 'POST',
-                          headers,
-                          body: JSON.stringify({
-                            contents: [{ parts: [{ text: 'Ping' }] }]
-                          })
-                        });
-                        if (res.ok) {
-                          setKeyTestStatus('✅ Key is Valid!');
-                          setTimeout(() => setKeyTestStatus(''), 4000);
-                        } else {
-                          const errData = await res.json().catch(() => ({}));
-                          const msg = errData?.error?.message || `HTTP ${res.status}`;
-                          setKeyTestStatus(`❌ Error: ${msg.slice(0, 50)}`);
+                        const testModels = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-1.5-flash'];
+                        let testSuccess = false;
+                        let lastErrMsg = '';
+                        for (const testModel of testModels) {
+                          try {
+                            const { url, headers } = buildGeminiRequestConfig(keyToTest, testModel, false);
+                            const res = await fetch(url, {
+                              method: 'POST',
+                              headers,
+                              body: JSON.stringify({
+                                contents: [{ parts: [{ text: 'Ping' }] }]
+                              })
+                            });
+                            if (res.ok) {
+                              testSuccess = true;
+                              setKeyTestStatus(`✅ Key is Valid! (${testModel})`);
+                              setTimeout(() => setKeyTestStatus(''), 4000);
+                              break;
+                            } else {
+                              const errData = await res.json().catch(() => ({}));
+                              lastErrMsg = errData?.error?.message || `HTTP ${res.status}`;
+                            }
+                          } catch (e) {
+                            lastErrMsg = e.message;
+                          }
+                        }
+                        if (!testSuccess) {
+                          setKeyTestStatus(`❌ Error: ${lastErrMsg.slice(0, 60)}`);
                         }
                       } catch (err) {
                         setKeyTestStatus(`❌ ${err.message}`);
@@ -2213,7 +2230,7 @@ RULES FOR USING CANDIDATE RESUME:
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
               <Sparkles size={10} />
-              <span>{getActiveGeminiKey() ? 'Gemini 2.0 Flash' : (getActiveGroqKey() ? 'Groq Llama 3' : 'AI Copilot')}</span>
+              <span>{getActiveGeminiKey() ? 'Gemini 3.5 Flash' : (getActiveGroqKey() ? 'Groq Llama 3' : 'AI Copilot')}</span>
             </span>
             {streamStatus && (
               <span className="text-[9px] text-teal-300 font-mono font-semibold bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 animate-pulse">
