@@ -390,6 +390,22 @@ app.whenReady().then(() => {
     }
   });
 
+  // ── EMERGENCY PANIC KILL SWITCH: Instantly terminates app & all background processes ──
+  const emergencyPanicKill = () => {
+    logDebug('EMERGENCY PANIC KILL TRIGGERED! Exiting app immediately.');
+    userWantsToClose = true;
+    try {
+      globalShortcut.unregisterAll();
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.destroy();
+      }
+    } catch (e) {}
+    app.exit(0);
+  };
+
+  globalShortcut.register('F10', emergencyPanicKill);
+  globalShortcut.register('CommandOrControl+Shift+Q', emergencyPanicKill);
+
   // Request focus from renderer (for text inputs)
   ipcMain.on('request-focus', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -666,7 +682,14 @@ app.whenReady().then(() => {
 
   ipcMain.on('force-quit-app', () => {
     userWantsToClose = true;
-    app.quit();
+    logDebug('Emergency force-quit-app received. Terminating process immediately.');
+    try {
+      globalShortcut.unregisterAll();
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.destroy();
+      }
+    } catch (e) {}
+    app.exit(0);
   });
 
   app.on('activate', () => {

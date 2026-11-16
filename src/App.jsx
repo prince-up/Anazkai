@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -1377,6 +1377,15 @@ RULES FOR USING CANDIDATE RESUME:
     }
   };
 
+  const handleForceQuit = () => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.send('force-quit-app');
+    } else {
+      window.close();
+    }
+  };
+
   if (isCompactMode) {
     return (
       <div 
@@ -1674,12 +1683,22 @@ RULES FOR USING CANDIDATE RESUME:
               </div>
             </div>
             
-            <button 
-              onClick={() => setShowSettings(false)} 
-              className="mt-5 w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
-            >
-              Done
-            </button>
+            <div className="flex gap-2 mt-5">
+              <button 
+                onClick={() => setShowSettings(false)} 
+                className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all shadow-md"
+              >
+                Done
+              </button>
+              <button 
+                onClick={handleForceQuit} 
+                className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Completely terminate application & background processes (F10)"
+              >
+                <Power size={13} />
+                <span>Quit App</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1748,7 +1767,7 @@ RULES FOR USING CANDIDATE RESUME:
         </div>
 
         {/* Minimal Window Controls */}
-        <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
+        <div className="flex space-x-1.5 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
             onClick={() => setShowSettings(true)}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
@@ -1759,16 +1778,24 @@ RULES FOR USING CANDIDATE RESUME:
           <button 
             onClick={handleMinimize}
             className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Minimize"
+            title="Minimize to Bubble"
           >
             <Minus size={12} />
           </button>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-red-500/20 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Close"
+            className="text-gray-400 hover:text-white bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 p-1.5 rounded-lg transition-colors cursor-pointer"
+            title="Hide to Background (F2)"
           >
             <X size={12} />
+          </button>
+          <button 
+            onClick={handleForceQuit}
+            className="text-red-400 hover:text-white bg-red-500/15 hover:bg-red-600 px-2 py-1 rounded-lg transition-all cursor-pointer border border-red-500/30 hover:border-red-600 shadow-sm flex items-center gap-1 font-bold active:scale-95"
+            title="🚨 Auto-Close / Kill Switch (F10) — Completely exit and stop all background processes"
+          >
+            <Power size={11} className="text-red-400 group-hover:text-white" />
+            <span className="text-[10px] font-bold">Auto Close</span>
           </button>
         </div>
       </header>
