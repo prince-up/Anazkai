@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power, Crop
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power, Crop, Keyboard, Play, Pause, Square
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -157,6 +157,80 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   // Debug Logs State
   const [debugLogs, setDebugLogs] = useState([]);
   const [showLogs, setShowLogs] = useState(false);
+
+  // Auto-Typer State (All 3 Levels: Button, Hotkeys, Auto-after-response)
+  const [autoTypeState, setAutoTypeState] = useState({
+    isTyping: false,
+    isPaused: false,
+    countdown: 0,
+    progress: 0,
+    currentIndex: 0,
+    totalChars: 0
+  });
+
+  const [autoTypeAfterResponse, setAutoTypeAfterResponse] = useState(() => {
+    return localStorage.getItem('auto_type_after_response') === 'true';
+  });
+
+  // Extract pure code block (ignoring approaches & explanations)
+  const extractCodeOnly = (text) => {
+    if (!text || typeof text !== 'string') return '';
+    const codeBlockRegex = /```(?:[a-zA-Z0-9_\-+]*)\r?\n([\s\S]*?)```/g;
+    const matches = [];
+    let match;
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      const code = match[1].trim();
+      if (code.length > 0) matches.push(code);
+    }
+    if (matches.length > 0) {
+      matches.sort((a, b) => b.length - a.length);
+      return matches[0];
+    }
+    return text.trim();
+  };
+
+  const handleStartAutoType = async (codeToType = null, countdown = 2) => {
+    const rawCode = codeToType || extractCodeOnly(outputText);
+    if (!rawCode || rawCode.trim().length === 0) {
+      addLog('⚠️ No code found in response to auto-type.');
+      return;
+    }
+
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      addLog(`⚡ Starting Auto-Typer (${rawCode.length} chars, countdown: ${countdown}s)...`);
+      try {
+        await ipcRenderer.invoke('auto-typer:start', { code: rawCode, countdown });
+      } catch (err) {
+        addLog(`❌ Auto-Typer error: ${err.message}`);
+      }
+    }
+  };
+
+  const handlePauseAutoType = async () => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      await ipcRenderer.invoke('auto-typer:pause');
+      addLog('⏸️ Auto-Typer paused.');
+    }
+  };
+
+  const handleResumeAutoType = async () => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      await ipcRenderer.invoke('auto-typer:resume');
+      addLog('▶️ Auto-Typer resumed.');
+    }
+  };
+
+  const handleStopAutoType = async () => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      await ipcRenderer.invoke('auto-typer:stop');
+      setAutoTypeState(prev => ({ ...prev, isTyping: false, isPaused: false, countdown: 0 }));
+      addLog('🛑 Auto-Typer stopped by user.');
+    }
+  };
 
   useEffect(() => {
     if (window.require) {
@@ -422,6 +496,21 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         return;
       }
 
+      // Auto-Typer Shortcuts (Cmd/Ctrl + Shift + T to start, Cmd/Ctrl + Shift + S to stop)
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 't' || e.key === 'T')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleStartAutoType();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleStopAutoType();
+        return;
+      }
+
       if (e.key === 'F1') {
         e.preventDefault();
         handleCapture('under-window');
@@ -436,7 +525,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     window.addEventListener('keydown', handleKeyDown);
 
-    // Also listen to IPC shortcut triggers from Electron Main process
+    // Also listen to IPC shortcut triggers and Auto-Typer status from Electron Main process
     let removeIpc = null;
     if (window.require) {
       try {
@@ -444,6 +533,8 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
         const handleIpcShortcut = (event, shortcut) => {
           if (shortcut === 'F10' || shortcut === 'FORCE_QUIT') {
             handleForceQuit();
+          } else if (shortcut === 'START_AUTO_TYPE') {
+            handleStartAutoType();
           } else if (shortcut === 'F1') {
             handleCapture('under-window');
           } else if (shortcut === 'F4') {
@@ -452,8 +543,18 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
             handleAskAI();
           }
         };
+
+        const handleAutoTypeStatus = (event, status) => {
+          setAutoTypeState(prev => ({ ...prev, ...status }));
+        };
+
         ipcRenderer.on('shortcut-triggered', handleIpcShortcut);
-        removeIpc = () => ipcRenderer.removeListener('shortcut-triggered', handleIpcShortcut);
+        ipcRenderer.on('auto-typer:status', handleAutoTypeStatus);
+
+        removeIpc = () => {
+          ipcRenderer.removeListener('shortcut-triggered', handleIpcShortcut);
+          ipcRenderer.removeListener('auto-typer:status', handleAutoTypeStatus);
+        };
       } catch (err) {}
     }
 
@@ -787,6 +888,15 @@ RULES FOR USING CANDIDATE RESUME:
     if (!success && !accumulatedReply) {
       setOutputText(`⚠️ Error: ${lastErr || 'Failed to connect to AI engine. Check your internet connection.'}`);
       setStreamStatus('');
+    } else if (success && accumulatedReply && autoTypeAfterResponse) {
+      // Level 3: Full Automatic Version — automatically start typing once AI finishes
+      const pureCode = extractCodeOnly(accumulatedReply);
+      if (pureCode && pureCode.length > 10) {
+        addLog('[AutoTyper] ⚡ Full Automatic Mode: Auto-type after response triggered!');
+        setTimeout(() => {
+          handleStartAutoType(pureCode, 3);
+        }, 700);
+      }
     }
 
     setIsLoading(false);
@@ -1723,6 +1833,38 @@ RULES FOR USING CANDIDATE RESUME:
                   onChange={(e) => setOpacity(parseFloat(e.target.value))}
                 />
               </div>
+
+              {/* Auto-Type After Response Toggle (Level 3 Setting) */}
+              <div className="bg-black/40 p-3.5 rounded-xl border border-white/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Keyboard size={14} className="text-cyan-400" />
+                    <span className="text-gray-200 text-xs font-bold">Auto-Type After Response</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const nextVal = !autoTypeAfterResponse;
+                      setAutoTypeAfterResponse(nextVal);
+                      localStorage.setItem('auto_type_after_response', String(nextVal));
+                      addLog(`Auto-Type After Response set to: ${nextVal}`);
+                    }}
+                    className={`w-10 h-5 rounded-full p-0.5 transition-colors cursor-pointer ${
+                      autoTypeAfterResponse ? 'bg-cyan-500' : 'bg-gray-700'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                      autoTypeAfterResponse ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400 leading-normal">
+                  Automatically starts human-like typing into your active window (LeetCode, VS Code, etc.) as soon as AI finishes generating code with a 3-second prep delay.
+                </p>
+                <div className="flex items-center justify-between text-[9px] text-gray-400 font-mono pt-1.5 border-t border-white/5">
+                  <span>Start / Resume: <span className="text-cyan-300 font-bold">Cmd+Shift+T</span></span>
+                  <span>Stop: <span className="text-red-300 font-bold">Cmd+Shift+S</span></span>
+                </div>
+              </div>
             </div>
             
             <div className="flex gap-2 mt-5">
@@ -1947,6 +2089,60 @@ RULES FOR USING CANDIDATE RESUME:
           </div>
 
           <div className="flex items-center gap-1.5">
+            {/* Auto-Type Button & Status Controls */}
+            {autoTypeState.countdown > 0 ? (
+              <button
+                onClick={handleStopAutoType}
+                className="bg-amber-500/20 hover:bg-red-500/30 text-amber-300 hover:text-red-300 border border-amber-500/40 px-2 py-0.5 rounded-md text-[9px] font-bold flex items-center gap-1 animate-pulse transition-all cursor-pointer shadow-xs"
+                title="Cancel countdown (Cmd+Shift+S)"
+              >
+                <Clock size={10} />
+                <span>Typing in {autoTypeState.countdown}s... (Cancel)</span>
+              </button>
+            ) : autoTypeState.isTyping ? (
+              <div className="flex items-center gap-1 bg-cyan-950/60 border border-cyan-500/30 px-1.5 py-0.5 rounded-md shadow-xs">
+                <span className="text-[9px] font-mono font-bold text-cyan-300 flex items-center gap-1 pr-1">
+                  <Keyboard size={10} className="animate-bounce text-cyan-400" />
+                  <span>{autoTypeState.progress}%</span>
+                </span>
+                {autoTypeState.isPaused ? (
+                  <button
+                    onClick={handleResumeAutoType}
+                    className="p-0.5 text-emerald-400 hover:text-white bg-white/10 rounded transition-colors"
+                    title="Resume typing (Cmd+Shift+T)"
+                  >
+                    <Play size={9} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handlePauseAutoType}
+                    className="p-0.5 text-amber-400 hover:text-white bg-white/10 rounded transition-colors"
+                    title="Pause typing"
+                  >
+                    <Pause size={9} />
+                  </button>
+                )}
+                <button
+                  onClick={handleStopAutoType}
+                  className="p-0.5 text-red-400 hover:text-white bg-red-500/20 hover:bg-red-600 rounded transition-colors"
+                  title="Stop typing (Cmd+Shift+S)"
+                >
+                  <Square size={9} />
+                </button>
+              </div>
+            ) : (
+              outputText && !outputText.startsWith('Screen captured') && !outputText.startsWith('Analyzing') && !outputText.startsWith('Please') && (
+                <button 
+                  onClick={() => handleStartAutoType()}
+                  className="text-cyan-300 hover:text-white bg-cyan-500/15 hover:bg-cyan-600 border border-cyan-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 text-[9px] font-bold transition-all cursor-pointer shadow-2xs active:scale-95"
+                  title="Auto-type code solution into focused editor / LeetCode (Cmd+Shift+T)"
+                >
+                  <Keyboard size={10} />
+                  <span>Auto Type</span>
+                </button>
+              )
+            )}
+
             {outputText && (
               <>
                 <button 
@@ -2009,16 +2205,26 @@ RULES FOR USING CANDIDATE RESUME:
                             <span className="w-2 h-2 rounded-full bg-emerald-500/80"></span>
                             <span className="ml-1.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400 font-bold">{match[1]}</span>
                           </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(codeString);
-                            }}
-                            className="text-gray-400 hover:text-white flex items-center gap-1 text-[9px] font-bold py-0.5 px-1.5 rounded hover:bg-white/10 transition-all cursor-pointer"
-                            title="Copy code"
-                          >
-                            <Copy size={10} />
-                            <span>Copy</span>
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => handleStartAutoType(codeString)}
+                              className="text-cyan-400 hover:text-white flex items-center gap-1 text-[9px] font-bold py-0.5 px-1.5 rounded hover:bg-cyan-500/20 border border-cyan-500/25 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                              title="Auto-type this snippet into active window (Cmd+Shift+T)"
+                            >
+                              <Keyboard size={9} />
+                              <span>Auto Type</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(codeString);
+                              }}
+                              className="text-gray-400 hover:text-white flex items-center gap-1 text-[9px] font-bold py-0.5 px-1.5 rounded hover:bg-white/10 transition-all cursor-pointer"
+                              title="Copy code"
+                            >
+                              <Copy size={10} />
+                              <span>Copy</span>
+                            </button>
+                          </div>
                         </div>
                         <SyntaxHighlighter
                           {...props}

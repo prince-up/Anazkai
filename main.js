@@ -34,6 +34,8 @@ if (process.platform === 'darwin' && app.dock) {
 const fs = require('fs');
 const os = require('os');
 const logPath = path.join(os.homedir(), 'Desktop', 'anazk_log.txt');
+const AutoTyper = require('./autoTyper.js');
+const autoTyper = new AutoTyper();
 
 function logDebug(msg) {
   try {
@@ -423,6 +425,64 @@ app.whenReady().then(() => {
   regPanic('CommandOrControl+Shift+X');
   regPanic('Alt+Q');
   regPanic('Alt+F4');
+
+  // ── AUTO TYPER GLOBAL HOTKEYS ──
+  // Start / Resume Auto-Typing: Cmd/Ctrl + Shift + T
+  globalShortcut.register('CommandOrControl+Shift+T', () => {
+    logDebug('[AutoTyper] HOTKEY TRIGGERED: CommandOrControl+Shift+T');
+    if (autoTyper.isTyping && autoTyper.isPaused) {
+      autoTyper.resume();
+    } else {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('shortcut-triggered', 'START_AUTO_TYPE');
+      }
+    }
+  });
+
+  // Stop / Pause Auto-Typing: Cmd/Ctrl + Shift + S
+  globalShortcut.register('CommandOrControl+Shift+S', () => {
+    logDebug('[AutoTyper] HOTKEY TRIGGERED: CommandOrControl+Shift+S');
+    if (autoTyper.isTyping) {
+      autoTyper.stop();
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('auto-typer:status', { isTyping: false, isPaused: false, stopped: true });
+      }
+    }
+  });
+
+  // ── AUTO TYPER IPC HANDLERS ──
+  const sendAutoTypeStatus = (status) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('auto-typer:status', status);
+    }
+  };
+
+  ipcMain.handle('auto-typer:start', async (event, { code, countdown = 2 }) => {
+    logDebug(`[AutoTyper] IPC start called, code length: ${code ? code.length : 0}`);
+    return autoTyper.start(code, { countdown }, {
+      onProgress: (prog) => sendAutoTypeStatus({ ...autoTyper.getStatus(), ...prog }),
+      onStatus: (status) => sendAutoTypeStatus(status)
+    });
+  });
+
+  ipcMain.handle('auto-typer:pause', () => {
+    logDebug('[AutoTyper] IPC pause called');
+    return autoTyper.pause();
+  });
+
+  ipcMain.handle('auto-typer:resume', () => {
+    logDebug('[AutoTyper] IPC resume called');
+    return autoTyper.resume();
+  });
+
+  ipcMain.handle('auto-typer:stop', () => {
+    logDebug('[AutoTyper] IPC stop called');
+    return autoTyper.stop();
+  });
+
+  ipcMain.handle('auto-typer:get-status', () => {
+    return autoTyper.getStatus();
+  });
 
   // Request focus from renderer (for text inputs)
   ipcMain.on('request-focus', () => {
