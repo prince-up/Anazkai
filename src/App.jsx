@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power
+  Settings, Copy, X, Minus, Sparkles, Mic, MicOff, Clock, Send, Image as ImageIcon, Trash2, Check, FileText, Upload, Gift, ShieldCheck, Power, Crop
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -1441,7 +1441,9 @@ RULES FOR USING CANDIDATE RESUME:
   }
 
   return (
-    <div className="flex flex-col h-screen bg-black/60 backdrop-blur-xl text-gray-100 p-3 font-sans select-none relative overflow-hidden rounded-2xl border border-white/5 shadow-2xl">
+    <div className="flex flex-col h-screen bg-[#07090e]/90 backdrop-blur-2xl text-slate-100 p-2.5 font-sans select-none relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_1px_1px_rgba(255,255,255,0.06)]">
+      {/* Subtle Top Ambient Accent Light */}
+      <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-emerald-500/[0.06] via-transparent to-transparent pointer-events-none" />
       
       {/* Preferences / Settings Modal */}
       {showSettings && (
@@ -1743,98 +1745,101 @@ RULES FOR USING CANDIDATE RESUME:
         </div>
       )}
 
-      {/* Top Stealth Header (Clean minimalist HUD, no logos/branding) */}
-      <header className="flex justify-between items-center pb-2 mb-1.5 border-b border-white/5 cursor-move select-none" style={{ WebkitAppRegion: 'drag' }}>
-        {/* Stealth Drag Handle */}
-        <div className="flex items-center gap-1.5 px-1">
-          <div className="w-8 h-1 rounded-full bg-white/20 hover:bg-white/30 transition-all"></div>
+      {/* Top Stealth Header (Parakeet AI Ultra-Minimalist Studio HUD) */}
+      <header className="flex justify-between items-center px-2 py-1.5 mb-2 bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] rounded-xl cursor-move select-none transition-all shadow-xs backdrop-blur-md" style={{ WebkitAppRegion: 'drag' }}>
+        
+        {/* Left: Brand Identity & Live Pulse */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex items-center justify-center">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute opacity-60"></span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-black tracking-tight text-white font-sans">Anazk<span className="text-emerald-400">AI</span></span>
+            <span className="text-[8px] font-extrabold tracking-widest text-emerald-400/90 font-mono uppercase bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">COPILOT</span>
+          </div>
         </div>
 
-        {/* Center: Discreet Timer & Resume Status Badge */}
+        {/* Center: Stealth Drag Grip & Quick Context Pills */}
         <div className="flex items-center gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
+          {/* Subtle Drag Grip Indicator */}
+          <div className="hidden sm:flex items-center justify-center px-2 py-1 cursor-grab opacity-30 hover:opacity-75 transition-opacity" title="Drag to reposition HUD">
+            <div className="w-7 h-1 rounded-full bg-white/40"></div>
+          </div>
+
+          {/* Resume Status Pill */}
           {resumeText.trim() ? (
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer"
-              title={`Resume loaded (${resumeFileName || 'Pasted'}) - AI is personalizing answers to your experience`}
+              className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer shadow-2xs"
+              title={`Resume loaded (${resumeFileName || 'Active'}) — AI personalizes solutions to your stack`}
             >
               <FileText size={9} />
-              <span>Resume Loaded ✓</span>
+              <span>Resume ✓</span>
             </button>
           ) : (
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center gap-1 bg-white/5 border border-white/5 text-gray-500 hover:text-gray-400 px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all cursor-pointer"
-              title="Click to upload/paste your resume for personalized AI answers"
+              className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-gray-200 px-2 py-0.5 rounded-full text-[9px] font-semibold hover:bg-white/[0.08] transition-all cursor-pointer"
+              title="Click to add resume for tailored answers"
             >
               <FileText size={9} />
               <span>+ Resume</span>
             </button>
           )}
 
+          {/* Session Time Remaining Pill */}
           {timeRemaining !== undefined && timeRemaining !== null && (
-            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs border ${
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] border font-mono font-bold shadow-2xs ${
               isFreeTrial || planType === 'free_trial'
-                ? 'bg-amber-500/10 border-amber-500/30' 
-                : 'bg-black/40 border-white/10'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                : (typeof timeRemaining === 'number' && timeRemaining < 10 
+                    ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' 
+                    : (timeRemaining === 'UNLIMITED' 
+                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                        : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'))
             }`}>
               {isFreeTrial || planType === 'free_trial' ? (
                 <Gift size={10} className="text-amber-400 animate-pulse" />
               ) : (
-                <Clock size={10} className={typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400 animate-pulse" : (timeRemaining === 'UNLIMITED' ? "text-amber-400" : "text-emerald-400")} />
+                <Clock size={10} />
               )}
-              <span className={`text-[9px] font-extrabold font-mono uppercase ${
-                isFreeTrial || planType === 'free_trial'
-                  ? 'text-amber-300 font-black' 
-                  : (typeof timeRemaining === 'number' && timeRemaining < 10 ? "text-red-400" : (timeRemaining === 'UNLIMITED' ? "text-amber-300 font-black" : "text-emerald-300"))
-              }`}>
-                {isFreeTrial || planType === 'free_trial' ? `TRIAL: ${timeRemaining}m` : (timeRemaining === 'UNLIMITED' ? '👑 VIP' : `${timeRemaining}m`)}
+              <span>
+                {isFreeTrial || planType === 'free_trial' ? `TRIAL: ${timeRemaining}m` : (timeRemaining === 'UNLIMITED' ? '👑 PRO' : `${timeRemaining}m`)}
               </span>
-              {onLogout && (
-                <>
-                  <span className="text-white/20 text-[9px]">|</span>
-                  <button 
-                    onClick={onLogout} 
-                    className="text-[8px] text-gray-400 hover:text-red-400 uppercase font-bold transition-colors cursor-pointer"
-                    title="Quit Session"
-                  >
-                    Quit
-                  </button>
-                </>
-              )}
             </div>
           )}
         </div>
 
-        {/* Minimal Window Controls */}
-        <div className="flex space-x-1.5 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
+        {/* Right: Parakeet Window Controls */}
+        <div className="flex space-x-1 items-center" style={{ WebkitAppRegion: 'no-drag' }}>
           <button 
             onClick={() => setShowSettings(true)}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
+            className="text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] p-1.5 rounded-lg transition-colors cursor-pointer"
             title="Settings"
           >
             <Settings size={12} />
           </button>
           <button 
             onClick={handleMinimize}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Minimize to Bubble"
+            className="text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] p-1.5 rounded-lg transition-colors cursor-pointer"
+            title="Minimize to Floating Bubble"
           >
             <Minus size={12} />
           </button>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 p-1.5 rounded-lg transition-colors cursor-pointer"
-            title="Hide to Background (F2)"
+            className="text-gray-400 hover:text-amber-300 bg-white/[0.04] hover:bg-amber-500/15 border border-white/[0.06] p-1.5 rounded-lg transition-colors cursor-pointer"
+            title="Hide Overlay to Background (F2)"
           >
             <X size={12} />
           </button>
           <button 
             onClick={handleForceQuit}
-            className="text-red-400 hover:text-white bg-red-500/15 hover:bg-red-600 px-2 py-1 rounded-lg transition-all cursor-pointer border border-red-500/30 hover:border-red-600 shadow-sm flex items-center gap-1 font-bold active:scale-95"
+            className="text-red-400 hover:text-white bg-red-500/10 hover:bg-red-600 px-2 py-1 rounded-lg transition-all cursor-pointer border border-red-500/25 hover:border-red-600 shadow-sm flex items-center gap-1 font-bold active:scale-95"
             title="🚨 Auto-Close / Kill Switch (F10) — Completely exit and stop all background processes"
           >
-            <Power size={11} className="text-red-400 group-hover:text-white" />
+            <Power size={11} />
             <span className="text-[10px] font-bold">Auto Close</span>
           </button>
         </div>
@@ -1924,31 +1929,45 @@ RULES FOR USING CANDIDATE RESUME:
         </div>
       )}
 
-      {/* Main Unified Response Viewport (No split double boxes) */}
-      <main className="flex-1 flex flex-col min-h-0 relative bg-black/40 rounded-xl overflow-hidden shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
+      {/* Main Unified Response Viewport (Parakeet Glass HUD) */}
+      <main className="flex-1 flex flex-col min-h-0 relative bg-[#090d14]/75 rounded-xl border border-white/[0.07] overflow-hidden shadow-inner backdrop-blur-md" style={{ WebkitAppRegion: 'no-drag' }}>
         
-        {/* Viewport Top Bar */}
-        <div className="px-3.5 py-2 border-b border-white/5 flex justify-between items-center bg-black/20 shrink-0">
+        {/* Viewport Top Bar (Model Status Strip) */}
+        <div className="px-3.5 py-1.5 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.02] shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="text-[10px] uppercase font-black text-gray-400 tracking-wider">Assistant Response</span>
+            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+              <Sparkles size={10} />
+              <span>{geminiKey ? 'Gemini 3.5 Flash' : (groqKey ? 'Groq Llama 3' : 'AI Copilot')}</span>
+            </span>
             {streamStatus && (
-              <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 animate-pulse">
+              <span className="text-[9px] text-teal-300 font-mono font-semibold bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 animate-pulse">
                 {streamStatus}
               </span>
             )}
           </div>
 
-          {outputText && (
-            <button 
-              onClick={handleCopy}
-              className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-md flex items-center gap-1 text-[10px] font-bold transition-all cursor-pointer"
-              title="Copy answer"
-            >
-              {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
-              <span>{copied ? 'Copied!' : 'Copy'}</span>
-            </button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {outputText && (
+              <>
+                <button 
+                  onClick={handleCopy}
+                  className="text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] px-2 py-0.5 rounded-md flex items-center gap-1 text-[9px] font-bold transition-all cursor-pointer"
+                  title="Copy full answer"
+                >
+                  {copied ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+                <button 
+                  onClick={handleClear}
+                  className="text-gray-400 hover:text-gray-200 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] px-2 py-0.5 rounded-md flex items-center gap-1 text-[9px] font-bold transition-all cursor-pointer"
+                  title="Clear viewport"
+                >
+                  <Trash2 size={10} />
+                  <span>Clear</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Loading Bar */}
@@ -1980,17 +1999,38 @@ RULES FOR USING CANDIDATE RESUME:
                 components={{
                   code({node, inline, className, children, ...props}) {
                     const match = /language-(\w+)/.exec(className || '');
+                    const codeString = String(children).replace(/\n$/, '');
                     return !inline && match ? (
-                      <SyntaxHighlighter
-                        {...props}
-                        children={String(children).replace(/\n$/, '')}
-                        style={atomDark}
-                        language={match[1]}
-                        PreTag="div"
-                        className="rounded-lg my-2.5 text-[11px] border border-white/5 font-mono shadow-md"
-                      />
+                      <div className="my-3 rounded-xl overflow-hidden border border-white/10 bg-[#0d1117] shadow-lg">
+                        <div className="flex items-center justify-between px-3 py-1.5 bg-white/[0.04] border-b border-white/[0.06] text-[10px] text-gray-400">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-red-500/80"></span>
+                            <span className="w-2 h-2 rounded-full bg-amber-500/80"></span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500/80"></span>
+                            <span className="ml-1.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400 font-bold">{match[1]}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(codeString);
+                            }}
+                            className="text-gray-400 hover:text-white flex items-center gap-1 text-[9px] font-bold py-0.5 px-1.5 rounded hover:bg-white/10 transition-all cursor-pointer"
+                            title="Copy code"
+                          >
+                            <Copy size={10} />
+                            <span>Copy</span>
+                          </button>
+                        </div>
+                        <SyntaxHighlighter
+                          {...props}
+                          children={codeString}
+                          style={atomDark}
+                          language={match[1]}
+                          PreTag="div"
+                          className="!m-0 !p-3 text-[11px] font-mono leading-relaxed bg-transparent"
+                        />
+                      </div>
                     ) : (
-                      <code {...props} className="text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold">
+                      <code {...props} className="text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold border border-emerald-500/20">
                         {children}
                       </code>
                     );
@@ -2001,19 +2041,39 @@ RULES FOR USING CANDIDATE RESUME:
               </ReactMarkdown>
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 text-xs px-4">
-              <Sparkles size={24} className="text-gray-600 mb-2 opacity-50" />
-              <p className="font-semibold text-gray-400">{outputText || 'Ready to assist'}</p>
-              <p className="text-[11px] text-gray-600 mt-1">
-                Press <span className="text-gray-400 font-mono">F1</span> for full screen • <span className="text-gray-400 font-mono">F4</span> for region snip • <span className="text-gray-400 font-mono">F3</span> to ask
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-400 text-xs px-6 py-6">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500/20 via-teal-500/10 to-transparent border border-emerald-500/30 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                <Sparkles size={18} className="text-emerald-400 animate-pulse" />
+              </div>
+              <h3 className="font-bold text-sm text-white mb-1">Anazk AI Copilot Ready</h3>
+              <p className="text-[11px] text-gray-400 max-w-xs leading-relaxed mb-4">
+                Invisible overlay active. Capture coding questions or speak directly to receive instant answers.
               </p>
+              <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
+                <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2 text-left">
+                  <span className="font-mono text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">F4</span>
+                  <span className="text-[10px] font-medium text-gray-300">Snip Question</span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2 text-left">
+                  <span className="font-mono text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">F1</span>
+                  <span className="text-[10px] font-medium text-gray-300">Full Screen</span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2 text-left">
+                  <span className="font-mono text-[10px] font-black text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20">F3</span>
+                  <span className="text-[10px] font-medium text-gray-300">Generate Answer</span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-2 text-left">
+                  <span className="font-mono text-[10px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">F2</span>
+                  <span className="text-[10px] font-medium text-gray-300">Hide Window</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </main>
 
-      {/* Inline Question Input Bar */}
-      <div className="mt-2.5 flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' }}>
+      {/* Floating Command Input Bar (Parakeet Glass Style) */}
+      <div className="mt-2 flex items-center gap-2 bg-[#090d14]/80 p-1 rounded-xl border border-white/[0.08] backdrop-blur-md shadow-inner" style={{ WebkitAppRegion: 'no-drag' }}>
         <input 
           type="text"
           value={inputText}
@@ -2034,92 +2094,69 @@ RULES FOR USING CANDIDATE RESUME:
               handleAskAI();
             }
           }}
-          placeholder="Ask a question or enter context (Press Enter to ask)..."
-          className="flex-1 px-3.5 py-2 bg-black/40 hover:bg-black/60 focus:bg-black/70 border border-white/10 focus:border-emerald-500/40 rounded-xl outline-none text-xs text-gray-200 placeholder-gray-500 transition-all font-medium"
+          placeholder="Ask a question, enter code context, or press Enter..."
+          className="flex-1 px-3 py-1.5 bg-transparent outline-none text-xs text-gray-100 placeholder-gray-500 font-medium"
         />
         {inputText.trim() && (
           <button 
             onClick={() => handleAskAI()}
             disabled={isLoading}
-            className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-sm active:scale-95 flex items-center gap-1"
+            className="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer shadow-md active:scale-95 flex items-center gap-1"
           >
-            <Send size={12} />
+            <Send size={11} />
+            <span className="text-[10px]">Send</span>
           </button>
         )}
       </div>
 
-      {/* Action Buttons Toolbar */}
-      <footer className="mt-2 flex flex-wrap gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
+      {/* Action Buttons Toolbar (Parakeet AI Ergonomic Dock) */}
+      <footer className="mt-1.5 flex items-center gap-1.5" style={{ WebkitAppRegion: 'no-drag' }}>
         <button 
           onClick={() => handleCapture('region')}
-          className="flex-1 min-w-[75px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-emerald-500/30 active:scale-95 cursor-pointer shadow-sm flex items-center justify-center gap-1"
-          title="Drag crosshairs directly around the question on screen"
+          className="flex-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 py-1.5 px-2 rounded-xl text-[10px] font-black transition-all border border-emerald-500/30 active:scale-95 cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+          title="Drag crosshairs directly around the question on screen (F4)"
         >
-          <span>✂️ Snip Question (F4)</span>
+          <Crop size={11} />
+          <span>Snip (F4)</span>
         </button>
 
         <button 
           onClick={() => handleCapture('under-window')}
-          className="flex-1 min-w-[65px] bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
-          title="Place overlay window over question and click to capture"
+          className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/[0.06] active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+          title="Place overlay window over question and click to capture (F1)"
         >
-          Under Window (F1)
+          <span>Under (F1)</span>
         </button>
 
         <button 
-          onClick={() => handleCapture('full')}
-          className="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-400 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
-          title="Capture full monitor"
-        >
-          Full Screen
-        </button>
-        
-        <button 
           onClick={handleListen}
-          className={`flex-1 min-w-[75px] flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border active:scale-95 cursor-pointer ${
+          className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all border active:scale-95 cursor-pointer ${
             isVoiceMode 
               ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse shadow-md shadow-red-500/20' 
-              : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/5'
+              : 'bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 border-white/[0.06]'
           }`}
+          title="Toggle live microphone and interviewer loopback transcription"
         >
           {isVoiceMode ? <MicOff size={11} className="animate-bounce" /> : <Mic size={11} />}
-          <span>{isVoiceMode ? `Listening (${liveVolume}%)` : 'Voice'}</span>
-        </button>
-        
-        <button 
-          onClick={toggleTestMic}
-          className={`min-w-[60px] flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-[10px] font-bold transition-all border active:scale-95 cursor-pointer ${
-            isTestingMic
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
-              : 'bg-white/5 hover:bg-white/10 text-gray-400 border-white/5'
-          }`}
-          title="Test Microphone volume without calling AI"
-        >
-          <span>{isTestingMic ? 'Stop Test' : 'Test Mic'}</span>
+          <span>{isVoiceMode ? `Rec (${liveVolume}%)` : 'Voice'}</span>
         </button>
 
         <button 
           onClick={() => handleAskAI()}
           disabled={isLoading}
-          className={`flex-1 min-w-[70px] bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-2.5 rounded-xl text-[10px] font-black transition-all shadow-md shadow-emerald-500/20 border border-emerald-400/30 active:scale-95 cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white py-1.5 px-2.5 rounded-xl text-[10px] font-black transition-all shadow-md shadow-emerald-500/25 border border-emerald-400/30 active:scale-95 cursor-pointer flex items-center justify-center gap-1 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          title="Ask AI Copilot for solution (F3)"
         >
-          Ask (F3)
+          <Sparkles size={11} />
+          <span>Ask (F3)</span>
         </button>
         
         <button 
           onClick={handlePaste}
-          className="bg-white/5 hover:bg-white/10 text-gray-300 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
+          className="bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white py-1.5 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/[0.06] active:scale-95 cursor-pointer"
           title="Paste from clipboard"
         >
           Paste
-        </button>
-        
-        <button 
-          onClick={handleClear}
-          className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 py-2 px-2.5 rounded-xl text-[10px] font-bold transition-all border border-white/5 active:scale-95 cursor-pointer"
-          title="Clear response"
-        >
-          Clear
         </button>
       </footer>
     </div>
