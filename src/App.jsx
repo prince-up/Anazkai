@@ -319,7 +319,7 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
   const [customGeminiKey, setCustomGeminiKey] = useState(() => localStorage.getItem('custom_gemini_key') || '');
   const [opacity, setOpacity] = useState(() => parseFloat(localStorage.getItem('overlay_opacity')) || 0.85);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
-  const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') === 'true');
+  const [autoAsk, setAutoAsk] = useState(() => localStorage.getItem('auto_ask') !== 'false');
   const [interviewCount, setInterviewCount] = useState(() => parseInt(localStorage.getItem('interview_count')) || 0);
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [keyTestStatus, setKeyTestStatus] = useState('');
@@ -704,24 +704,19 @@ function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = 
 
     const candidateProfile = resumeSummary || resumeText;
 
-    let sysInstruction = `You are an expert coding and live technical interview copilot assisting a candidate.
+    let sysInstruction = `You are a world-class competitive programming and technical interview AI copilot.
 
-RULES FOR CODING QUESTIONS & SCREEN CAPTURES:
-1. COMPLETE, 100% WORKING CODE:
-   - Always give the **COMPLETE, FULLY WORKING CODE**. Never give partial, pseudo-code, truncated, or half solutions. Never leave "// TODO" or incomplete methods.
-   - Include all necessary imports, class definitions, helper functions, and full logic ready to copy and run.
-   - Make the code clean, optimal, and interview-ready.
-2. EXACT PROGRAMMING LANGUAGE:
-   - Detect the exact programming language requested in the question (Java, Python, C++, JavaScript, TypeScript, Go, C#, SQL, etc.).
-   - If the candidate explicitly mentions or types a language in the question, write the solution in that EXACT language.
-   - If no specific language is requested or visible, default to Python.
-3. OUTPUT STRUCTURE:
-   - First: A very short approach (3-5 concise bullet points: intuition, optimal algorithm, Time and Space Complexity).
-   - Second: The **COMPLETE working code** enclosed inside a clean Markdown code block with language identifier (\`\`\`language ... \`\`\`).
-   - If it is an MCQ or theoretical question, clearly state the correct option and a concise explanation.
+CORE MANDATE: 100% COMPLETE, OPTIMAL WORKING CODE EVERY TIME
+1. NEVER output placeholders, "// TODO", ellipses, or partial snippets.
+2. ALWAYS provide the COMPLETE, FULLY WORKING CODE with all necessary imports, full class/function definitions, helper methods, and full logic ready to copy-paste directly and pass all test cases.
+3. Detect the target programming language from the question/screenshot (e.g. Python, Java, C++, JS, SQL). Default to Python if unspecified.
+4. STRICT 2-PART RESPONSE FORMAT:
+   - Part 1: **Approach & Complexity** (3-4 concise bullet points: Intuition, Algorithm, Time Complexity O(...), Space Complexity O(...)).
+   - Part 2: **Complete Solution** (enclosed in a single clean Markdown code block with language identifier, e.g. \`\`\`python ... \`\`\`).
+   - If MCQ or theoretical: State the correct answer clearly and explain in 2-3 concise bullets.
 
 RULES FOR USING CANDIDATE RESUME:
-- If the question is about the candidate's personal background, projects, or work history ("Tell me about yourself", "Walk me through your projects"):
+- If asked about candidate background/projects ("Tell me about yourself", "Walk me through your projects"):
   ALWAYS answer from the FIRST PERSON perspective ("I am...", "In my recent project, I built...") strictly reflecting the details in the Candidate Resume below.`;
 
     if (candidateProfile && candidateProfile.trim()) {
@@ -733,12 +728,12 @@ RULES FOR USING CANDIDATE RESUME:
 
     if (imageBase64) {
       if (userQuery) {
-        promptText = `${sysInstruction}\n\n[USER INSTRUCTION]:\n${userQuery}\n\n[ATTACHED SCREENSHOT]:\nThe user has attached a screenshot of the coding interview question/screen. Carefully inspect the attached screenshot, extract the problem statement, constraints, example test cases, and detect the target programming language. Follow the user's instructions and output: 1. A short approach (3-5 concise bullets with Time/Space complexity). 2. The COMPLETE 100% working code solution inside markdown code blocks. Do not say you cannot see the image; the screenshot is attached.`;
+        promptText = `${sysInstruction}\n\n[USER INSTRUCTION]:\n${userQuery}\n\n[ATTACHED SCREENSHOT]:\nA screenshot of the coding interview question/code editor is attached above. Carefully inspect the screenshot, extract the problem statement, constraints, example test cases, and target programming language. Follow user instruction and output: 1. Concise approach with Big-O. 2. COMPLETE 100% working code inside markdown code blocks.`;
       } else {
-        promptText = `${sysInstruction}\n\n[ATTACHED SCREENSHOT]:\nThis is a coding interview question from the attached screen capture. Read the image carefully, extract the problem statement, detect the required programming language, and output the short approach followed by the COMPLETE 100% working code immediately. Do NOT ask for more details or clarification — solve the exact question shown in the screenshot.`;
+        promptText = `${sysInstruction}\n\n[ATTACHED SCREENSHOT]:\nThis is a coding interview question from the attached screen capture. Read the image carefully, extract the problem statement, constraints, and target programming language. Output: 1. Concise approach with Big-O. 2. COMPLETE 100% working code solution immediately.`;
       }
     } else {
-      promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${userQuery || 'Please solve this coding problem.'}`;
+      promptText = `${sysInstruction}\n\n[Interview Question / Context]:\n${userQuery || 'Please solve this coding problem with complete working code.'}`;
     }
 
     let success = false;
@@ -746,9 +741,97 @@ RULES FOR USING CANDIDATE RESUME:
     let lastErr = null;
     const startTime = Date.now();
 
-    // 1. Gemini Multimodal Vision & Coding Engine
+    // 1. FAST-PATH FOR WRITTEN (TEXT-ONLY) QUESTIONS: Groq LPUs stream complete code in <0.5s!
+    if (!imageBase64 && groqKey) {
+      addLog(`[Text] Ultra-fast routing to Groq AI LPU...`);
+      const groqModels = [
+        'openai/gpt-oss-120b',
+        'qwen/qwen3.8-27b',
+        'openai/gpt-oss-20b'
+      ];
+
+      for (const modelId of groqModels) {
+        addLog(`[Groq] Attempting model: ${modelId}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+              model: modelId,
+              messages: [
+                { role: 'system', content: sysInstruction },
+                { role: 'user', content: promptText }
+              ],
+              temperature: 0.1,
+              max_tokens: 4096,
+              stream: true
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstTokenTime = null;
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr && jsonStr !== '[DONE]') {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      const chunk = data.choices?.[0]?.delta?.content;
+                      if (chunk) {
+                        if (!firstTokenTime) {
+                          firstTokenTime = Date.now();
+                          const latency = ((firstTokenTime - startTime) / 1000).toFixed(2);
+                          setStreamStatus(`⚡ ${latency}s`);
+                        }
+                        accumulatedReply += chunk;
+                        setOutputText(accumulatedReply);
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+            }
+
+            if (accumulatedReply && accumulatedReply.trim()) {
+              const totalSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              setStreamStatus(`⚡ ${totalSec}s`);
+              addLog(`✅ Groq streamed complete response in ${totalSec}s`);
+              setInterviewCount(prev => prev + 1);
+              decrementUserCredits();
+              success = true;
+              break;
+            }
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          addLog(`⚠️ Groq text stream error: ${err.message}`);
+        }
+      }
+    }
+
+    // 2. Gemini Multimodal Vision & Fallback Coding Engine
     const hasValidGeminiKey = geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes('your_gemini');
-    if (hasValidGeminiKey) {
+    if (!success && hasValidGeminiKey) {
       const geminiModels = [
         'gemini-3.5-flash',
         'gemini-3.8-flash',
@@ -761,7 +844,7 @@ RULES FOR USING CANDIDATE RESUME:
         console.log(`[Plan] Model being used: ${modelId}`);
         addLog(`[Gemini] Attempting model: ${modelId}`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         try {
           const { url, headers } = buildGeminiRequestConfig(geminiKey, modelId, true);
@@ -818,6 +901,7 @@ RULES FOR USING CANDIDATE RESUME:
                       const parts = data.candidates?.[0]?.content?.parts || [];
                       let textChunk = '';
                       for (const part of parts) {
+                        if (part.thought) continue;
                         if (part.text) {
                           textChunk += part.text;
                         }
