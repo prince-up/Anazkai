@@ -2642,9 +2642,7 @@ function App() {
   }
 
   return (
-    <SubscriptionGuard>
-      <AppContent />
-    </SubscriptionGuard>
+    <AppContent planType="paid" isFreeTrial={false} />
   );
 }
 
