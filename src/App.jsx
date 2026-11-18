@@ -2216,11 +2216,11 @@ RULES FOR USING CANDIDATE RESUME:
           </button>
           <button 
             onClick={handleForceQuit}
-            className="text-red-400 hover:text-white bg-red-500/10 hover:bg-red-600 px-2 py-1 rounded-lg transition-all cursor-pointer border border-red-500/25 hover:border-red-600 shadow-sm flex items-center gap-1 font-bold active:scale-95"
-            title="🚨 Auto-Close / Kill Switch (F10) — Completely exit and stop all background processes"
+            className="text-red-400 hover:text-white bg-red-500/10 hover:bg-red-600 px-2.5 py-1 rounded-lg transition-all cursor-pointer border border-red-500/25 hover:border-red-600 shadow-sm flex items-center gap-1 font-bold active:scale-95"
+            title="🚨 Quit & Terminate App (F10) — Completely exit and stop all background processes"
           >
             <Power size={11} />
-            <span className="text-[10px] font-bold">Auto Close</span>
+            <span className="text-[10px] font-bold">Quit (F10)</span>
           </button>
         </div>
       </header>

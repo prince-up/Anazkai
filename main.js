@@ -817,18 +817,17 @@ process.on('SIGINT', () => {
   logDebug('Intercepted external SIGINT (kill -2)');
 });
 
-// Intercept all termination attempts
-app.on('before-quit', (e) => {
-  logDebug(`app.before-quit fired, userWantsToClose=${userWantsToClose}`);
-  if (!userWantsToClose) {
-    e.preventDefault();
-  }
+// Clean termination when user quits
+app.on('before-quit', () => {
+  logDebug('app.before-quit fired');
+  userWantsToClose = true;
 });
 
-// NEVER quit when window is hidden or closed
-app.on('window-all-closed', (e) => {
+app.on('window-all-closed', () => {
   logDebug('app.window-all-closed fired');
-  if (e && e.preventDefault) e.preventDefault();
+  if (userWantsToClose || process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
 app.on('will-quit', () => {
