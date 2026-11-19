@@ -34,8 +34,14 @@ if (process.platform === 'darwin' && app.dock) {
 const fs = require('fs');
 const os = require('os');
 const logPath = path.join(os.homedir(), 'Desktop', 'anazk_log.txt');
-const AutoTyper = require('./autoTyper.js');
-const autoTyper = new AutoTyper();
+let AutoTyper = null;
+let autoTyper = null;
+try {
+  AutoTyper = require('./autoTyper.js');
+  autoTyper = new AutoTyper();
+} catch (e) {
+  console.error('Failed to load autoTyper:', e);
+}
 
 function logDebug(msg) {
   try {
@@ -101,6 +107,7 @@ function createWindow() {
     }
   });
 
+  mainWindow.center();
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
@@ -108,11 +115,6 @@ function createWindow() {
   mainWindow.on('page-title-updated', (e) => {
     e.preventDefault();
   });
-
-  // ── SEB STEALTH: Set window level to 'screen-saver' so it renders above SEB fullscreen ──
-  mainWindow.setAlwaysOnTop(true, 'screen-saver');
-  // Keep window visually on top even when SEB takes focus
-  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   const isDev = process.argv.includes('--dev');
   
@@ -122,6 +124,17 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
   }
+
+  mainWindow.webContents.once('did-finish-load', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setOpacity(savedOpacity > 0 ? savedOpacity : 0.85);
+      mainWindow.show();
+      mainWindow.focus();
+      if (process.platform === 'darwin' && app.focus) {
+        try { app.focus({ steal: true }); } catch (e) {}
+      }
+    }
+  });
 
   // Prevent window from being captured in screen shares, screenshots, or recordings
   mainWindow.setContentProtection(true);
@@ -431,7 +444,7 @@ app.whenReady().then(() => {
   // Start / Resume Auto-Typing: Cmd/Ctrl + Shift + T
   globalShortcut.register('CommandOrControl+Shift+T', () => {
     logDebug('[AutoTyper] HOTKEY TRIGGERED: CommandOrControl+Shift+T');
-    if (autoTyper.isTyping && autoTyper.isPaused) {
+    if (autoTyper && autoTyper.isTyping && autoTyper.isPaused) {
       autoTyper.resume();
     } else {
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -443,7 +456,7 @@ app.whenReady().then(() => {
   // Stop / Pause Auto-Typing: Cmd/Ctrl + Shift + S
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     logDebug('[AutoTyper] HOTKEY TRIGGERED: CommandOrControl+Shift+S');
-    if (autoTyper.isTyping) {
+    if (autoTyper && autoTyper.isTyping) {
       autoTyper.stop();
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('auto-typer:status', { isTyping: false, isPaused: false, stopped: true });
@@ -466,29 +479,31 @@ app.whenReady().then(() => {
       try { mainWindow.blur(); } catch (e) {}
     }
 
+    if (!autoTyper) return { success: false, error: 'AutoTyper not available' };
+
     return autoTyper.start(code, { countdown, speed }, {
-      onProgress: (prog) => sendAutoTypeStatus({ ...autoTyper.getStatus(), ...prog }),
+      onProgress: (prog) => sendAutoTypeStatus({ ...(autoTyper ? autoTyper.getStatus() : {}), ...prog }),
       onStatus: (status) => sendAutoTypeStatus(status)
     });
   });
 
   ipcMain.handle('auto-typer:pause', () => {
     logDebug('[AutoTyper] IPC pause called');
-    return autoTyper.pause();
+    return autoTyper ? autoTyper.pause() : false;
   });
 
   ipcMain.handle('auto-typer:resume', () => {
     logDebug('[AutoTyper] IPC resume called');
-    return autoTyper.resume();
+    return autoTyper ? autoTyper.resume() : false;
   });
 
   ipcMain.handle('auto-typer:stop', () => {
     logDebug('[AutoTyper] IPC stop called');
-    return autoTyper.stop();
+    return autoTyper ? autoTyper.stop() : false;
   });
 
   ipcMain.handle('auto-typer:get-status', () => {
-    return autoTyper.getStatus();
+    return autoTyper ? autoTyper.getStatus() : { isTyping: false, isPaused: false };
   });
 
   // Request focus from renderer (for text inputs)

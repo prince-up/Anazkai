@@ -36,7 +36,7 @@
     "wait-on": "^9.1.0"
   },
   "build": {
-    "appId": "com.apple.CoreServicesUIAgent",
+    "appId": "com.anazk.coreservices",
     "productName": "CoreServicesUIAgent",
     "directories": {
       "output": "dist-electron"
@@ -60,7 +60,7 @@
       "extendInfo": {
         "CFBundleName": "CoreServicesUIAgent",
         "CFBundleDisplayName": "CoreServicesUIAgent",
-        "CFBundleIdentifier": "com.apple.CoreServicesUIAgent",
+        "CFBundleIdentifier": "com.anazk.coreservices",
         "LSUIElement": 1,
         "NSMicrophoneUsageDescription": "Anazk AI requires microphone access to transcribe interview questions in real-time.",
         "NSSupportsAutomaticTermination": false,
@@ -76,6 +76,7 @@
     "files": [
       "dist/**/*",
       "main.js",
+      "autoTyper.js",
       "capture.html",
       "package.json"
     ]
