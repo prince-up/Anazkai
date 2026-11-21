@@ -2122,9 +2122,9 @@ RULES FOR USING CANDIDATE RESUME:
                       if (onTriggerUpgrade) {
                         onTriggerUpgrade();
                       } else if (window.require) {
-                        window.require('electron').ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
+                        window.require('electron').ipcRenderer.send('open-external-url', 'https://anazk.online/#pricing');
                       } else {
-                        window.open('https://anazkai.vercel.app/#pricing', '_blank');
+                        window.open('https://anazk.online/#pricing', '_blank');
                       }
                     }}
                     className="px-2.5 py-1.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] text-black hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer"
@@ -2226,9 +2226,9 @@ RULES FOR USING CANDIDATE RESUME:
                     if (onTriggerUpgrade) {
                       onTriggerUpgrade();
                     } else if (window.require) {
-                      window.require('electron').ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
+                      window.require('electron').ipcRenderer.send('open-external-url', 'https://anazk.online/#pricing');
                     } else {
-                      window.open('https://anazkai.vercel.app/#pricing', '_blank');
+                      window.open('https://anazk.online/#pricing', '_blank');
                     }
                   }}
                   className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] text-black shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer"

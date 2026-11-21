@@ -2,40 +2,40 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://anazkai.vercel.app/</loc>
+    <loc>https://anazk.online/</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://anazkai.vercel.app/anazk-hero-generated.png</image:loc>
+      <image:loc>https://anazk.online/anazk-hero-generated.png</image:loc>
       <image:title>Anazk AI - Undetectable Real-Time AI Interview Assistant &amp; Coding Copilot</image:title>
       <image:caption>Real-time interview copilot with undetectable HUD overlay and auto-typer.</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://anazkai.vercel.app/penguin.jpg</image:loc>
+      <image:loc>https://anazk.online/penguin.jpg</image:loc>
       <image:title>Anazk AI Logo</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://anazkai.vercel.app/#features</loc>
+    <loc>https://anazk.online/#features</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://anazkai.vercel.app/#pricing</loc>
+    <loc>https://anazk.online/#pricing</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://anazkai.vercel.app/#how-it-works</loc>
+    <loc>https://anazk.online/#how-it-works</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://anazkai.vercel.app/#faq</loc>
+    <loc>https://anazk.online/#faq</loc>
     <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

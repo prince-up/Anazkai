@@ -1,4 +1,4 @@
-# robots.txt for https://anazkai.vercel.app
+# robots.txt for https://anazk.online
 User-agent: *
 Allow: /
 
@@ -24,4 +24,4 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-Sitemap: https://anazkai.vercel.app/sitemap.xml
+Sitemap: https://anazk.online/sitemap.xml

@@ -5,12 +5,12 @@ import { supabase } from '../supabaseClient';
 const FREE_TRIAL_DURATION_MINUTES = 5;
 const FREE_TRIAL_DURATION_MS = FREE_TRIAL_DURATION_MINUTES * 60 * 1000;
 
-const WEBSITE_LOGIN_URL = 'https://anazkai.vercel.app/app-login';
+const WEBSITE_LOGIN_URL = 'https://anazk.online/app-login';
 const RAZORPAY_KEY_ID = 'rzp_live_TQP7ZivrFvZ5cE';
 
 const VIP_EMAILS = [
-  'admin@anazkai.vercel.app',
-  'prince@anazkai.vercel.app',
+  'admin@anazk.online',
+  'prince@anazk.online',
   'luckyprinceyadav1234@gmail.com'
 ];
 
@@ -552,7 +552,7 @@ const SubscriptionGuard = ({ children }) => {
         currency: 'INR',
         name: 'Anazk AI',
         description: 'Lifetime Access Pass — Stealth AI Assistant',
-        image: 'https://anazkai.vercel.app/favicon.ico',
+        image: 'https://anazk.online/favicon.ico',
         prefill: {
           email: targetEmail,
           name: targetEmail.split('@')[0],
@@ -599,7 +599,7 @@ const SubscriptionGuard = ({ children }) => {
       script.onerror = () => {
         setIsValidating(false);
         if (ipcRenderer) {
-          ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
+          ipcRenderer.send('open-external-url', 'https://anazk.online/#pricing');
         }
         setError('Payment gateway blocked by firewall. Opening website pricing page...');
       };
@@ -901,7 +901,7 @@ const SubscriptionGuard = ({ children }) => {
 
         {/* Clean Exit Info */}
         <div className="mt-3 flex items-center justify-between w-full text-[9px] text-gray-400 font-bold px-1">
-          <span>Website: anazkai.vercel.app</span>
+          <span>Website: anazk.online</span>
           <button 
             onClick={handleQuitApp} 
             className="hover:text-red-500 flex items-center gap-0.5 cursor-pointer"
