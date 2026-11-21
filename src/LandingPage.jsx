@@ -3164,7 +3164,7 @@ class Solution {
           {/* Copyright & Made in India */}
           <div className="space-y-1 text-xs font-bold text-gray-500">
             <p>© 2026 Anazk AI · All rights reserved</p>
-            <p className="text-emerald-700 font-extrabold">Made In India 🇮🇳</p>
+            <p className="text-emerald-700 font-extrabold">Real-Time AI Interview Assistant & Coding Copilot · Made In India 🇮🇳</p>
           </div>
 
         </div>
