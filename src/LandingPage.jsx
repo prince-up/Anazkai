@@ -1236,6 +1236,12 @@ class Solution {
                             </button>
                           </li>
                           <li>
+                            <button onClick={() => scrollToSection('screen-share-feature')} className={`hover:underline block text-left cursor-pointer flex items-center gap-1.5 ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-900'}`}>
+                              <span>Screen Sharing Copilot</span>
+                              <span className="text-[9px] bg-emerald-500/20 px-1.5 py-0.2 rounded font-black uppercase">Soon</span>
+                            </button>
+                          </li>
+                          <li>
                             <button onClick={() => scrollToSection('industries')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
                               All Industries
                             </button>
@@ -1742,7 +1748,7 @@ class Solution {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="uppercase tracking-wider text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded">NEW</span>
-            <span>Live Screen Sharing Vision Copilot · Coming Soon (To Be Soon) ➔</span>
+            <span>Live Screen Sharing Vision Copilot · Coming Soon ➔</span>
           </div>
 
           <h1 className={`font-display font-black text-[30px] xs:text-[36px] sm:text-[50px] lg:text-[66px] leading-[1.12] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
