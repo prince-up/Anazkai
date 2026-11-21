@@ -1169,133 +1169,159 @@ class Solution {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-sky-200/25 via-blue-100/15 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
-      {/* ─── TOP NAVBAR (EXACT GETSCREEN.ME DESIGN) ─── */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-[0_2px_15px_-4px_rgba(0,0,0,0.06)] transition-all duration-200">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-18 flex items-center justify-between">
-          
-          {/* Left: Brand Logo & Title */}
-          <div 
-            onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="flex items-center space-x-2.5 cursor-pointer group shrink-0"
-          >
-            <img 
-              src="/penguin.jpg" 
-              alt="Anazk AI Logo" 
-              className="w-9 h-9 rounded-full border border-emerald-500/40 object-cover shadow-xs group-hover:scale-105 transition-transform" 
-            />
-            <span className="font-display font-black text-xl sm:text-2xl tracking-tight text-[#2c323f] flex items-center">
-              Anazk<span className="getscreen-gradient-text font-black ml-1">AI</span>
-            </span>
-          </div>
-
-          {/* Center: Clean Getscreen Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-[14px] font-bold text-[#444444]">
-            <button 
-              onClick={() => scrollToSection('features')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer"
-            >
-              Features
-            </button>
-            <button 
-              onClick={() => scrollToSection('solutions')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer"
-            >
-              Solutions
-            </button>
-            <button 
-              onClick={() => scrollToSection('sandbox')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer flex items-center gap-1.5 text-emerald-700 font-extrabold"
-            >
-              <Sparkles size={14} className="text-emerald-500 animate-pulse" />
-              <span>Live Sandbox</span>
-            </button>
-            <button 
-              onClick={() => scrollToSection('pricing')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer"
-            >
-              Pricing
-            </button>
-            <button 
-              onClick={() => scrollToSection('reviews')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer"
-            >
-              Reviews
-            </button>
-            <button 
-              onClick={() => scrollToSection('faq')}
-              className="hover:text-[#0076FF] transition-colors cursor-pointer"
-            >
-              FAQ
-            </button>
-          </nav>
-
-          {/* Right: Actions (Download, Sign In, Getscreen Green CTA Button) */}
-          <div className="hidden md:flex items-center space-x-3.5">
-            <button 
-              onClick={() => setShowDownloadModal(true)} 
-              className="px-3.5 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-[8px] transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Download size={13} className="text-[#0076FF]" />
-              <span>Download</span>
-            </button>
-
-            {user ? (
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold" title="Logged in account">
-                  <User size={13} className="text-[#0076FF]" />
-                  <span className="max-w-[130px] truncate">{user.email}</span>
-                </div>
-                <button 
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setUser(null);
-                  }}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:text-slate-900 font-bold text-xs rounded-lg transition-all cursor-pointer"
-                >
-                  Sign out
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => setCurrentView('auth')}
-                className="text-xs font-bold text-[#444444] hover:text-[#0076FF] px-2 py-1 transition-colors cursor-pointer"
+      {/* ─── TOP NAVBAR (EXACT GETSCREEN.ME 2-TIER DESIGN) ─── */}
+      <header className="fixed top-0 inset-x-0 z-50 shadow-sm">
+        
+        {/* ── TOP SUBHEADER BAR (dark navy, exact like getscreen.me) ── */}
+        <div className="bg-[#1e2d4a] text-white">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-9 flex items-center justify-between">
+            {/* Left: Downloads & Share Screen */}
+            <div className="flex items-center gap-5">
+              <button
+                onClick={() => setShowDownloadModal(true)}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
               >
-                Sign In
+                <Download size={12} />
+                DOWNLOADS
               </button>
-            )}
-
-            {/* Getscreen Signature Green CTA Button */}
-            <button 
-              onClick={() => scrollToSection('pricing')}
-              className="button--green px-5 py-2.5 text-xs font-black tracking-wider uppercase shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform cursor-pointer"
-            >
-              START FREE TRIAL / ₹349
-            </button>
+              <button
+                onClick={() => scrollToSection('sandbox')}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
+              >
+                <Monitor size={12} />
+                LIVE SANDBOX
+              </button>
+            </div>
+            {/* Right: Sign In / Sign Up / User */}
+            <div className="flex items-center gap-4">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300">
+                    <User size={12} />
+                    <span className="max-w-[140px] truncate">{user.email}</span>
+                  </div>
+                  <button
+                    onClick={async () => { await supabase.auth.signOut(); setUser(null); }}
+                    className="text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                  >
+                    SIGN OUT
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setCurrentView('auth')}
+                    className="flex items-center gap-1 text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                  >
+                    <ArrowRight size={11} />
+                    SIGN IN
+                  </button>
+                  <span className="text-gray-600 text-xs">|</span>
+                  <button
+                    onClick={() => setCurrentView('auth')}
+                    className="text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                  >
+                    SIGN UP
+                  </button>
+                </>
+              )}
+            </div>
           </div>
+        </div>
 
-          {/* Mobile Menu Trigger */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button 
-              onClick={() => scrollToSection('pricing')}
-              className="button--green px-3 py-1.5 text-[11px] font-black uppercase tracking-wider cursor-pointer"
+        {/* ── MAIN HEADER BAR (white, logo + nav + CTA) ── */}
+        <div className="bg-white border-b border-gray-200/80">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-[60px] flex items-center justify-between">
+
+            {/* Left: Brand Logo */}
+            <div
+              onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="flex items-center space-x-2.5 cursor-pointer group shrink-0"
             >
-              ₹349 Deal
-            </button>
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#448AFF] to-[#59C141] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                <img src="/penguin.jpg" alt="Anazk AI" className="w-7 h-7 rounded-lg object-cover" />
+              </div>
+              <span className="font-display font-black text-[20px] tracking-tight text-[#1e2d4a]">
+                Anazk<span className="getscreen-gradient-text ml-0.5">AI</span>
+              </span>
+            </div>
+
+            {/* Center: Getscreen-style nav links with chevrons */}
+            <nav className="hidden lg:flex items-center gap-1 text-[14px] font-semibold text-[#333]">
+              <button
+                onClick={() => scrollToSection('pricing')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+              >
+                Pricing <ChevronDown size={13} className="text-gray-400" />
+              </button>
+              <button
+                onClick={() => scrollToSection('features')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+              >
+                Features <ChevronDown size={13} className="text-gray-400" />
+              </button>
+              <button
+                onClick={() => scrollToSection('solutions')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+              >
+                Solutions <ChevronDown size={13} className="text-gray-400" />
+              </button>
+              <button
+                onClick={() => scrollToSection('sandbox')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#59C141] transition-colors cursor-pointer rounded-md hover:bg-green-50 text-[#59C141] font-bold"
+              >
+                <Sparkles size={13} />
+                Live Sandbox
+              </button>
+              <button
+                onClick={() => scrollToSection('reviews')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+              >
+                Reviews <ChevronDown size={13} className="text-gray-400" />
+              </button>
+              <button
+                onClick={() => scrollToSection('faq')}
+                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+              >
+                FAQ
+              </button>
+            </nav>
+
+            {/* Right: Getscreen "Get Started with a Tour" style button */}
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => scrollToSection('sandbox')}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 text-[13px] font-semibold text-[#333] transition-all cursor-pointer shadow-xs"
+              >
+                <Sparkles size={14} className="text-[#59C141]" />
+                GET STARTED WITH A TOUR
+              </button>
+            </div>
+
+            {/* Mobile Menu Trigger */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <button
+                onClick={() => scrollToSection('pricing')}
+                className="button--green px-3 py-1.5 text-[11px] font-black uppercase tracking-wider cursor-pointer"
+              >
+                ₹349
+              </button>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
+                aria-label="Toggle Navigation Menu"
+              >
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
+
           </div>
-
         </div>
       </header>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-x-4 top-20 bg-white border border-gray-200 rounded-2xl p-5 shadow-2xl z-50 lg:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
+        <div className="fixed inset-x-4 top-[100px] bg-white border border-gray-200 rounded-2xl p-5 shadow-2xl z-50 lg:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('features'); }} className="py-2 border-b border-gray-100 text-left w-full">Features</button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('solutions'); }} className="py-2 border-b border-gray-100 text-left w-full">Solutions</button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('sandbox'); }} className="py-2 border-b border-gray-100 text-left w-full text-emerald-700 font-extrabold flex items-center justify-between">
@@ -1338,7 +1364,7 @@ class Solution {
       )}
 
       {/* ─── HERO SECTION (EXACT GETSCREEN.ME OVERVIEW STYLE) ─── */}
-      <section id="top" className="getscreen-hero pt-26 sm:pt-30 pb-16 sm:pb-24 px-4 sm:px-8 lg:px-12 w-full border-b border-slate-200/70">
+      <section id="top" className="getscreen-hero pt-[100px] pb-16 sm:pb-24 px-4 sm:px-8 lg:px-12 w-full border-b border-slate-200/70">
         <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
           {/* Hero Left Content (overview__page--left) */}
