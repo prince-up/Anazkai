@@ -64,6 +64,17 @@ function LandingPage() {
   const [appliedCodeData, setAppliedCodeData] = useState(null);
   const [referralError, setReferralError] = useState('');
   
+  // Navbar scroll tracking
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  const isDarkNav = activeTab === 'coding' || isScrolled;
+  
   // Real Stories / Candidate Reviews Carousel
   const [activeReviewIndex, setActiveReviewIndex] = useState(2);
   const candidateReviews = [
@@ -1158,7 +1169,7 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* ─── TOP NAVBAR (GIRGIT AI MEGA-MENU STYLE) ─── */}
-      <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-md transition-all duration-300 border-b ${activeTab === 'coding' ? 'bg-[#030712]/95 border-gray-800 text-gray-100' : 'bg-[#eef8f3]/95 border-emerald-500/15 text-[#0d2e27]'}`}>
+      <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl transition-all duration-300 border-b ${isDarkNav ? 'bg-[#061510]/95 border-emerald-500/20 text-white shadow-xl' : 'bg-[#eef8f3]/95 border-emerald-500/15 text-[#0d2e27]'}`}>
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between relative">
           
           {/* Left: Brand Logo & Title */}
@@ -1169,15 +1180,15 @@ class Solution {
             <img 
               src="/penguin.jpg" 
               alt="Anazk AI Logo" 
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500/30 object-cover shadow-xs group-hover:scale-105 transition-transform" 
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 object-cover shadow-xs group-hover:scale-105 transition-transform ${isDarkNav ? 'border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.3)]' : 'border-emerald-500/30'}`} 
             />
-            <span className={`font-display font-black text-xl sm:text-2xl tracking-tight flex items-center ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-              Anazk<span className="text-emerald-600 font-extrabold ml-1">AI</span>
+            <span className={`font-display font-black text-xl sm:text-2xl tracking-tight flex items-center ${isDarkNav ? 'text-white' : 'text-[#0d2e27]'}`}>
+              Anazk<span className={`${isDarkNav ? 'text-emerald-400' : 'text-emerald-600'} font-extrabold ml-1`}>AI</span>
             </span>
           </div>
 
           {/* Center: Mega Menu Navigation Links */}
-          <nav className={`hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black ${activeTab === 'coding' ? 'text-gray-250' : 'text-[#0d2e27]'}`}>
+          <nav className={`hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black ${isDarkNav ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
             
             {/* 1. AI Interview Assistant Mega Menu */}
             <div 
@@ -1546,21 +1557,21 @@ class Solution {
             {/* Download Button */}
             <button 
               onClick={() => setShowDownloadModal(true)} 
-              className={`px-4 py-2 border rounded-lg text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 hover:bg-gray-800 text-gray-100' : 'border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900'}`}
+              className={`px-4 py-2 border rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300' : 'border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900'}`}
             >
-              <Download size={14} className={activeTab === 'coding' ? 'text-gray-400' : 'text-emerald-800'} />
+              <Download size={14} className={isDarkNav ? 'text-emerald-400' : 'text-emerald-800'} />
               <span>Download App</span>
             </button>
 
             {user ? (
               <div className="flex items-center gap-3">
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-300' : 'bg-white border-[#0d2e27]/20 text-[#0d2e27]'}`} title="Logged in account">
-                  <User size={14} className={activeTab === 'coding' ? 'text-emerald-400' : 'text-[#c99a4c]'} />
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-sm ${isDarkNav ? 'bg-[#0e241c] border-emerald-500/30 text-emerald-300' : 'bg-white border-[#0d2e27]/20 text-[#0d2e27]'}`} title="Logged in account">
+                  <User size={14} className={isDarkNav ? 'text-emerald-400' : 'text-[#c99a4c]'} />
                   <span className="text-xs font-black max-w-[150px] truncate">{user.email}</span>
                 </div>
                 <button 
                   onClick={() => supabase.auth.signOut()}
-                  className={`px-3.5 py-1.5 border font-bold text-xs rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-300 hover:bg-gray-800' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
+                  className={`px-3.5 py-1.5 border font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-white/5 text-gray-300 hover:bg-white/10' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
                 >
                   <span>Sign out</span>
                 </button>
@@ -1568,7 +1579,7 @@ class Solution {
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
-                className={`px-5 py-2 text-white font-black text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${activeTab === 'coding' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-[#0d2e27] hover:bg-emerald-950'}`}
+                className={`px-5 py-2 font-black text-xs sm:text-sm rounded-xl transition-all shadow-lg flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${isDarkNav ? 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-[#061510] shadow-emerald-500/20' : 'bg-[#0d2e27] hover:bg-emerald-950 text-white'}`}
               >
                 <span>Sign in</span>
                 <ArrowRight size={14} />
@@ -1580,7 +1591,7 @@ class Solution {
           <div className="flex items-center gap-2 md:hidden">
             <button 
               onClick={() => setShowDownloadModal(true)}
-              className={`px-2.5 py-1.5 border rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer ${activeTab === 'coding' ? 'border-gray-800 bg-gray-900/60 text-gray-200' : 'border-emerald-600/30 bg-emerald-100 text-emerald-900'}`}
+              className={`px-2.5 py-1.5 border rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300' : 'border-emerald-600/30 bg-emerald-100 text-emerald-900'}`}
             >
               <Download size={12} />
               <span>Download App</span>
@@ -1588,21 +1599,21 @@ class Solution {
             {user ? (
               <button 
                 onClick={() => supabase.auth.signOut()}
-                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg cursor-pointer ${activeTab === 'coding' ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
+                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg cursor-pointer ${isDarkNav ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
               >
                 Sign out
               </button>
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
-                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg ${activeTab === 'coding' ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
+                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg ${isDarkNav ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
               >
                 Sign in
               </button>
             )}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 text-[#0d2e27] hover:bg-emerald-100/50 rounded-lg transition-all"
+              className={`p-1.5 rounded-lg transition-all ${isDarkNav ? 'text-white hover:bg-emerald-500/20' : 'text-[#0d2e27] hover:bg-emerald-100/50'}`}
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -2502,53 +2513,151 @@ class Solution {
         </div>
       </section>
 
-      {/* Privacy Stealth & Undetectability */}
-      <section id="privacy" className="py-20 bg-[#0d2e27] text-white px-6">
-        <div className="max-w-7xl mx-auto space-y-12">
+      {/* ─── PRIVACY STEALTH & UNDETECTABILITY SECTION ─── */}
+      <section id="privacy" className="py-24 sm:py-32 bg-gradient-to-b from-[#061510] via-[#09221b] to-[#05110d] text-white px-4 sm:px-8 relative overflow-hidden border-t border-emerald-500/20">
+        {/* Ambient Glows & Cyber Mesh */}
+        <div className="absolute top-1/2 -left-20 w-[550px] h-[550px] bg-emerald-500/12 rounded-full blur-[130px] pointer-events-none"></div>
+        <div className="absolute top-0 right-10 w-[450px] h-[450px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(16,185,129,0.07)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto space-y-12 relative z-10">
           
-          {/* Split top: info text & short details */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7 space-y-6">
-              <span className="inline-flex items-center gap-1 bg-white/10 border border-white/20 px-3.5 py-1 rounded-full text-xs font-extrabold text-emerald-400 uppercase tracking-widest">
-                <Lock size={12} />
-                Stealth Mode
-              </span>
-              <h2 className="font-display font-black text-3xl sm:text-4xl leading-tight">
-                100% Private and Undetectable
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            
+            {/* Left Column: Heading, Stealth Narrative & Hardware Specs */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 font-mono text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+                <ShieldCheck size={14} className="text-emerald-400" />
+                <span>Stealth Mode Architecture</span>
+              </div>
+
+              <h2 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.12]">
+                <span className="text-white">100% Private and </span>
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                  Undetectable
+                </span>
               </h2>
-              <p className="text-emerald-100/80 text-base leading-relaxed font-medium">
-                Anazk AI runs natively on your system and intercepts window draw calls. This ensures that the assistant overlay is invisible to all screen recorders, browsers, and screensharing software.
+
+              <p className="text-emerald-100/80 text-base sm:text-lg leading-relaxed font-normal max-w-2xl">
+                Anazk AI runs natively at your operating system&apos;s hardware compositor layer, intercepting low-level window draw calls. This guarantees that the assistant overlay is mathematically excluded from all screen recorders, proctoring browsers, and screen-sharing pipelines.
               </p>
+
+              {/* Technical Architecture Chips */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3">
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-emerald-500/20 backdrop-blur-md hover:border-emerald-500/40 transition-colors">
+                  <div className="text-xs text-emerald-400 font-mono font-bold flex items-center gap-1.5">
+                    <Zap size={13} className="text-emerald-400" />
+                    <span>0ms Latency</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-medium mt-0.5">Direct GPU Hardware Blit</div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-emerald-500/20 backdrop-blur-md hover:border-emerald-500/40 transition-colors">
+                  <div className="text-xs text-emerald-400 font-mono font-bold flex items-center gap-1.5">
+                    <Shield size={13} className="text-emerald-400" />
+                    <span>Zero Injections</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-medium mt-0.5">No Browser DOM Hooking</div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-emerald-500/20 backdrop-blur-md hover:border-emerald-500/40 transition-colors col-span-2 sm:col-span-1">
+                  <div className="text-xs text-emerald-400 font-mono font-bold flex items-center gap-1.5">
+                    <Lock size={13} className="text-emerald-400" />
+                    <span>Panic Cloak: F10</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-medium mt-0.5">Instant Stealth Termination</div>
+                </div>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 bg-white/5 rounded-3xl p-6 border border-white/10 space-y-3.5 text-sm text-gray-300 font-semibold">
-              <div className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-400" />
-                <span>Invisible on Screen Share (Zoom, Meet, Teams, Discord)</span>
+            {/* Right Column: Cyber Stealth Status Matrix Card */}
+            <div className="lg:col-span-5 bg-gradient-to-br from-[#0c241d]/95 via-[#071914]/95 to-[#040e0b]/95 rounded-3xl p-6 sm:p-7 border border-emerald-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(16,185,129,0.12)] relative overflow-hidden backdrop-blur-xl space-y-4 text-left">
+              
+              {/* Matrix Top Header */}
+              <div className="flex items-center justify-between pb-3.5 border-b border-emerald-500/20 text-xs font-mono">
+                <div className="flex items-center gap-2 text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="font-bold tracking-wider">ACTIVE CLOAK MATRIX</span>
+                </div>
+                <span className="text-emerald-300/80 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
+                  v1.1.4 SECURE
+                </span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-400" />
-                <span>Invisible in System Dock / Taskbar</span>
+
+              {/* 4 Stealth Guarantee Rows */}
+              <div className="space-y-3">
+                <div className="flex items-start gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 transition-all group">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 group-hover:scale-105 transition-transform mt-0.5">
+                    <EyeOff size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                      Invisible on Screen Share
+                    </h4>
+                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed mt-0.5">
+                      Zoom, Google Meet, Microsoft Teams, Discord &amp; Slack never capture or transmit the overlay.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 transition-all group">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 group-hover:scale-105 transition-transform mt-0.5">
+                    <Laptop size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                      Zero Dock &amp; Taskbar Presence
+                    </h4>
+                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed mt-0.5">
+                      Operates headless without a system tray, dock icon, or visible window manager entries.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 transition-all group">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 group-hover:scale-105 transition-transform mt-0.5">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                      Task Manager Cloaking
+                    </h4>
+                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed mt-0.5">
+                      Camouflaged as native OS background worker (<code className="text-emerald-400 font-mono text-[10px]">CoreServicesUIAgent</code>) with near-zero CPU usage.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 transition-all group">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 group-hover:scale-105 transition-transform mt-0.5">
+                    <CheckCircle2 size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                      Tab Switch &amp; Focus Defense
+                    </h4>
+                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed mt-0.5">
+                      HackerRank, LeetCode, and CoderPad keep focus on your code; zero window blur events fired.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-400" />
-                <span>Invisible in Task Manager process listings</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-400" />
-                <span>Bypass Browser Tab/Focus switching detections</span>
-              </div>
+
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* ─── WORKS FOR ALL INDUSTRIES (IMAGE 2 REPLACEMENT) ─── */}
-      <section id="industries" className="py-20 sm:py-24 bg-[#0a1210] text-white px-4 sm:px-8 border-y border-emerald-500/20 relative overflow-hidden">
+      {/* ─── WORKS FOR ALL INDUSTRIES SECTION ─── */}
+      <section id="industries" className="py-24 sm:py-32 bg-gradient-to-b from-[#05110d] via-[#081813] to-[#040e0b] text-white px-4 sm:px-8 border-y border-emerald-500/20 relative overflow-hidden">
         {/* Glow ambient backdrops */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-10 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/4 right-10 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto space-y-12 relative z-10 text-left">
           
@@ -2557,14 +2666,15 @@ class Solution {
             {/* Left Column: Heading, Industry Pills, & Link */}
             <div className="lg:col-span-5 space-y-7">
               <div className="space-y-3.5">
-                <span className="text-emerald-400 font-extrabold text-xs uppercase tracking-widest block">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 font-mono text-xs uppercase tracking-widest">
+                  <Sparkles size={12} className="text-emerald-400" />
                   Tailored Copilot
                 </span>
                 <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
-                  Works For All Industries
+                  Works For All <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300 bg-clip-text text-transparent">Industries</span>
                 </h2>
-                <p className="text-gray-300 font-medium text-sm sm:text-base leading-relaxed">
-                  From first application to final offer, <span className="text-emerald-400 font-bold">Anazk AI</span> empowers job seekers to succeed, faster, smarter, and with confidence.
+                <p className="text-gray-300 font-normal text-sm sm:text-base leading-relaxed">
+                  From first round technical screening to final partner offer, <span className="text-emerald-400 font-bold">Anazk AI</span> empowers candidates to succeed faster, smarter, and with complete stealth.
                 </p>
               </div>
 
@@ -2577,14 +2687,14 @@ class Solution {
                     <button
                       key={indKey}
                       onClick={() => setSelectedIndustry(indKey)}
-                      className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer text-left ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer text-left ${
                         isSelected
-                          ? 'bg-emerald-950/90 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-[1.02]'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                          ? 'bg-gradient-to-r from-emerald-950/90 via-[#0e2f23] to-[#0a231b] border-2 border-emerald-400 text-white shadow-[0_0_25px_rgba(16,185,129,0.3)] scale-[1.02]'
+                          : 'bg-white/[0.04] border-white/10 text-gray-300 hover:bg-white/[0.08] hover:border-emerald-500/30 hover:text-white'
                       }`}
                     >
-                      <span className="text-base">{ind.icon}</span>
-                      <span>{ind.label}</span>
+                      <span className="text-lg shrink-0">{ind.icon}</span>
+                      <span className="truncate">{ind.label}</span>
                     </button>
                   );
                 })}
@@ -2605,75 +2715,84 @@ class Solution {
             <div className="lg:col-span-7 relative">
               
               {/* Laptop Shell Container */}
-              <div className="bg-[#111c18] rounded-3xl border border-emerald-500/25 p-3 sm:p-4 shadow-2xl space-y-3 relative overflow-hidden backdrop-blur-xl">
+              <div className="bg-gradient-to-b from-[#0c1f19] to-[#06120e] rounded-3xl border border-emerald-500/30 p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_30px_rgba(16,185,129,0.15)] space-y-3.5 relative overflow-hidden backdrop-blur-2xl">
                 
                 {/* Top Google Meet Browser Header */}
-                <div className="flex items-center justify-between px-3 py-2 bg-black/60 rounded-xl border border-white/10 text-[11px] text-gray-400 font-mono">
+                <div className="flex items-center justify-between px-3.5 py-2 bg-black/70 rounded-xl border border-white/10 text-[11px] text-gray-300 font-mono">
                   <div className="flex items-center gap-2">
                     <div className="flex space-x-1.5">
-                      <span className="w-2.5 h-2.5 bg-red-500/80 rounded-full inline-block"></span>
-                      <span className="w-2.5 h-2.5 bg-yellow-500/80 rounded-full inline-block"></span>
-                      <span className="w-2.5 h-2.5 bg-green-500/80 rounded-full inline-block"></span>
+                      <span className="w-2.5 h-2.5 bg-rose-500 rounded-full inline-block shadow-xs"></span>
+                      <span className="w-2.5 h-2.5 bg-amber-500 rounded-full inline-block shadow-xs"></span>
+                      <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block shadow-xs"></span>
                     </div>
                     <span className="text-gray-300 font-semibold truncate ml-1">meet.google.com/anazk-interview</span>
                   </div>
-                  <span className="text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px]">
+                  <span className="text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     100% STEALTH ACTIVE
                   </span>
                 </div>
 
                 {/* Main Video Call Area (Split Grid) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[220px] sm:min-h-[250px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[230px] sm:min-h-[260px]">
                   
                   {/* Interviewer Video Feed */}
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/10 p-3 flex flex-col justify-between relative overflow-hidden group">
+                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-white/10 p-3.5 flex flex-col justify-between relative overflow-hidden group">
                     <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
                     <div className="flex justify-between items-start z-10">
-                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                      <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         Interviewer (Hiring Team)
                       </span>
                     </div>
 
-                    <div className="my-auto text-center py-4 z-10">
-                      <div className="w-14 h-14 rounded-full bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 mx-auto flex items-center justify-center font-black text-lg mb-2 shadow-inner">
+                    <div className="my-auto text-center py-3 z-10 space-y-2">
+                      <div className="w-14 h-14 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 mx-auto flex items-center justify-center font-black text-lg shadow-inner">
                         HR
                       </div>
-                      <p className="text-xs text-gray-300 italic max-w-[200px] mx-auto font-medium">
-                        "{industryProfiles[selectedIndustry]?.question}"
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-sound-wave"></span>
+                        <span className="w-1 h-5 bg-emerald-300 rounded-full animate-sound-wave" style={{ animationDelay: '0.15s' }}></span>
+                        <span className="w-1 h-3.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.3s' }}></span>
+                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.45s' }}></span>
+                      </div>
+                      <p className="text-xs text-gray-200 italic max-w-[210px] mx-auto font-medium leading-relaxed">
+                        &quot;{industryProfiles[selectedIndustry]?.question}&quot;
                       </p>
                     </div>
 
-                    <div className="text-[10px] text-gray-400 z-10 flex items-center justify-between">
+                    <div className="text-[10px] text-gray-400 z-10 flex items-center justify-between border-t border-white/5 pt-2">
                       <span>Live Audio Stream</span>
                       <span className="text-emerald-400 font-mono font-bold">Whisper AI ⚡ 180ms</span>
                     </div>
                   </div>
 
                   {/* Candidate Feed (You) */}
-                  <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-[#071d18] rounded-2xl border border-emerald-500/30 p-3 flex flex-col justify-between relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-[#071d18] rounded-2xl border border-emerald-500/30 p-3.5 flex flex-col justify-between relative overflow-hidden">
                     <div className="flex justify-between items-start z-10">
-                      <span className="bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                      <span className="bg-emerald-950/90 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         You ({selectedIndustry} Candidate)
                       </span>
                     </div>
 
                     {/* Quiet Anazk AI Overlay Assistant Card */}
-                    <div className="bg-black/85 backdrop-blur-md border border-emerald-400/40 p-3 rounded-xl shadow-lg my-auto z-10 text-left space-y-1.5 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-black/92 backdrop-blur-xl border border-emerald-400/50 p-3 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.2)] my-auto z-10 text-left space-y-1.5 animate-in fade-in zoom-in-95 duration-200">
                       <div className="flex items-center justify-between pb-1 border-b border-emerald-500/20">
                         <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
-                          <Sparkles size={11} />
+                          <Sparkles size={11} className="text-emerald-400 animate-pulse" />
                           Anazk AI Speaking Points ({selectedIndustry})
                         </span>
-                        <span className="text-[9px] text-gray-400 font-mono">Invisible Overlay</span>
+                        <span className="text-[9px] text-emerald-300/80 font-mono bg-emerald-950/80 border border-emerald-500/30 px-1.5 py-0.2 rounded">
+                          Invisible Overlay
+                        </span>
                       </div>
-                      <p className="text-[11px] text-gray-200 leading-relaxed font-medium whitespace-pre-line">
+                      <p className="text-[11px] text-gray-200 leading-relaxed font-mono whitespace-pre-line">
                         {industryProfiles[selectedIndustry]?.answer}
                       </p>
                     </div>
 
-                    <div className="text-[10px] text-emerald-300/80 z-10 flex items-center justify-between">
+                    <div className="text-[10px] text-emerald-300/80 z-10 flex items-center justify-between border-t border-emerald-500/10 pt-2">
                       <span>Screen share active</span>
                       <span className="text-emerald-400 font-bold flex items-center gap-1">
                         <span>Overlay: Hidden to Team</span>
@@ -2685,14 +2804,16 @@ class Solution {
                 </div>
 
                 {/* Bottom Call Controls Strip */}
-                <div className="px-4 py-2.5 bg-black/70 rounded-xl border border-white/10 flex items-center justify-between text-xs text-gray-400">
-                  <div className="font-mono text-[11px] text-gray-300 font-semibold">
-                    1:35 PM | Anazk AI Protected Session
+                <div className="px-4 py-2.5 bg-black/75 rounded-xl border border-white/10 flex items-center justify-between text-xs text-gray-400">
+                  <div className="font-mono text-[11px] text-gray-300 font-semibold flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>1:35 PM | Protected Session</span>
                   </div>
                   <div className="flex items-center gap-2 text-white">
-                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs">🎤</span>
-                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs">📹</span>
-                    <span className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center text-xs">📞</span>
+                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs hover:bg-white/20 transition-colors" title="Microphone">🎤</span>
+                    <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs hover:bg-white/20 transition-colors" title="Camera">📹</span>
+                    <span className="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-xs" title="Screen Shared (Overlay Cloaked)">🖥️</span>
+                    <span className="w-7 h-7 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center text-xs transition-colors" title="End Call">📞</span>
                   </div>
                 </div>
 
