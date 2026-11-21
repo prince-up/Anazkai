@@ -1732,6 +1732,19 @@ class Solution {
          {/* Hero Left Content */}
         <div className="lg:col-span-5 space-y-5 sm:space-y-7 text-left pl-0 pr-0 sm:pr-2">
           
+          {/* New Coming Soon Announcement Pill */}
+          <div 
+            onClick={() => scrollToSection('screen-share-feature')}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-black shadow-xs hover:bg-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer"
+          >
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="uppercase tracking-wider text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded">NEW</span>
+            <span>Live Screen Sharing Vision Copilot · Coming Soon (To Be Soon) ➔</span>
+          </div>
+
           <h1 className={`font-display font-black text-[30px] xs:text-[36px] sm:text-[50px] lg:text-[66px] leading-[1.12] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
             The calm advantage for high-stakes interviews
           </h1>
@@ -2184,6 +2197,108 @@ class Solution {
               <span className="w-1.5 bg-teal-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.4s' }}></span>
               <span className="w-1.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.6s' }}></span>
             </div>
+          </div>
+        </div>
+
+        {/* Card 3: Live Screen Sharing Vision Copilot — COMING SOON */}
+        <div id="screen-share-feature" className="md:col-span-12 bg-gradient-to-br from-[#0a1512] via-[#0d231c] to-[#061410] rounded-3xl p-8 sm:p-12 border-2 border-emerald-500/30 shadow-[0_20px_60px_rgba(16,185,129,0.15)] relative overflow-hidden text-left">
+          {/* Ambient Glows */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/40 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  🚀 Coming Soon • Launching Soon
+                </span>
+                <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-amber-500/30">
+                  Next-Gen Multimodal Vision
+                </span>
+              </div>
+
+              <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
+                Live Screen Sharing &amp; Real-Time Vision Copilot
+              </h3>
+
+              <p className="text-gray-300 text-sm sm:text-base font-medium leading-relaxed max-w-2xl">
+                Experience the next revolution in technical interview copilot assistance. When you share your screen with the interviewer on Zoom, Google Meet, or Teams, Anazk AI autonomously watches and understands your code editor, problem statements, system design diagrams, and failing test cases in real-time — without needing manual screenshots or key triggers.
+              </p>
+
+              {/* Feature Highlights Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs font-bold text-gray-200">
+                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
+                  <Eye className="text-emerald-400 shrink-0" size={16} />
+                  <span>Zero-Click Autonomous Problem Detection</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
+                  <ShieldCheck className="text-emerald-400 shrink-0" size={16} />
+                  <span>100% Reverse-Invisible Screen Overlay</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
+                  <Sparkles className="text-emerald-400 shrink-0" size={16} />
+                  <span>Real-time Debugging &amp; Test Case Hints</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
+                  <Crop className="text-emerald-400 shrink-0" size={16} />
+                  <span>Multi-Screen &amp; Virtual Display Support</span>
+                </div>
+              </div>
+
+              <div className="pt-3 flex flex-wrap items-center gap-4">
+                <button
+                  onClick={() => setShowSignInModal(true)}
+                  className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-400 text-[#0d2e27] hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Get Early Access on Launch</span>
+                  <ArrowRight size={14} />
+                </button>
+                <span className="text-[11px] text-emerald-400 font-bold">
+                  ⚡ Will be automatically included for all Lifetime Access users
+                </span>
+              </div>
+            </div>
+
+            {/* Right Futuristic Mockup UI */}
+            <div className="lg:col-span-5 bg-black/60 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-2xl relative font-mono text-xs">
+              {/* Screen Sharing Live Indicator Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[10px] text-gray-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-emerald-300 font-bold uppercase tracking-wider">LIVE SCREEN SHARING STREAM</span>
+                </div>
+                <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded text-[9px] font-bold">
+                  AI VISION: ACTIVE
+                </span>
+              </div>
+
+              {/* Mock problem being solved live */}
+              <div className="mt-3.5 space-y-2.5">
+                <div className="bg-white/5 p-3 rounded-xl border border-white/10 text-[11px] text-gray-300">
+                  <span className="text-emerald-400 font-bold block mb-1">Target: LeetCode #42 — Trapping Rain Water</span>
+                  <span className="text-gray-400 text-[10px] block">Detected test failure: height = [0,1,0,2,1,0,1,3,2,1,2,1]</span>
+                </div>
+
+                {/* AI Instant Live Suggestion Card */}
+                <div className="bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-400/40 shadow-inner">
+                  <div className="flex items-center justify-between text-emerald-400 text-[10px] font-bold mb-1.5">
+                    <span>💡 AI LIVE COPILOT ADVICE</span>
+                    <span className="text-emerald-300">Confidence: 99.4%</span>
+                  </div>
+                  <p className="text-gray-200 text-[11px] leading-relaxed">
+                    &quot;Your two-pointer approach needs to update <code>maxLeft</code> and <code>maxRight</code> before calculating water units. Move pointers toward the smaller boundary to maintain O(1) space.&quot;
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1">
+                  <span>Latency: ~180ms</span>
+                  <span className="text-emerald-400 font-bold">Auto Typer Ready (Cmd+Shift+T)</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
