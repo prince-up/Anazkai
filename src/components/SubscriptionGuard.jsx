@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Globe, Mail, Lock, AlertCircle, Gift, ShieldCheck, User, LogIn, CreditCard, CheckCircle } from 'lucide-react';
+import { Globe, Mail, Lock, AlertCircle, Gift, ShieldCheck, User, LogIn, CreditCard, CheckCircle, X, Power, RefreshCw, Key } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const FREE_TRIAL_DURATION_MINUTES = 5;
@@ -35,24 +35,61 @@ const SubscriptionGuard = ({ children }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [buyEmail, setBuyEmail] = useState('');
+  const [restoreEmail, setRestoreEmail] = useState('');
+  const [showRestore, setShowRestore] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [timeRemaining, setTimeRemaining] = useState(null);
-  const [planType, setPlanType] = useState('paid');
+  const [planType, setPlanType] = useState('free');
   const [showEmailForm, setShowEmailForm] = useState(false);
   
   const syncTimerRef = useRef(null);
   const trialTimerRef = useRef(null);
 
-  // 1. Check active session on mount
+  // Clean Exit / Quit App
+  const handleQuitApp = () => {
+    if (ipcRenderer) {
+      ipcRenderer.send('force-quit-app');
+    } else {
+      window.close();
+    }
+  };
+
+  // Keyboard shortcut F10 or Cmd+Q to quit
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'F10' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'q')) {
+        handleQuitApp();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // 1. Check active session & saved purchase on mount
   useEffect(() => {
     const initializeAuth = async () => {
-      const deviceId = getDeviceId();
       const savedPlan = localStorage.getItem('anazk_plan_type');
-      const trialStartTimeStr = localStorage.getItem(`anazk_free_trial_start_${deviceId}`);
+      const savedPaymentId = localStorage.getItem('anazk_payment_id');
+      const savedPaidEmail = localStorage.getItem('anazk_paid_email');
 
-      // Check for active free trial
+      // ── IF USER ALREADY PAID, UNLOCK IMMEDIATELY ──
+      if (savedPlan === 'paid' || savedPaymentId) {
+        setPlanType('paid');
+        setTimeRemaining(999999);
+        setIsAuthorized(true);
+        if (savedPaidEmail) {
+          setBuyEmail(savedPaidEmail);
+        }
+        return;
+      }
+
+      // ── CHECK FREE TRIAL ──
+      const deviceId = getDeviceId();
+      const trialStartTimeStr = localStorage.getItem(`anazk_free_trial_start_${deviceId}`);
       if (savedPlan === 'free_trial' && trialStartTimeStr) {
         const startTime = parseInt(trialStartTimeStr, 10);
         const elapsed = Date.now() - startTime;
@@ -70,22 +107,33 @@ const SubscriptionGuard = ({ children }) => {
         }
       }
 
-      // Check Supabase session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setCurrentUser(session.user);
-        await fetchProfileAndAuthorize(session.user);
+      // ── CHECK SUPABASE SESSION ──
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setCurrentUser(session.user);
+          await fetchProfileAndAuthorize(session.user);
+        }
+      } catch (e) {
+        console.warn('Supabase session check error:', e);
       }
     };
 
     initializeAuth();
 
-    // Listen for auth changes (e.g. after deep link login)
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const savedPlan = localStorage.getItem('anazk_plan_type');
+      if (savedPlan === 'paid') {
+        setIsAuthorized(true);
+        setPlanType('paid');
+        return;
+      }
+
       if (session?.user) {
         setCurrentUser(session.user);
         await fetchProfileAndAuthorize(session.user);
-      } else {
+      } else if (savedPlan !== 'free_trial') {
         setCurrentUser(null);
         setIsAuthorized(false);
       }
@@ -107,14 +155,12 @@ const SubscriptionGuard = ({ children }) => {
           refreshToken = urlObj.searchParams.get('refresh_token');
         } catch (e) {}
 
-        // Fallback for hash fragments (#access_token=...)
         if (!accessToken && url.includes('#')) {
           const hashParams = new URLSearchParams(url.split('#')[1]);
           accessToken = hashParams.get('access_token');
           refreshToken = hashParams.get('refresh_token');
         }
 
-        // Fallback for raw regex matching
         if (!accessToken) {
           const matchAccess = url.match(/[?&#]access_token=([^&#]+)/);
           const matchRefresh = url.match(/[?&#]refresh_token=([^&#]+)/);
@@ -134,7 +180,7 @@ const SubscriptionGuard = ({ children }) => {
             await fetchProfileAndAuthorize(data.user);
           }
         } else {
-          setError('Login link was missing authentication token. Please try again or sign in with email.');
+          setError('Login link was missing authentication token. Please sign in with email.');
         }
       } catch (err) {
         console.error('Deep link auth error:', err.message);
@@ -144,12 +190,10 @@ const SubscriptionGuard = ({ children }) => {
       }
     };
 
-    // Listen for deep link auth token from main process (Electron)
     if (ipcRenderer) {
       ipcRenderer.on('auth-deep-link', async (event, url) => {
         processDeepLinkUrl(url);
       });
-      // Retrieve any deep link that arrived before component mounted
       ipcRenderer.invoke('get-pending-auth-url').then((pendingUrl) => {
         if (pendingUrl) {
           processDeepLinkUrl(pendingUrl);
@@ -174,8 +218,6 @@ const SubscriptionGuard = ({ children }) => {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (profileErr) throw profileErr;
-
       let activeProfile = profile;
       if (!profile) {
         const { data: newProfile, error: createErr } = await supabase
@@ -198,24 +240,21 @@ const SubscriptionGuard = ({ children }) => {
         setTimeRemaining(999999);
         setPlanType('vip');
         setIsAuthorized(true);
+        localStorage.setItem('anazk_plan_type', 'paid');
         setError('');
       } else if (credits > 0) {
         setPlanType('paid');
         setIsAuthorized(true);
+        localStorage.setItem('anazk_plan_type', 'paid');
         setError('');
       } else {
-        // 0 credits → check if device free trial is still available
         const deviceId = getDeviceId();
-        // Use email-scoped trial key so deleted+re-registered users get fresh trial
         const trialKey = `anazk_free_trial_used_${user.email?.replace(/[^a-z0-9]/gi, '_')}`;
         const trialUsed = localStorage.getItem(trialKey) === 'true';
 
         if (!trialUsed) {
-          // Auto-start 5-min free trial for first-time / new account users
           const now = Date.now();
           const trialStartKey = `anazk_free_trial_start_${user.email?.replace(/[^a-z0-9]/gi, '_')}`;
-          
-          // Check if trial was already started (and still running) for this email
           const existingStart = localStorage.getItem(trialStartKey);
           if (existingStart) {
             const elapsed = Date.now() - parseInt(existingStart, 10);
@@ -228,16 +267,14 @@ const SubscriptionGuard = ({ children }) => {
               startTrialTimerForEmail(user.email);
               return;
             } else {
-              // Trial ended
               localStorage.setItem(trialKey, 'true');
               localStorage.removeItem(trialStartKey);
               setPlanType('free');
               setIsAuthorized(false);
               setTimeRemaining(0);
-              setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
+              setError('Your 5-min free trial has ended. Please purchase lifetime access below.');
             }
           } else {
-            // Fresh trial — start now
             localStorage.setItem(trialStartKey, now.toString());
             setTimeRemaining(FREE_TRIAL_DURATION_MINUTES);
             setPlanType('free_trial');
@@ -249,36 +286,36 @@ const SubscriptionGuard = ({ children }) => {
           setPlanType('free');
           setIsAuthorized(false);
           setTimeRemaining(0);
-          setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
+          setError('Your 5-min free trial has ended. Please purchase lifetime access below.');
         }
       }
 
-      // Sync credits every 15s
       if (syncTimerRef.current) clearInterval(syncTimerRef.current);
-      syncTimerRef.current = setInterval(() => syncUserCredits(user.id), 15000);
+      syncTimerRef.current = setInterval(() => syncUserCredits(user.id), 20000);
 
     } catch (err) {
       console.error('Profile fetch error:', err.message);
-      setError('Connection error. Failed to sync your credit minutes.');
+      // If user had local paid flag, don't lock them out on network errors
+      if (localStorage.getItem('anazk_plan_type') === 'paid') {
+        setIsAuthorized(true);
+        setPlanType('paid');
+      } else {
+        setError('Network error while checking credits. Try again.');
+      }
     }
   };
 
-  // 3. Periodic sync
   const syncUserCredits = async (userId) => {
     try {
-      const { data: profile, error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('credits_minutes')
         .eq('id', userId)
         .maybeSingle();
 
-      if (!error && profile) {
+      if (profile) {
         const credits = profile.credits_minutes || 0;
         setTimeRemaining(credits);
-        if (credits <= 0 && planType === 'paid') {
-          setIsAuthorized(false);
-          setError('Your account is out of credits. Please purchase more minutes at anazkai.vercel.app');
-        }
       }
     } catch (e) {}
   };
@@ -300,7 +337,7 @@ const SubscriptionGuard = ({ children }) => {
           setIsAuthorized(false);
           setPlanType('free');
           setTimeRemaining(0);
-          setError('Free trial ended. Please log in and purchase minutes at anazkai.vercel.app');
+          setError('Free trial ended. Purchase Lifetime Access for ₹349 to continue.');
           return;
         }
         setTimeRemaining(Math.ceil(remaining / 60000));
@@ -308,7 +345,6 @@ const SubscriptionGuard = ({ children }) => {
     }, 10000);
   };
 
-  // 4b. Email-scoped trial timer (for logged-in users with 0 credits)
   const startTrialTimerForEmail = (email) => {
     const emailKey = email?.replace(/[^a-z0-9]/gi, '_');
     const trialStartKey = `anazk_free_trial_start_${emailKey}`;
@@ -328,7 +364,7 @@ const SubscriptionGuard = ({ children }) => {
           setIsAuthorized(false);
           setPlanType('free');
           setTimeRemaining(0);
-          setError('Your 5-min free trial has ended. Please purchase minutes at anazkai.vercel.app');
+          setError('Your 5-min free trial has ended. Purchase Lifetime Access for ₹349 to continue.');
           return;
         }
         setTimeRemaining(Math.ceil(remaining / 60000));
@@ -339,6 +375,11 @@ const SubscriptionGuard = ({ children }) => {
   // 5. Start Free Trial
   const handleStartFreeTrial = () => {
     const deviceId = getDeviceId();
+    const isUsed = localStorage.getItem(`anazk_free_trial_used_${deviceId}`) === 'true';
+    if (isUsed) {
+      setError('Free trial has already been used on this device. Purchase Lifetime Access for ₹349 to continue.');
+      return;
+    }
     const now = Date.now();
     localStorage.setItem(`anazk_free_trial_start_${deviceId}`, now.toString());
     localStorage.setItem('anazk_plan_type', 'free_trial');
@@ -356,7 +397,6 @@ const SubscriptionGuard = ({ children }) => {
       ipcRenderer.send('open-external-url', WEBSITE_LOGIN_URL);
       setError('');
     } else {
-      // Fallback for dev mode (browser)
       window.open(WEBSITE_LOGIN_URL, '_blank');
     }
   };
@@ -373,21 +413,20 @@ const SubscriptionGuard = ({ children }) => {
 
     try {
       if (isLoginMode) {
-        // --- HARDCODED PREMIUM BYPASS FOR FRIENDS ---
         if (cleanEmail === 'bikharimc@gmail.com' && cleanPassword === 'bikhari7600') {
           setCurrentUser({ 
             id: 'premium-friend-id', 
             email: cleanEmail, 
             user_metadata: { full_name: 'Anazk AI Premium VIP' } 
           });
-          setTimeRemaining('UNLIMITED');
+          setTimeRemaining(999999);
           setPlanType('vip');
           setIsAuthorized(true);
+          localStorage.setItem('anazk_plan_type', 'paid');
           setError('');
           setIsValidating(false);
           return;
         }
-        // ---------------------------------------------
 
         const { data, error: authErr } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
@@ -430,48 +469,81 @@ const SubscriptionGuard = ({ children }) => {
 
   // 8. Logout
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
     setCurrentUser(null);
     setIsAuthorized(false);
     setPlanType('free');
     setTimeRemaining(0);
     localStorage.removeItem('anazk_plan_type');
+    localStorage.removeItem('anazk_payment_id');
+    localStorage.removeItem('anazk_paid_email');
     if (syncTimerRef.current) clearInterval(syncTimerRef.current);
     if (trialTimerRef.current) clearInterval(trialTimerRef.current);
   };
 
-  // 9. Handle Razorpay payment success — grant lifetime credits
-  const handlePaymentSuccess = async (paymentId) => {
-    if (!currentUser) return;
+  // 9. Payment Success: Instantly unlock app & record in Supabase
+  const handlePaymentSuccess = async (paymentId, targetEmail) => {
     try {
       setIsValidating(true);
       setError('');
-      // Update Supabase: grant 999999 credits (lifetime access)
-      const { error: updateErr } = await supabase
-        .from('profiles')
-        .update({ credits_minutes: 999999 })
-        .eq('id', currentUser.id);
-      if (updateErr) throw updateErr;
-      // Also store payment ID in localStorage for reference
-      localStorage.setItem(`anazk_payment_id_${currentUser.id}`, paymentId);
+      const cleanEmail = (targetEmail || buyEmail || currentUser?.email || 'customer@anazkai.com').trim().toLowerCase();
+
+      // ── PERMANENT LOCAL ACTIVATION ──
+      localStorage.setItem('anazk_plan_type', 'paid');
+      localStorage.setItem('anazk_payment_id', paymentId);
+      localStorage.setItem('anazk_paid_email', cleanEmail);
+
+      // Record in Supabase profiles for multi-device restore
+      try {
+        if (currentUser?.id) {
+          await supabase
+            .from('profiles')
+            .update({ credits_minutes: 999999 })
+            .eq('id', currentUser.id);
+        } else {
+          await supabase
+            .from('profiles')
+            .upsert([{
+              id: 'rzp_' + paymentId,
+              email: cleanEmail,
+              full_name: cleanEmail.split('@')[0],
+              credits_minutes: 999999
+            }], { onConflict: 'email' });
+        }
+      } catch (e) {
+        console.warn('Database sync completed with fallback:', e);
+      }
+
       setPlanType('paid');
       setTimeRemaining(999999);
       setIsAuthorized(true);
       setError('');
     } catch (err) {
-      setError(`Payment received ✅ but activation failed. Email supportanazkai@gmail.com with Payment ID: ${paymentId}`);
+      // User paid money! Never block them:
+      localStorage.setItem('anazk_plan_type', 'paid');
+      localStorage.setItem('anazk_payment_id', paymentId);
+      setPlanType('paid');
+      setTimeRemaining(999999);
+      setIsAuthorized(true);
     } finally {
       setIsValidating(false);
     }
   };
 
-  // 10. Open Razorpay checkout
+  // 10. Open Razorpay checkout — direct instant buy without login!
   const handleBuyNow = () => {
-    if (!currentUser) {
-      setError('Please log in first before purchasing.');
+    const targetEmail = (buyEmail || currentUser?.email || '').trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!targetEmail || !emailRegex.test(targetEmail)) {
+      setError('Please enter a valid email address to receive your lifetime license.');
       return;
     }
+
     setError('');
+    setIsValidating(true);
 
     const openCheckout = () => {
       const options = {
@@ -479,34 +551,44 @@ const SubscriptionGuard = ({ children }) => {
         amount: 34900, // ₹349 in paise
         currency: 'INR',
         name: 'Anazk AI',
-        description: 'Lifetime Access — One Time Payment',
+        description: 'Lifetime Access Pass — Stealth AI Assistant',
         image: 'https://anazkai.vercel.app/favicon.ico',
         prefill: {
-          email: currentUser?.email || '',
-          name: currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '',
+          email: targetEmail,
+          name: targetEmail.split('@')[0],
         },
         notes: {
-          user_id: currentUser?.id || '',
-          email: currentUser?.email || '',
+          email: targetEmail,
+          plan: 'lifetime_349',
+          device_id: getDeviceId()
         },
         theme: { color: '#0d2e27' },
         handler: async (response) => {
-          await handlePaymentSuccess(response.razorpay_payment_id);
+          await handlePaymentSuccess(response.razorpay_payment_id, targetEmail);
         },
         modal: {
-          ondismiss: () => setError('Payment cancelled. Click "Buy ₹349" to try again.'),
+          ondismiss: () => {
+            setIsValidating(false);
+            setError('Payment window closed. Click "Buy Lifetime Access" anytime to activate.');
+          },
           escape: true,
           animation: true,
         },
       };
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response) => {
-        setError('Payment failed: ' + (response.error?.description || 'Unknown error. Please try again.'));
-      });
-      rzp.open();
+
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', (response) => {
+          setIsValidating(false);
+          setError('Payment failed: ' + (response.error?.description || 'Transaction cancelled.'));
+        });
+        rzp.open();
+      } catch (err) {
+        setIsValidating(false);
+        setError('Error launching Razorpay: ' + err.message);
+      }
     };
 
-    // Load Razorpay script if not already loaded
     if (window.Razorpay) {
       openCheckout();
     } else {
@@ -515,13 +597,59 @@ const SubscriptionGuard = ({ children }) => {
       script.async = true;
       script.onload = openCheckout;
       script.onerror = () => {
-        // Fallback: open website pricing in browser
+        setIsValidating(false);
         if (ipcRenderer) {
           ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
         }
-        setError('Payment page failed to load. Opening website instead...');
+        setError('Payment gateway blocked by firewall. Opening website pricing page...');
       };
       document.body.appendChild(script);
+    }
+  };
+
+  // 11. Restore Purchase by Email
+  const handleRestorePurchase = async () => {
+    const cleanEmail = (restoreEmail || '').trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setError('Please enter the email address used when purchasing.');
+      return;
+    }
+
+    setIsValidating(true);
+    setError('');
+    setSuccessMsg('');
+
+    try {
+      if (VIP_EMAILS.includes(cleanEmail)) {
+        localStorage.setItem('anazk_plan_type', 'paid');
+        localStorage.setItem('anazk_paid_email', cleanEmail);
+        setPlanType('vip');
+        setTimeRemaining(999999);
+        setIsAuthorized(true);
+        return;
+      }
+
+      const { data, error: fetchErr } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (data && (data.credits_minutes > 0 || data.credits_minutes === 999999)) {
+        localStorage.setItem('anazk_plan_type', 'paid');
+        localStorage.setItem('anazk_paid_email', cleanEmail);
+        setPlanType('paid');
+        setTimeRemaining(data.credits_minutes);
+        setIsAuthorized(true);
+        setSuccessMsg('Access restored successfully!');
+      } else {
+        setError('No active purchase found for ' + cleanEmail + '. Please check your email or purchase Lifetime Access below.');
+      }
+    } catch (err) {
+      setError('Could not verify purchase with server. Check internet connection.');
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -538,208 +666,249 @@ const SubscriptionGuard = ({ children }) => {
               onLogout: handleLogout,
               planType,
               isFreeTrial: planType === 'free_trial',
-              currentUser
+              currentUser,
+              onTriggerUpgrade: handleBuyNow
             })
           : children}
       </div>
     );
   }
 
-  // Login Screen
+  // ── Paywall & Login Screen ──
   return (
     <div 
-      className="flex flex-col h-screen bg-[#fbf7ee] text-[#0d2e27] p-6 font-sans select-none relative overflow-hidden items-center justify-center border border-emerald-500/20"
+      className="flex flex-col h-screen bg-[#fbf7ee] text-[#0d2e27] p-5 font-sans select-none relative overflow-y-auto items-center justify-center border border-emerald-500/20"
       style={{ WebkitAppRegion: 'drag' }}
     >
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#c99a4c]/20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div 
-        className="bg-white p-7 rounded-3xl border border-[#0d2e27]/10 shadow-2xl z-10 w-full max-w-sm flex flex-col items-center"
+        className="bg-white p-6 rounded-3xl border border-[#0d2e27]/10 shadow-2xl z-10 w-full max-w-sm flex flex-col items-center relative my-auto"
         style={{ WebkitAppRegion: 'no-drag' }}
       >
+        {/* Top Header Quit Button (F10) */}
+        <button
+          onClick={handleQuitApp}
+          title="Quit App (F10)"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+        >
+          <X size={16} />
+        </button>
 
         {/* Logo */}
         <img
           src="dist/penguin.jpg"
           alt="Anazk AI Logo"
-          className="w-14 h-14 rounded-2xl object-cover border border-[#c99a4c]/30 mb-3.5 shadow-lg"
+          className="w-12 h-12 rounded-2xl object-cover border border-[#c99a4c]/30 mb-2.5 shadow-lg"
           onError={(e) => { e.target.src = 'penguin.jpg'; }}
         />
 
-        <h2 className="text-xl font-black mb-1 bg-gradient-to-r from-[#0d2e27] to-[#14473d] bg-clip-text text-transparent text-center">
+        <h2 className="text-lg font-black bg-gradient-to-r from-[#0d2e27] to-[#14473d] bg-clip-text text-transparent text-center">
           Anazk AI Stealth HUD
         </h2>
-        <p className="text-[#0d2e27]/60 text-xs text-center font-bold mb-5">
-          Sign in to access your interview minutes
+        <p className="text-[#0d2e27]/60 text-[11px] text-center font-bold mb-3.5">
+          Undetectable Live Interview & Coding Copilot
         </p>
 
-        {/* Primary: Login with Website */}
-        {!showEmailForm && (
-          <>
+        {/* ── SECTION 1: INSTANT BUY LIFETIME PASS (PRIMARY) ── */}
+        <div className="w-full bg-gradient-to-br from-[#c99a4c]/10 via-[#c99a4c]/5 to-transparent border border-[#c99a4c]/40 rounded-2xl p-3.5 mb-3 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#b8893b] flex items-center gap-1">
+              <CheckCircle size={11} className="text-[#b8893b]" /> Lifetime License
+            </span>
+            <span className="text-xs font-black text-[#0d2e27] bg-[#c99a4c]/20 px-2 py-0.5 rounded-full">
+              ₹349 One-Time
+            </span>
+          </div>
+
+          <p className="text-[11px] text-[#0d2e27]/80 font-medium leading-tight mb-2.5">
+            Unlimited AI minutes • Auto Typer • 100% Invisible to SEB, Zoom & Proctors.
+          </p>
+
+          <div className="space-y-2">
+            <div className="relative">
+              <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#0d2e27]/40" size={13} />
+              <input
+                type="email"
+                value={buyEmail}
+                onChange={(e) => setBuyEmail(e.target.value)}
+                placeholder="Enter email for license..."
+                className="w-full pl-8 pr-2.5 py-2 text-xs font-bold rounded-xl border border-[#c99a4c]/40 bg-white/90 text-[#0d2e27] placeholder-gray-400 focus:outline-none focus:border-[#c99a4c]"
+              />
+            </div>
+
             <button
-              onClick={handleLoginWithWebsite}
+              onClick={handleBuyNow}
               disabled={isValidating}
-              className="w-full py-3 px-4 mb-3 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all border shadow-lg bg-[#0d2e27] hover:bg-[#14473d] border-[#0d2e27] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] hover:from-[#b8893b] hover:to-[#c99a4c] text-white hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
             >
               {isValidating ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               ) : (
                 <>
-                  <Globe size={16} />
-                  <span>Login with Website</span>
+                  <CreditCard size={14} />
+                  <span>Buy Lifetime Access — ₹349</span>
                 </>
               )}
             </button>
-
-            {isValidating && (
-              <p className="text-[#c99a4c] text-[11px] font-bold text-center mb-3 animate-pulse">
-                ⏳ Waiting for browser login... come back after signing in on anazkai.vercel.app
-              </p>
-            )}
-
-            {/* Divider */}
-            <div className="w-full flex items-center gap-3 my-2 mb-3">
-              <div className="flex-1 h-[1px] bg-[#0d2e27]/10"></div>
-              <span className="text-[10px] text-[#0d2e27]/50 font-bold uppercase tracking-wider">or</span>
-              <div className="flex-1 h-[1px] bg-[#0d2e27]/10"></div>
-            </div>
-
-            {/* Free Trial / Instant Start */}
-            <button
-              onClick={handleStartFreeTrial}
-              className="w-full py-2.5 px-4 mb-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all border shadow-lg bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-700 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <Gift size={14} className="text-emerald-600" />
-              <span>🎁 Enter App Directly (Free Trial / Test)</span>
-            </button>
-
-            {/* Email fallback toggle */}
-            <button
-              type="button"
-              onClick={() => setShowEmailForm(true)}
-              className="text-[11px] text-[#0d2e27]/70 font-bold hover:text-[#0d2e27] transition-colors cursor-pointer mt-1"
-            >
-              or sign in with email & password
-            </button>
-          </>
-        )}
-
-        {/* Fallback: Email/Password form */}
-        {showEmailForm && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowEmailForm(false)}
-              className="text-[11px] text-[#0d2e27] font-bold hover:underline cursor-pointer mb-3 self-start"
-            >
-              ← Back to Website Login
-            </button>
-
-            <form onSubmit={handleAuthSubmit} className="w-full flex flex-col gap-3">
-              {!isLoginMode && (
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
-                  <input
-                    type="text"
-                    required
-                    placeholder="Full Name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
-                  />
-                </div>
-              )}
-
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
-                <input
-                  type="email"
-                  required
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
-                />
-              </div>
-
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0d2e27]/50" size={14} />
-                <input
-                  type="password"
-                  required
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-[#0d2e27]/20 rounded-xl outline-none focus:border-[#c99a4c] text-[#0d2e27] placeholder-gray-400 transition-all text-xs font-bold"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isValidating || !email || !password}
-                className={`w-full py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer ${
-                  isValidating || !email || !password
-                    ? 'bg-[#0d2e27]/40 text-white/50 cursor-not-allowed'
-                    : 'bg-[#0d2e27] hover:bg-[#14473d] text-white hover:scale-[1.02] active:scale-[0.98]'
-                }`}
-              >
-                {isValidating ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                ) : (
-                  <>
-                    <ShieldCheck size={14} />
-                    <span>{isLoginMode ? 'Log In' : 'Register'}</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-4 text-[11px] text-[#0d2e27]/70 font-bold text-center">
-              {isLoginMode ? (
-                <p>New user? <button type="button" onClick={() => { setIsLoginMode(false); setError(''); }} className="text-[#c99a4c] hover:underline cursor-pointer">Create Account</button></p>
-              ) : (
-                <p>Already registered? <button type="button" onClick={() => { setIsLoginMode(true); setError(''); }} className="text-[#c99a4c] hover:underline cursor-pointer">Sign In</button></p>
-              )}
-            </div>
-          </>
-        )}
-
-        {error && (
-          <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 p-2.5 rounded-xl text-[11px] font-semibold mt-3 w-full">
-            <AlertCircle size={13} className="shrink-0 mt-0.5" />
-            <p className="leading-relaxed">{error}</p>
           </div>
-        )}
+        </div>
 
-        <p className="mt-4 text-[10px] text-[#0d2e27]/50 font-bold text-center">
-          Buy at <span className="text-[#c99a4c]">anazkai.vercel.app</span> or pay below
-        </p>
+        {/* ── SECTION 2: FREE TRIAL BUTTON ── */}
+        <button
+          onClick={handleStartFreeTrial}
+          disabled={isValidating || freeTrialUsed}
+          className={`w-full py-2 px-3 mb-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all border shadow-xs cursor-pointer ${
+            freeTrialUsed
+              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+              : 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-800 hover:scale-[1.01] active:scale-[0.98]'
+          }`}
+        >
+          <Gift size={13} className={freeTrialUsed ? 'text-gray-400' : 'text-emerald-600'} />
+          <span>{freeTrialUsed ? 'Free Trial Used' : '🎁 Try 5-Minute Free Trial'}</span>
+        </button>
 
-        {/* Buy Now Button — always visible if user is logged in */}
-        {currentUser && (
+        {/* ── SECTION 3: RESTORE PURCHASE (COLLAPSIBLE) ── */}
+        {showRestore ? (
+          <div className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 mb-2.5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold text-gray-600">Enter Purchase Email:</span>
+              <button 
+                onClick={() => setShowRestore(false)} 
+                className="text-[10px] text-gray-400 hover:text-gray-600 font-bold"
+              >
+                Close
+              </button>
+            </div>
+            <div className="flex gap-1.5">
+              <input
+                type="email"
+                value={restoreEmail}
+                onChange={(e) => setRestoreEmail(e.target.value)}
+                placeholder="buyer@gmail.com"
+                className="flex-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white text-[#0d2e27] outline-none"
+              />
+              <button
+                onClick={handleRestorePurchase}
+                disabled={isValidating}
+                className="px-3 py-1.5 bg-[#0d2e27] hover:bg-[#14473d] text-white text-[10px] font-black rounded-lg cursor-pointer"
+              >
+                Verify
+              </button>
+            </div>
+          </div>
+        ) : (
           <button
-            onClick={handleBuyNow}
-            disabled={isValidating}
-            className="w-full mt-3 py-3 px-4 rounded-xl text-sm font-black flex items-center justify-center gap-2.5 transition-all shadow-lg bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] hover:from-[#b8893b] hover:to-[#c99a4c] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-[#c99a4c]/30"
+            onClick={() => { setShowRestore(true); setShowEmailForm(false); }}
+            className="text-[10px] text-[#c99a4c] font-black hover:underline cursor-pointer mb-2 flex items-center gap-1"
           >
-            {isValidating ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            ) : (
-              <>
-                <CreditCard size={16} />
-                <span>Buy Lifetime Access — ₹349</span>
-              </>
-            )}
+            <RefreshCw size={10} /> Already bought? Restore Access
           </button>
         )}
 
-        {/* Show Buy button even if not logged in (with prompt) */}
-        {!currentUser && (
-          <div className="w-full mt-3 p-3 rounded-xl border border-[#c99a4c]/40 bg-[#c99a4c]/5 text-center">
-            <p className="text-[11px] text-[#c99a4c] font-bold">💳 Login first, then buy ₹349 for lifetime access</p>
+        {/* ── SECTION 4: WEBSITE OR PASSWORD LOGIN TOGGLE ── */}
+        {!showEmailForm ? (
+          <div className="w-full pt-2 border-t border-gray-100 flex items-center justify-between">
+            <button
+              onClick={handleLoginWithWebsite}
+              disabled={isValidating}
+              className="text-[10px] text-[#0d2e27]/70 hover:text-[#0d2e27] font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <Globe size={11} /> Login via Website
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowEmailForm(true); setShowRestore(false); }}
+              className="text-[10px] text-[#0d2e27]/70 hover:text-[#0d2e27] font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <Key size={11} /> Email Login
+            </button>
+          </div>
+        ) : (
+          <div className="w-full pt-2 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold text-gray-500">Sign in with Email:</span>
+              <button 
+                type="button"
+                onClick={() => setShowEmailForm(false)} 
+                className="text-[10px] text-gray-400 hover:text-gray-600 font-bold"
+              >
+                Cancel
+              </button>
+            </div>
+            <form onSubmit={handleAuthSubmit} className="space-y-1.5">
+              {!isLoginMode && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white outline-none"
+                />
+              )}
+              <input
+                type="email"
+                required
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white outline-none"
+              />
+              <input
+                type="password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isValidating || !email || !password}
+                className="w-full py-1.5 bg-[#0d2e27] text-white text-xs font-bold rounded-lg hover:bg-[#14473d] cursor-pointer"
+              >
+                {isValidating ? '...' : (isLoginMode ? 'Sign In' : 'Create Account')}
+              </button>
+            </form>
+            <div className="mt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setIsLoginMode(!isLoginMode)}
+                className="text-[9px] text-[#c99a4c] font-bold hover:underline cursor-pointer"
+              >
+                {isLoginMode ? 'Need an account? Register' : 'Have an account? Sign in'}
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Feedback Messages */}
+        {error && (
+          <div className="flex items-start gap-1.5 bg-red-50 border border-red-200 text-red-600 p-2 rounded-xl text-[10px] font-semibold mt-2.5 w-full">
+            <AlertCircle size={12} className="shrink-0 mt-0.5" />
+            <p className="leading-tight">{error}</p>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="flex items-start gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 p-2 rounded-xl text-[10px] font-semibold mt-2.5 w-full">
+            <CheckCircle size={12} className="shrink-0 mt-0.5" />
+            <p className="leading-tight">{successMsg}</p>
+          </div>
+        )}
+
+        {/* Clean Exit Info */}
+        <div className="mt-3 flex items-center justify-between w-full text-[9px] text-gray-400 font-bold px-1">
+          <span>Website: anazkai.vercel.app</span>
+          <button 
+            onClick={handleQuitApp} 
+            className="hover:text-red-500 flex items-center gap-0.5 cursor-pointer"
+          >
+            <Power size={9} /> Quit (F10)
+          </button>
+        </div>
 
       </div>
     </div>

@@ -175,7 +175,7 @@ function buildGeminiBearerConfig(geminiKey, modelId, isStream = true) {
   return { url, headers };
 }
 
-function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false, currentUser = null }) {
+function AppContent({ timeRemaining, onLogout, planType = 'paid', isFreeTrial = false, currentUser = null, onTriggerUpgrade = null }) {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [screenshotData, setScreenshotData] = useState(null);
@@ -2103,6 +2103,36 @@ RULES FOR USING CANDIDATE RESUME:
                   </div>
                 </div>
               </div>
+
+              {/* Plan Status / Lifetime Upgrade */}
+              <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Active Plan</div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5 mt-0.5">
+                    {planType === 'paid' || planType === 'vip' || timeRemaining === 'UNLIMITED' ? (
+                      <span className="text-amber-300 flex items-center gap-1">👑 Lifetime Access Active</span>
+                    ) : (
+                      <span className="text-emerald-400 flex items-center gap-1">⏱️ Free Trial ({timeRemaining}m)</span>
+                    )}
+                  </div>
+                </div>
+                {planType !== 'paid' && planType !== 'vip' && timeRemaining !== 'UNLIMITED' && (
+                  <button
+                    onClick={() => {
+                      if (onTriggerUpgrade) {
+                        onTriggerUpgrade();
+                      } else if (window.require) {
+                        window.require('electron').ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
+                      } else {
+                        window.open('https://anazkai.vercel.app/#pricing', '_blank');
+                      }
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] text-black hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer"
+                  >
+                    💳 Buy Lifetime (₹349)
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="flex gap-2 mt-5">
@@ -2170,23 +2200,43 @@ RULES FOR USING CANDIDATE RESUME:
 
           {/* Session Time Remaining Pill */}
           {timeRemaining !== undefined && timeRemaining !== null && (
-            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] border font-mono font-bold shadow-2xs ${
-              isFreeTrial || planType === 'free_trial'
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
-                : (typeof timeRemaining === 'number' && timeRemaining < 10 
-                    ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' 
-                    : (timeRemaining === 'UNLIMITED' 
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
-                        : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'))
-            }`}>
-              {isFreeTrial || planType === 'free_trial' ? (
-                <Gift size={10} className="text-amber-400 animate-pulse" />
-              ) : (
-                <Clock size={10} />
+            <div className="flex items-center gap-1">
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] border font-mono font-bold shadow-2xs ${
+                isFreeTrial || planType === 'free_trial'
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                  : (typeof timeRemaining === 'number' && timeRemaining < 10 
+                      ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' 
+                      : (timeRemaining === 'UNLIMITED' 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' 
+                          : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'))
+              }`}>
+                {isFreeTrial || planType === 'free_trial' ? (
+                  <Gift size={10} className="text-amber-400 animate-pulse" />
+                ) : (
+                  <Clock size={10} />
+                )}
+                <span>
+                  {isFreeTrial || planType === 'free_trial' ? `TRIAL: ${timeRemaining}m` : (timeRemaining === 'UNLIMITED' ? '👑 PRO' : `${timeRemaining}m`)}
+                </span>
+              </div>
+
+              {(isFreeTrial || planType === 'free_trial') && (
+                <button
+                  onClick={() => {
+                    if (onTriggerUpgrade) {
+                      onTriggerUpgrade();
+                    } else if (window.require) {
+                      window.require('electron').ipcRenderer.send('open-external-url', 'https://anazkai.vercel.app/#pricing');
+                    } else {
+                      window.open('https://anazkai.vercel.app/#pricing', '_blank');
+                    }
+                  }}
+                  className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-[#c99a4c] to-[#e0b86a] text-black shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  title="Upgrade to Lifetime Access (₹349)"
+                >
+                  💳 Upgrade ₹349
+                </button>
               )}
-              <span>
-                {isFreeTrial || planType === 'free_trial' ? `TRIAL: ${timeRemaining}m` : (timeRemaining === 'UNLIMITED' ? '👑 PRO' : `${timeRemaining}m`)}
-              </span>
             </div>
           )}
         </div>
@@ -2642,7 +2692,9 @@ function App() {
   }
 
   return (
-    <AppContent planType="paid" isFreeTrial={false} />
+    <SubscriptionGuard>
+      <AppContent />
+    </SubscriptionGuard>
   );
 }
 

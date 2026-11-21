@@ -211,7 +211,7 @@ function LandingPage() {
         throw new Error(data.error || 'Failed to initiate order. Please try again.');
       }
 
-      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_TQP7ZivrFvZ5cE';
 
       const options = {
         key: keyId,
@@ -340,7 +340,7 @@ function LandingPage() {
         throw new Error(data.error || 'Failed to initiate order. Please try again.');
       }
       
-      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      const keyId = data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_TQP7ZivrFvZ5cE';
 
       const options = {
         key: keyId,
