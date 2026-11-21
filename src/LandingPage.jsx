@@ -1170,39 +1170,39 @@ class Solution {
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
       {/* ─── TOP NAVBAR (EXACT GETSCREEN.ME 2-TIER DESIGN) ─── */}
-      <header className="fixed top-0 inset-x-0 z-50 shadow-sm">
+      <header className="fixed top-0 inset-x-0 z-50 shadow-xs">
         
         {/* ── TOP SUBHEADER BAR (dark navy, exact like getscreen.me) ── */}
-        <div className="bg-[#1e2d4a] text-white">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-9 flex items-center justify-between">
+        <div className="bg-[#1f3463] text-white">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-8 flex items-center justify-between">
             {/* Left: Downloads & Share Screen */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-6">
               <button
                 onClick={() => setShowDownloadModal(true)}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-200 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
               >
                 <Download size={12} />
-                DOWNLOADS
+                <span>DOWNLOADS</span>
               </button>
               <button
-                onClick={() => scrollToSection('sandbox')}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
+                onClick={() => scrollToSection('features')}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-200 hover:text-white transition-colors cursor-pointer uppercase tracking-wider"
               >
                 <Monitor size={12} />
-                LIVE SANDBOX
+                <span>SCREEN CONTROL</span>
               </button>
             </div>
-            {/* Right: Sign In / Sign Up / User */}
+            {/* Right: Sign In / Sign Up / User + Flag */}
             <div className="flex items-center gap-4">
               {user ? (
                 <>
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-200">
                     <User size={12} />
                     <span className="max-w-[140px] truncate">{user.email}</span>
                   </div>
                   <button
                     onClick={async () => { await supabase.auth.signOut(); setUser(null); }}
-                    className="text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                    className="text-[11px] font-bold text-gray-200 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
                   >
                     SIGN OUT
                   </button>
@@ -1211,77 +1211,75 @@ class Solution {
                 <>
                   <button
                     onClick={() => setCurrentView('auth')}
-                    className="flex items-center gap-1 text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                    className="flex items-center gap-1 text-[11px] font-bold text-gray-200 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
                   >
                     <ArrowRight size={11} />
                     SIGN IN
                   </button>
-                  <span className="text-gray-600 text-xs">|</span>
+                  <span className="text-gray-500 text-xs">|</span>
                   <button
                     onClick={() => setCurrentView('auth')}
-                    className="text-[11px] font-bold text-gray-300 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
+                    className="text-[11px] font-bold text-gray-200 hover:text-white cursor-pointer transition-colors uppercase tracking-wider"
                   >
                     SIGN UP
                   </button>
                 </>
               )}
+              {/* Country indicator */}
+              <div className="hidden sm:flex items-center gap-1 text-xs text-gray-300 pl-2 border-l border-white/20">
+                <span className="text-sm">🇮🇳</span>
+                <ChevronDown size={11} className="text-gray-400" />
+              </div>
             </div>
           </div>
         </div>
 
         {/* ── MAIN HEADER BAR (white, logo + nav + CTA) ── */}
         <div className="bg-white border-b border-gray-200/80">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-[60px] flex items-center justify-between">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-[66px] flex items-center justify-between">
 
             {/* Left: Brand Logo */}
             <div
               onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               className="flex items-center space-x-2.5 cursor-pointer group shrink-0"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#448AFF] to-[#59C141] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#448AFF] to-[#59C141] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
                 <img src="/penguin.jpg" alt="Anazk AI" className="w-7 h-7 rounded-lg object-cover" />
               </div>
-              <span className="font-display font-black text-[20px] tracking-tight text-[#1e2d4a]">
+              <span className="font-display font-black text-[21px] tracking-tight text-[#1f3463]">
                 Anazk<span className="getscreen-gradient-text ml-0.5">AI</span>
               </span>
             </div>
 
             {/* Center: Getscreen-style nav links with chevrons */}
-            <nav className="hidden lg:flex items-center gap-1 text-[14px] font-semibold text-[#333]">
+            <nav className="hidden lg:flex items-center gap-2 text-[14px] font-semibold text-[#333]">
               <button
                 onClick={() => scrollToSection('pricing')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+                className="flex items-center gap-1 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
               >
                 Pricing <ChevronDown size={13} className="text-gray-400" />
               </button>
               <button
                 onClick={() => scrollToSection('features')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+                className="flex items-center gap-1 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
               >
                 Features <ChevronDown size={13} className="text-gray-400" />
               </button>
               <button
                 onClick={() => scrollToSection('solutions')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+                className="flex items-center gap-1 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
               >
                 Solutions <ChevronDown size={13} className="text-gray-400" />
               </button>
               <button
-                onClick={() => scrollToSection('sandbox')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#59C141] transition-colors cursor-pointer rounded-md hover:bg-green-50 text-[#59C141] font-bold"
-              >
-                <Sparkles size={13} />
-                Live Sandbox
-              </button>
-              <button
                 onClick={() => scrollToSection('reviews')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+                className="flex items-center gap-1 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
               >
                 Reviews <ChevronDown size={13} className="text-gray-400" />
               </button>
               <button
                 onClick={() => scrollToSection('faq')}
-                className="flex items-center gap-0.5 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
+                className="flex items-center gap-1 px-3 py-2 hover:text-[#0076FF] transition-colors cursor-pointer rounded-md hover:bg-blue-50"
               >
                 FAQ
               </button>
@@ -1290,7 +1288,7 @@ class Solution {
             {/* Right: Getscreen "Get Started with a Tour" style button */}
             <div className="hidden md:flex items-center gap-3">
               <button
-                onClick={() => scrollToSection('sandbox')}
+                onClick={() => scrollToSection('features')}
                 className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 text-[13px] font-semibold text-[#333] transition-all cursor-pointer shadow-xs"
               >
                 <Sparkles size={14} className="text-[#59C141]" />
@@ -1321,13 +1319,9 @@ class Solution {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-x-4 top-[100px] bg-white border border-gray-200 rounded-2xl p-5 shadow-2xl z-50 lg:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
+        <div className="fixed inset-x-4 top-[105px] bg-white border border-gray-200 rounded-2xl p-5 shadow-2xl z-50 lg:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('features'); }} className="py-2 border-b border-gray-100 text-left w-full">Features</button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('solutions'); }} className="py-2 border-b border-gray-100 text-left w-full">Solutions</button>
-          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('sandbox'); }} className="py-2 border-b border-gray-100 text-left w-full text-emerald-700 font-extrabold flex items-center justify-between">
-            <span>Live Sandbox Simulator</span>
-            <Sparkles size={14} className="text-emerald-500" />
-          </button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('pricing'); }} className="py-2 border-b border-gray-100 text-left w-full">Pricing & Plans</button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('reviews'); }} className="py-2 border-b border-gray-100 text-left w-full">Reviews & Testimonials</button>
           <button onClick={() => { setMobileMenuOpen(false); scrollToSection('faq'); }} className="py-2 border-b border-gray-100 text-left w-full">FAQ</button>
@@ -1364,33 +1358,59 @@ class Solution {
       )}
 
       {/* ─── HERO SECTION (EXACT GETSCREEN.ME OVERVIEW STYLE) ─── */}
-      <section id="top" className="getscreen-hero pt-[100px] pb-16 sm:pb-24 px-4 sm:px-8 lg:px-12 w-full border-b border-slate-200/70">
+      <section id="top" className="getscreen-hero pt-[140px] sm:pt-[160px] lg:pt-[175px] pb-16 sm:pb-24 px-4 sm:px-8 lg:px-12 w-full border-b border-slate-200/70">
         <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
           {/* Hero Left Content (overview__page--left) */}
-          <div className="lg:col-span-6 space-y-6 text-left">
+          <div className="lg:col-span-6 space-y-7 text-left">
             
-            {/* OS Compatibility Row (.overview__os) */}
-            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-600">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Windows">
-                <svg className="w-3.5 h-3.5 text-[#0078D7]" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-13.051-1.802"/></svg>
-                <span className="text-[11px] font-bold text-gray-700">Windows</span>
+            {/* OS Compatibility Row (.overview__os - Exact Getscreen icons only, no bulky text) */}
+            <div className="flex items-center gap-4 sm:gap-5 mb-2">
+              {/* Windows 4-Color Logo */}
+              <div title="Windows" className="w-7 h-7 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <rect x="1" y="1" width="10" height="10" fill="#F25022" />
+                  <rect x="13" y="1" width="10" height="10" fill="#7FBA00" />
+                  <rect x="1" y="13" width="10" height="10" fill="#00A4EF" />
+                  <rect x="13" y="13" width="10" height="10" fill="#FFB900" />
+                </svg>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to macOS">
-                <svg className="w-3.5 h-3.5 text-gray-800" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.87-.96.04-2.12.64-2.79 1.43-.59.68-1.1 1.77-.96 2.81 1.07.08 2.12-.59 2.74-1.37z"/></svg>
-                <span className="text-[11px] font-bold text-gray-700">macOS</span>
+
+              {/* Apple macOS Logo */}
+              <div title="macOS" className="w-7 h-7 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 fill-current text-[#222222]" viewBox="0 0 170 170">
+                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.77-8.1-12.24-15.06-6.19-9.59-11-20.73-14.42-33.42-3.42-12.68-5.14-24.89-5.14-36.63 0-14.53 3.63-26.68 10.9-36.46 7.27-9.78 16.5-14.74 27.69-14.88 4.92 0 10.36 1.34 16.34 4.01 5.98 2.67 9.87 4.07 11.66 4.2 1.45 0 5.48-1.51 12.09-4.52 6.61-3.01 12.44-4.33 17.5-3.95 13.52.89 23.95 6.09 31.3 15.61-12.07 7.37-17.98 17.51-17.73 30.43.25 10.04 4.09 18.57 11.53 25.6 7.44 7.03 16.33 10.94 26.68 11.73-2.12 6.47-4.69 13.06-7.7 19.78zM119.22 33.15c0-7.37 2.65-14.19 7.95-20.46 5.3-6.27 11.83-10.27 19.59-12 1.01 7.26-.84 14.18-5.55 20.76-4.71 6.58-11.08 10.63-19.11 12.16-.9-2.02-1.35-4.04-1.35-6.06z" />
+                </svg>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Linux">
-                <span className="text-amber-600 font-black text-xs">🐧</span>
-                <span className="text-[11px] font-bold text-gray-700">Linux</span>
+
+              {/* Linux Penguin Logo */}
+              <div title="Linux" className="w-7 h-7 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C9.5 2 8 4 8 6.5V9C6.5 10 5.5 11.5 5.5 13.5C5.5 15.5 6.5 17 8 18V20C8 21.5 9 22 10.5 22H13.5C15 22 16 21.5 16 20V18C17.5 17 18.5 15.5 18.5 13.5C18.5 11.5 17.5 10 16 9V6.5C16 4 14.5 2 12 2Z" fill="#222" />
+                  <ellipse cx="12" cy="14" rx="4" ry="5.5" fill="#FFF" />
+                  <ellipse cx="10.5" cy="6.5" rx="1" ry="1.5" fill="#FFF" />
+                  <ellipse cx="13.5" cy="6.5" rx="1" ry="1.5" fill="#FFF" />
+                  <circle cx="10.5" cy="6.5" r="0.6" fill="#000" />
+                  <circle cx="13.5" cy="6.5" r="0.6" fill="#000" />
+                  <path d="M11 8C11 8 11.5 9 12 9C12.5 9 13 8 13 8L12 9.8L11 8Z" fill="#FFA500" stroke="#FFA500" strokeWidth="0.8" />
+                  <path d="M7 21C6 21 5 21.8 6 22.5C7 23 9 22.5 9 21.5L7 21Z" fill="#FFA500" />
+                  <path d="M17 21C18 21 19 21.8 18 22.5C17 23 15 22.5 15 21.5L17 21Z" fill="#FFA500" />
+                </svg>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Android">
-                <span className="text-emerald-600 font-black text-xs">📱</span>
-                <span className="text-[11px] font-bold text-gray-700">Android</span>
+
+              {/* Android Robot Logo */}
+              <div title="Android" className="w-7 h-7 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="#3DDC84">
+                  <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v6c0 .83.67 1.5 1.5 1.5S5 16.33 5 15.5v-6C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5zm-4.97-4.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 2.23 12.95 2 12 2c-.96 0-1.86.23-2.66.63L7.85 1.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 4.26 6 6.01 6 8h12c0-1.99-.97-3.75-2.47-4.84zM10 5.5c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75zm4 0c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75z"/>
+                </svg>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-blue-200 shadow-xs text-blue-600 hover:border-blue-400 transition-colors" title="WebRTC Browser-Based Connections">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                <span className="text-[11px] font-bold text-blue-700">WebRTC</span>
+
+              {/* WebRTC Badge */}
+              <div title="WebRTC-powered Connections" className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-250 shadow-xs ml-3 sm:ml-5 cursor-pointer hover:border-gray-400 transition-colors">
+                <span className="w-2 h-2 rounded-full bg-[#00A3FF] animate-pulse"></span>
+                <span className="text-[12px] font-bold text-[#333333] tracking-wide font-sans">
+                  Web<span className="text-[#00A3FF]">RTC</span>
+                </span>
               </div>
             </div>
 
@@ -1425,10 +1445,10 @@ class Solution {
               <div className="text-xs text-[#666666] pt-1">
                 Not sure where to start?{' '}
                 <button 
-                  onClick={() => scrollToSection('sandbox')}
+                  onClick={() => scrollToSection('features')}
                   className="text-[#0076FF] font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
                 >
-                  Test the Desktop Overlay in Live Sandbox ➔
+                  Get Started with a Tour ➔
                 </button>
               </div>
             </div>
@@ -1651,7 +1671,7 @@ class Solution {
               <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-gray-500 border-t border-slate-200/80">
                 <button onClick={() => scrollToSection('privacy')} className="hover:text-[#0076FF] cursor-pointer">Features of Permanent Stealth</button>
                 <span>•</span>
-                <button onClick={() => scrollToSection('sandbox')} className="hover:text-[#0076FF] cursor-pointer">Live Simulator Demo</button>
+                <button onClick={() => scrollToSection('features')} className="hover:text-[#0076FF] cursor-pointer">Features Overview</button>
               </div>
             </div>
           </div>
@@ -1682,10 +1702,10 @@ class Solution {
                   TRY NOW (₹349)
                 </button>
                 <button 
-                  onClick={() => scrollToSection('sandbox')}
+                  onClick={() => scrollToSection('pricing')}
                   className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
                 >
-                  Try in Sandbox ➔
+                  Explore Pricing ➔
                 </button>
               </div>
 
@@ -1851,10 +1871,10 @@ class Solution {
                 START FREE TRIAL / ₹349
               </button>
               <button 
-                onClick={() => scrollToSection('sandbox')}
+                onClick={() => setShowDownloadModal(true)}
                 className="button--primary px-7 py-3.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
               >
-                TEST IN SANDBOX
+                DOWNLOAD NOW
               </button>
             </div>
           </div>
@@ -1894,293 +1914,6 @@ class Solution {
                 <span className="font-bold">Hotkeys: Cmd/Win+Shift+A</span>
               </div>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ─── INTERACTIVE SANDBOX SIMULATOR SECTION (id="sandbox") ─── */}
-      <section id="sandbox" className={`scroll-mt-24 py-20 px-4 sm:px-8 border-t transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#080d1a] border-gray-800' : 'bg-[#f4faf7] border-emerald-500/15'}`}>
-        <div className="max-w-6xl mx-auto text-center space-y-8">
-          
-          <div className="space-y-3">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest ${activeTab === 'coding' ? 'bg-emerald-950/50 border border-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800 border border-emerald-300/60'}`}>
-              <Sparkles size={12} />
-              Try Live Sandbox
-            </span>
-            <h2 className={`font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-              Test the Desktop Overlay Live
-            </h2>
-            <p className={`text-sm sm:text-base font-semibold max-w-2xl mx-auto transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
-              Experience the exact invisible overlay. Try typing a question, changing interview modes, and dragging the overlay around the mock desktop screen below.
-            </p>
-          </div>
-
-          {/* Interactive Screen Area */}
-          <div id="sandbox-screen-container" className="w-full h-[580px] relative rounded-3xl border-2 border-emerald-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_35px_rgba(16,185,129,0.12)] overflow-hidden bg-[#070d18] select-none">
-            
-            {/* Background: Realistic Mock Interview Workspace */}
-            <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-              {/* Mock OS Desktop Top Menu Bar */}
-              <div className="h-9 bg-black/85 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between text-[11px] text-gray-300 font-mono">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-2.5 h-2.5 bg-rose-500 rounded-full inline-block"></span>
-                    <span className="w-2.5 h-2.5 bg-amber-500 rounded-full inline-block"></span>
-                    <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span>
-                  </div>
-                  <span className="font-bold text-white ml-1">Google Meet • Technical Interview Call #4</span>
-                  <span className="hidden sm:inline-block text-gray-500">|</span>
-                  <span className="hidden sm:flex items-center gap-1.5 text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Screen Share: Active (Anazk Cloaked)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-400">
-                  <span className="hidden md:inline">Audio: 100%</span>
-                  <span>10:42 AM</span>
-                </div>
-              </div>
-
-              {/* Main Desktop Workspace: Split Editor & Video Stream */}
-              <div className="h-[calc(100%-36px)] grid grid-cols-1 md:grid-cols-12 gap-0 bg-[#070d18]">
-                {/* Left: Code Editor (VS Code / CoderPad Mockup) */}
-                <div className="hidden md:flex md:col-span-7 border-r border-white/10 flex-col bg-[#0b1220]">
-                  {/* Editor Tab Bar */}
-                  <div className="h-8 bg-[#070d18] border-b border-white/10 flex items-center px-3 gap-2 text-[11px] font-mono text-gray-400">
-                    <div className="bg-[#0b1220] border-t-2 border-emerald-400 text-gray-200 px-3 py-1 flex items-center gap-1.5 rounded-t">
-                      <Code2 size={12} className="text-emerald-400" />
-                      <span>solution.ts</span>
-                    </div>
-                    <span className="hover:text-gray-300">tests.spec.ts</span>
-                  </div>
-
-                  {/* Code Lines with Syntax Colors */}
-                  <div className="p-4 font-mono text-[11px] leading-relaxed text-gray-300 space-y-1 text-left opacity-90">
-                    <div className="text-gray-500 italic">// Q: Design Distributed Rate Limiter with Sliding Window</div>
-                    <div><span className="text-purple-400">class</span> <span className="text-yellow-300">RateLimiter</span> {'{'}</div>
-                    <div className="pl-4"><span className="text-purple-400">private</span> <span className="text-blue-300">capacity</span>: <span className="text-teal-300">number</span>;</div>
-                    <div className="pl-4"><span className="text-purple-400">private</span> <span className="text-blue-300">redisClient</span>: <span className="text-teal-300">RedisCluster</span>;</div>
-                    <div className="pl-4 mt-2"><span className="text-purple-400">async</span> <span className="text-blue-400">checkLimit</span>(<span className="text-orange-300">userId</span>: <span className="text-teal-300">string</span>) {'{'}</div>
-                    <div className="pl-8 text-gray-400">// Atomic Redis Lua script execution</div>
-                    <div className="pl-8"><span className="text-purple-400">const</span> now = Date.<span className="text-blue-400">now</span>();</div>
-                    <div className="pl-8"><span className="text-purple-400">return await</span> <span className="text-blue-300">this</span>.redisClient.<span className="text-blue-400">eval</span>(LUA_TOKEN_SCRIPT, [userId, now]);</div>
-                    <div className="pl-4">{'}'}</div>
-                    <div>{'}'}</div>
-                  </div>
-
-                  {/* Terminal status at bottom */}
-                  <div className="mt-auto p-2.5 bg-[#050912] border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-emerald-400">
-                    <span>✓ Terminal: 12 tests passed (0 failures)</span>
-                    <span className="text-gray-500">TypeScript 5.3</span>
-                  </div>
-                </div>
-
-                {/* Right: Real Interviewer Video Stream & Status */}
-                <div className="col-span-12 md:col-span-5 flex flex-col justify-between p-4 space-y-3 bg-[#080e1b]">
-                  {/* Interviewer Video Box */}
-                  <div className="bg-[#0f172a] rounded-2xl border border-white/10 p-3.5 flex flex-col justify-between h-56 relative overflow-hidden shadow-lg">
-                    <div className="flex items-center justify-between z-10">
-                      <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Sarah Jenkins (Staff Interviewer)
-                      </span>
-                      <span className="text-emerald-400 text-[10px] font-bold">Zoom HD</span>
-                    </div>
-
-                    {/* Interviewer Avatar & Audio */}
-                    <div className="my-auto text-center py-2 z-10">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white mx-auto flex items-center justify-center font-black text-base shadow-lg mb-2">
-                        SJ
-                      </div>
-                      <div className="flex items-center justify-center gap-1 my-1">
-                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-sound-wave"></span>
-                        <span className="w-1 h-4 bg-emerald-300 rounded-full animate-sound-wave" style={{ animationDelay: '0.15s' }}></span>
-                        <span className="w-1 h-3 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.3s' }}></span>
-                        <span className="w-1 h-1.5 bg-emerald-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.45s' }}></span>
-                      </div>
-                      <p className="text-[11px] text-gray-200 italic max-w-[220px] mx-auto font-medium">
-                        &quot;Can you explain how your rate limiter handles Redis node failover?&quot;
-                      </p>
-                    </div>
-
-                    <div className="text-[10px] text-gray-400 flex items-center justify-between border-t border-white/10 pt-2 z-10">
-                      <span>Whisper Live Audio</span>
-                      <span className="text-emerald-400 font-mono font-bold">Transcribed • 120ms</span>
-                    </div>
-                  </div>
-
-                  {/* Live Candidate Status Box */}
-                  <div className="bg-[#0c1322] rounded-2xl border border-emerald-500/20 p-3 flex items-center justify-between text-left text-xs">
-                    <div>
-                      <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                        <ShieldCheck size={13} className="text-emerald-400" />
-                        <span>Stealth Display Engine Active</span>
-                      </div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">
-                        Interviewer &amp; Screen share only see the IDE. The AI HUD remains 100% invisible.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Instruction Banner overlay */}
-            <div className="absolute top-12 left-4 right-4 bg-slate-950/90 backdrop-blur-md py-2.5 px-4 rounded-xl border border-white/15 text-[11px] sm:text-xs text-slate-200 z-20 flex items-center justify-between text-left shadow-lg">
-              <span>💡 <strong>Live Interactive Demo:</strong> Drag this floating widget anywhere across the mock interview. Click <strong>&quot;Hide&quot;</strong> to test the collapsed stealth pill.</span>
-              <button 
-                onClick={() => {
-                  setSandboxPos({ x: 50, y: 110 });
-                  setSandboxCollapsed(false);
-                }} 
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-sm shrink-0 ml-2"
-              >
-                Reset Widget
-              </button>
-            </div>
-
-            {/* ─── WIDGET OR COLLAPSED PILL ─── */}
-            {sandboxCollapsed ? (
-              // COLLAPSED PILL FORM
-              <div 
-                style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
-                onMouseDown={handleDragStart}
-                className="absolute w-[200px] h-[48px] bg-slate-950/95 backdrop-blur-md rounded-full border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.25)] p-1.5 flex items-center justify-between z-30 select-none active:shadow-emerald-500/40"
-              >
-                {/* Steering icon / target logo */}
-                <div className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                  <Sparkles size={14} className="text-emerald-400 animate-pulse" />
-                </div>
-                {/* Expand / Hide toggle */}
-                <button 
-                  onClick={() => setSandboxCollapsed(false)}
-                  className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-[11px] rounded-full flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-colors"
-                >
-                  <ChevronDown size={11} className="rotate-180 text-emerald-400" />
-                  <span>Expand</span>
-                </button>
-                {/* Stop button (dark circle with white square) */}
-                <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
-                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-xs"></span>
-                </div>
-              </div>
-            ) : (
-              // EXPANDED OVERLAY WINDOW
-              <div 
-                style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px` }}
-                className="absolute w-[460px] max-w-[90vw] bg-slate-950/95 backdrop-blur-xl rounded-3xl border border-emerald-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(16,185,129,0.2)] flex flex-col z-30 select-none overflow-hidden"
-              >
-                {/* Draggable header bar */}
-                <div 
-                  onMouseDown={handleDragStart}
-                  className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/60"
-                  style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                    <span className="text-[11px] text-white uppercase font-black tracking-wider">Anazk AI Stealth Overlay</span>
-                  </div>
-                  {/* Active mode badge on top right */}
-                  <span className="px-3 py-1 bg-blue-600 border border-blue-400/40 text-white font-extrabold text-[10px] rounded-full shadow-xs">
-                    {sandboxMode === 'say' ? 'What should I say?' : sandboxMode === 'follow' ? 'Follow-up' : sandboxMode === 'recap' ? 'Recap' : 'Assist'}
-                  </span>
-                </div>
-
-                {/* Text Response area */}
-                <div className="p-5 text-left min-h-[120px] flex flex-col justify-between bg-black/40">
-                  {isSandboxLoading ? (
-                    <div className="flex items-center gap-2 py-4">
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                      <span className="text-xs text-emerald-300 font-bold">Transcribing audio and analyzing screen...</span>
-                    </div>
-                  ) : (
-                    <p className="text-slate-100 font-sans text-xs sm:text-[13px] leading-relaxed font-semibold transition-all duration-300">
-                      {sandboxResponse || '"Type a question in the prompt box below, or click any mode like Assist, What should I say?, Follow-up, or Recap to test."'}
-                    </p>
-                  )}
-                </div>
-
-                {/* Action Modes Row */}
-                <div className="px-5 py-2.5 border-y border-slate-800 flex flex-wrap items-center justify-start gap-x-3.5 gap-y-1.5 text-[11px] font-bold text-slate-300 select-none bg-slate-900/50">
-                  <button 
-                    onClick={() => { setSandboxMode('assist'); triggerQuickResponse('assist'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'assist' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
-                  >
-                    <span>✨ Assist</span>
-                  </button>
-                  <span className="text-slate-600">•</span>
-                  <button 
-                    onClick={() => { setSandboxMode('say'); triggerQuickResponse('say'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'say' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
-                  >
-                    <span>🖋️ What should I say?</span>
-                  </button>
-                  <span className="text-slate-600">•</span>
-                  <button 
-                    onClick={() => { setSandboxMode('follow'); triggerQuickResponse('follow'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'follow' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
-                  >
-                    <span>💬 Follow-up</span>
-                  </button>
-                  <span className="text-slate-600">•</span>
-                  <button 
-                    onClick={() => { setSandboxMode('recap'); triggerQuickResponse('recap'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'recap' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
-                  >
-                    <span>🔄 Recap</span>
-                  </button>
-                </div>
-
-                {/* Bottom Input Area */}
-                <div className="p-4 bg-[#0a0f1d] border-t border-slate-800/80">
-                  <form onSubmit={handleSandboxActionSubmit} className="border border-slate-700/80 rounded-2xl p-2 flex items-center justify-between gap-2.5 bg-slate-900/80 shadow-inner">
-                    {/* Left side: Smart pill + menu dot */}
-                    <div className="flex items-center gap-1.5 shrink-0 pl-1">
-                      <span className="px-2 py-1 bg-slate-800 border border-slate-700 text-slate-200 font-black text-[9px] rounded-lg">
-                        ⚡ Smart
-                      </span>
-                      <span className="text-slate-400 font-bold text-xs">...</span>
-                    </div>
-
-                    {/* Input element */}
-                    <input 
-                      type="text"
-                      value={sandboxInputText}
-                      onChange={(e) => setSandboxInputText(e.target.value)}
-                      placeholder="Ask about your screen or conversation, or ⌘ ↩ for Assist"
-                      className="w-full bg-transparent border-0 text-white text-[11px] font-sans placeholder-slate-400 focus:outline-none focus:ring-0 select-text cursor-text font-medium"
-                    />
-
-                    {/* Play/Send circular button */}
-                    <button 
-                      type="submit"
-                      disabled={isSandboxLoading}
-                      className="w-7 h-7 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </button>
-                  </form>
-
-                  {/* Hide option (collapses to small pill widget) */}
-                  <div className="mt-3.5 flex items-center justify-between text-[10px] text-slate-400 font-extrabold px-1">
-                    <span className="font-mono">Press Enter to Ask</span>
-                    <button 
-                      onClick={() => setSandboxCollapsed(true)}
-                      className="flex items-center gap-1 hover:text-white cursor-pointer px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 text-slate-300 transition-colors"
-                    >
-                      <ChevronDown size={11} />
-                      <span>Hide Widget</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
 
         </div>
