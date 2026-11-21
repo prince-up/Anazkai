@@ -20,10 +20,12 @@ export default function AuthPage({ onBackToHome, onSuccess, isAppLogin = false, 
     try {
       setAuthLoading(true);
       setAuthError('');
+      const targetOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://www.anazk.online';
+      const redirectUrl = isAppLogin ? `${targetOrigin}/app-login` : targetOrigin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: isAppLogin ? `${window.location.origin}/app-login` : window.location.origin,
+          redirectTo: redirectUrl,
           queryParams: {
             prompt: 'select_account'
           }
