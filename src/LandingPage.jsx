@@ -4,7 +4,7 @@ import {
   MoreVertical, Move, ChevronDown, CornerDownLeft, Sparkles, Settings, Copy, 
   Shield, Eye, EyeOff, User, Users, ChevronLeft, ChevronRight, Lock, Laptop, Check,
   MessageSquare, Send, Bot, Compass, HelpCircle, CreditCard, Mail, LayoutDashboard,
-  Zap, Target, Code2, Volume2, Clock, FileText, Tag, Sliders, ShieldCheck, Info
+  Zap, Target, Code2, Volume2, Clock, FileText, Tag, Sliders, ShieldCheck, Info, Crop
 } from 'lucide-react';
 import { getSubscriptionPlan } from './plans';
 import { supabase } from './supabaseClient';
