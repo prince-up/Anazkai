@@ -2321,11 +2321,11 @@ class Solution {
       </section>
 
       {/* ─── INTERACTIVE SANDBOX SIMULATOR SECTION (id="sandbox") ─── */}
-      <section id="sandbox" className={`py-20 px-4 sm:px-8 border-t transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#080d1a] border-gray-800' : 'bg-[#eefcf4]/50 border-emerald-500/10'}`}>
+      <section id="sandbox" className={`scroll-mt-24 py-20 px-4 sm:px-8 border-t transition-colors duration-700 ${activeTab === 'coding' ? 'bg-[#080d1a] border-gray-800' : 'bg-[#f4faf7] border-emerald-500/15'}`}>
         <div className="max-w-6xl mx-auto text-center space-y-8">
           
           <div className="space-y-3">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest ${activeTab === 'coding' ? 'bg-emerald-950/50 border border-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800'}`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest ${activeTab === 'coding' ? 'bg-emerald-950/50 border border-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800 border border-emerald-300/60'}`}>
               <Sparkles size={12} />
               Try Live Sandbox
             </span>
@@ -2338,28 +2338,124 @@ class Solution {
           </div>
 
           {/* Interactive Screen Area */}
-          <div id="sandbox-screen-container" className="w-full h-[550px] relative rounded-3xl border border-slate-700/30 shadow-2xl overflow-hidden bg-slate-900 select-none">
-            {/* Background: Mock Video Interview Call Screen */}
-            <div className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-40 filter blur-xs">
-              <div className="w-full h-full bg-[#0a0f1d] flex items-center justify-center">
-                <div className="grid grid-cols-2 w-full h-full opacity-35">
-                  <div className="border-r border-b border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Interviewer Camera (Screen Shared)</div>
-                  <div className="border-b border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Your Camera Overlay</div>
-                  <div className="border-r border-gray-800/60 flex items-center justify-center text-gray-500 text-xs font-mono">Coding Task IDE Window</div>
-                  <div className="flex items-center justify-center text-gray-500 text-xs font-mono">System Audio Output</div>
+          <div id="sandbox-screen-container" className="w-full h-[580px] relative rounded-3xl border-2 border-emerald-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_35px_rgba(16,185,129,0.12)] overflow-hidden bg-[#070d18] select-none">
+            
+            {/* Background: Realistic Mock Interview Workspace */}
+            <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+              {/* Mock OS Desktop Top Menu Bar */}
+              <div className="h-9 bg-black/85 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between text-[11px] text-gray-300 font-mono">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="w-2.5 h-2.5 bg-rose-500 rounded-full inline-block"></span>
+                    <span className="w-2.5 h-2.5 bg-amber-500 rounded-full inline-block"></span>
+                    <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span>
+                  </div>
+                  <span className="font-bold text-white ml-1">Google Meet • Technical Interview Call #4</span>
+                  <span className="hidden sm:inline-block text-gray-500">|</span>
+                  <span className="hidden sm:flex items-center gap-1.5 text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Screen Share: Active (Anazk Cloaked)
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-400">
+                  <span className="hidden md:inline">Audio: 100%</span>
+                  <span>10:42 AM</span>
+                </div>
+              </div>
+
+              {/* Main Desktop Workspace: Split Editor & Video Stream */}
+              <div className="h-[calc(100%-36px)] grid grid-cols-1 md:grid-cols-12 gap-0 bg-[#070d18]">
+                {/* Left: Code Editor (VS Code / CoderPad Mockup) */}
+                <div className="hidden md:flex md:col-span-7 border-r border-white/10 flex-col bg-[#0b1220]">
+                  {/* Editor Tab Bar */}
+                  <div className="h-8 bg-[#070d18] border-b border-white/10 flex items-center px-3 gap-2 text-[11px] font-mono text-gray-400">
+                    <div className="bg-[#0b1220] border-t-2 border-emerald-400 text-gray-200 px-3 py-1 flex items-center gap-1.5 rounded-t">
+                      <Code2 size={12} className="text-emerald-400" />
+                      <span>solution.ts</span>
+                    </div>
+                    <span className="hover:text-gray-300">tests.spec.ts</span>
+                  </div>
+
+                  {/* Code Lines with Syntax Colors */}
+                  <div className="p-4 font-mono text-[11px] leading-relaxed text-gray-300 space-y-1 text-left opacity-90">
+                    <div className="text-gray-500 italic">// Q: Design Distributed Rate Limiter with Sliding Window</div>
+                    <div><span className="text-purple-400">class</span> <span className="text-yellow-300">RateLimiter</span> {'{'}</div>
+                    <div className="pl-4"><span className="text-purple-400">private</span> <span className="text-blue-300">capacity</span>: <span className="text-teal-300">number</span>;</div>
+                    <div className="pl-4"><span className="text-purple-400">private</span> <span className="text-blue-300">redisClient</span>: <span className="text-teal-300">RedisCluster</span>;</div>
+                    <div className="pl-4 mt-2"><span className="text-purple-400">async</span> <span className="text-blue-400">checkLimit</span>(<span className="text-orange-300">userId</span>: <span className="text-teal-300">string</span>) {'{'}</div>
+                    <div className="pl-8 text-gray-400">// Atomic Redis Lua script execution</div>
+                    <div className="pl-8"><span className="text-purple-400">const</span> now = Date.<span className="text-blue-400">now</span>();</div>
+                    <div className="pl-8"><span className="text-purple-400">return await</span> <span className="text-blue-300">this</span>.redisClient.<span className="text-blue-400">eval</span>(LUA_TOKEN_SCRIPT, [userId, now]);</div>
+                    <div className="pl-4">{'}'}</div>
+                    <div>{'}'}</div>
+                  </div>
+
+                  {/* Terminal status at bottom */}
+                  <div className="mt-auto p-2.5 bg-[#050912] border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-emerald-400">
+                    <span>✓ Terminal: 12 tests passed (0 failures)</span>
+                    <span className="text-gray-500">TypeScript 5.3</span>
+                  </div>
+                </div>
+
+                {/* Right: Real Interviewer Video Stream & Status */}
+                <div className="col-span-12 md:col-span-5 flex flex-col justify-between p-4 space-y-3 bg-[#080e1b]">
+                  {/* Interviewer Video Box */}
+                  <div className="bg-[#0f172a] rounded-2xl border border-white/10 p-3.5 flex flex-col justify-between h-56 relative overflow-hidden shadow-lg">
+                    <div className="flex items-center justify-between z-10">
+                      <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Sarah Jenkins (Staff Interviewer)
+                      </span>
+                      <span className="text-emerald-400 text-[10px] font-bold">Zoom HD</span>
+                    </div>
+
+                    {/* Interviewer Avatar & Audio */}
+                    <div className="my-auto text-center py-2 z-10">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white mx-auto flex items-center justify-center font-black text-base shadow-lg mb-2">
+                        SJ
+                      </div>
+                      <div className="flex items-center justify-center gap-1 my-1">
+                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-sound-wave"></span>
+                        <span className="w-1 h-4 bg-emerald-300 rounded-full animate-sound-wave" style={{ animationDelay: '0.15s' }}></span>
+                        <span className="w-1 h-3 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.3s' }}></span>
+                        <span className="w-1 h-1.5 bg-emerald-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.45s' }}></span>
+                      </div>
+                      <p className="text-[11px] text-gray-200 italic max-w-[220px] mx-auto font-medium">
+                        &quot;Can you explain how your rate limiter handles Redis node failover?&quot;
+                      </p>
+                    </div>
+
+                    <div className="text-[10px] text-gray-400 flex items-center justify-between border-t border-white/10 pt-2 z-10">
+                      <span>Whisper Live Audio</span>
+                      <span className="text-emerald-400 font-mono font-bold">Transcribed • 120ms</span>
+                    </div>
+                  </div>
+
+                  {/* Live Candidate Status Box */}
+                  <div className="bg-[#0c1322] rounded-2xl border border-emerald-500/20 p-3 flex items-center justify-between text-left text-xs">
+                    <div>
+                      <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                        <ShieldCheck size={13} className="text-emerald-400" />
+                        <span>Stealth Display Engine Active</span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">
+                        Interviewer &amp; Screen share only see the IDE. The AI HUD remains 100% invisible.
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Instruction Banner overlay */}
-            <div className="absolute top-4 left-4 right-4 bg-slate-950/80 backdrop-blur-xs py-2 px-4 rounded-xl border border-slate-800/80 text-[11px] sm:text-xs text-slate-300 z-10 flex items-center justify-between text-left">
-              <span>💡 <strong>Tip:</strong> Drag the widget by holding the top bar. Click <strong>"Hide"</strong> to collapse it to the floating pill.</span>
+            <div className="absolute top-12 left-4 right-4 bg-slate-950/90 backdrop-blur-md py-2.5 px-4 rounded-xl border border-white/15 text-[11px] sm:text-xs text-slate-200 z-20 flex items-center justify-between text-left shadow-lg">
+              <span>💡 <strong>Live Interactive Demo:</strong> Drag this floating widget anywhere across the mock interview. Click <strong>&quot;Hide&quot;</strong> to test the collapsed stealth pill.</span>
               <button 
                 onClick={() => {
-                  setSandboxPos({ x: 80, y: 130 });
+                  setSandboxPos({ x: 50, y: 110 });
                   setSandboxCollapsed(false);
                 }} 
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded font-bold cursor-pointer transition-colors"
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-sm shrink-0 ml-2"
               >
                 Reset Widget
               </button>
@@ -2367,109 +2463,107 @@ class Solution {
 
             {/* ─── WIDGET OR COLLAPSED PILL ─── */}
             {sandboxCollapsed ? (
-              // COLLAPSED PILL (IMAGE 2 FORM)
+              // COLLAPSED PILL FORM
               <div 
                 style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
                 onMouseDown={handleDragStart}
-                className="absolute w-[200px] h-[48px] bg-slate-950/90 backdrop-blur-md rounded-full border border-slate-800 shadow-2xl p-1.5 flex items-center justify-between z-30 transition-shadow select-none active:shadow-emerald-500/10"
+                className="absolute w-[200px] h-[48px] bg-slate-950/95 backdrop-blur-md rounded-full border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.25)] p-1.5 flex items-center justify-between z-30 select-none active:shadow-emerald-500/40"
               >
                 {/* Steering icon / target logo */}
-                <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707-.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 12a3 3 0 100-6 3 3 0 000 6z" />
-                  </svg>
+                <div className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                  <Sparkles size={14} className="text-emerald-400 animate-pulse" />
                 </div>
                 {/* Expand / Hide toggle */}
                 <button 
                   onClick={() => setSandboxCollapsed(false)}
-                  className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-white font-extrabold text-[11px] rounded-full flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-colors"
+                  className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-[11px] rounded-full flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-colors"
                 >
-                  <ChevronDown size={11} className="rotate-180" />
+                  <ChevronDown size={11} className="rotate-180 text-emerald-400" />
                   <span>Expand</span>
                 </button>
                 {/* Stop button (dark circle with white square) */}
-                <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800/80 flex items-center justify-center shrink-0">
-                  <span className="w-2.5 h-2.5 bg-white rounded-xs"></span>
+                <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-xs"></span>
                 </div>
               </div>
             ) : (
-              // EXPANDED OVERLAY WINDOW (IMAGE 1 FORM)
+              // EXPANDED OVERLAY WINDOW
               <div 
                 style={{ left: `${sandboxPos.x}px`, top: `${sandboxPos.y}px` }}
-                className="absolute w-[460px] max-w-[90vw] bg-slate-950/95 backdrop-blur-md rounded-3xl border border-slate-800/90 shadow-2xl flex flex-col z-30 select-none overflow-hidden"
+                className="absolute w-[460px] max-w-[90vw] bg-slate-950/95 backdrop-blur-xl rounded-3xl border border-emerald-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(16,185,129,0.2)] flex flex-col z-30 select-none overflow-hidden"
               >
                 {/* Draggable header bar */}
                 <div 
                   onMouseDown={handleDragStart}
-                  className="px-5 py-3.5 border-b border-slate-800/40 flex items-center justify-between bg-slate-900/20"
+                  className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/60"
                   style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Anazk AI Overlay</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+                    <span className="text-[11px] text-white uppercase font-black tracking-wider">Anazk AI Stealth Overlay</span>
                   </div>
-                  {/* What should I say? Blue badge on top right */}
-                  <span className="px-3 py-1 bg-[#0b48a3] border border-blue-500/30 text-white font-extrabold text-[10px] rounded-full shadow-xs">
+                  {/* Active mode badge on top right */}
+                  <span className="px-3 py-1 bg-blue-600 border border-blue-400/40 text-white font-extrabold text-[10px] rounded-full shadow-xs">
                     {sandboxMode === 'say' ? 'What should I say?' : sandboxMode === 'follow' ? 'Follow-up' : sandboxMode === 'recap' ? 'Recap' : 'Assist'}
                   </span>
                 </div>
 
                 {/* Text Response area */}
-                <div className="p-5 text-left min-h-[120px] flex flex-col justify-between">
+                <div className="p-5 text-left min-h-[120px] flex flex-col justify-between bg-black/40">
                   {isSandboxLoading ? (
                     <div className="flex items-center gap-2 py-4">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                      <span className="text-xs text-slate-400 font-bold">Transcribing audio and analyzing screen...</span>
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></span>
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      <span className="text-xs text-emerald-300 font-bold">Transcribing audio and analyzing screen...</span>
                     </div>
                   ) : (
-                    <p className="text-slate-200 font-sans text-xs sm:text-[13px] leading-relaxed font-semibold transition-all duration-300">
+                    <p className="text-slate-100 font-sans text-xs sm:text-[13px] leading-relaxed font-semibold transition-all duration-300">
                       {sandboxResponse || '"Type a question in the prompt box below, or click any mode like Assist, What should I say?, Follow-up, or Recap to test."'}
                     </p>
                   )}
                 </div>
 
                 {/* Action Modes Row */}
-                <div className="px-5 py-2.5 border-y border-slate-800/50 flex flex-wrap items-center justify-start gap-x-3.5 gap-y-1.5 text-[10px] font-black text-slate-450 select-none bg-slate-900/30">
+                <div className="px-5 py-2.5 border-y border-slate-800 flex flex-wrap items-center justify-start gap-x-3.5 gap-y-1.5 text-[11px] font-bold text-slate-300 select-none bg-slate-900/50">
                   <button 
                     onClick={() => { setSandboxMode('assist'); triggerQuickResponse('assist'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'assist' ? 'text-emerald-450 font-black' : ''}`}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'assist' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
                   >
                     <span>✨ Assist</span>
                   </button>
-                  <span>•</span>
+                  <span className="text-slate-600">•</span>
                   <button 
                     onClick={() => { setSandboxMode('say'); triggerQuickResponse('say'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'say' ? 'text-emerald-450 font-black' : ''}`}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'say' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
                   >
                     <span>🖋️ What should I say?</span>
                   </button>
-                  <span>•</span>
+                  <span className="text-slate-600">•</span>
                   <button 
                     onClick={() => { setSandboxMode('follow'); triggerQuickResponse('follow'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'follow' ? 'text-emerald-450 font-black' : ''}`}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'follow' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
                   >
-                    <span>💬 Follow-up questions</span>
+                    <span>💬 Follow-up</span>
                   </button>
-                  <span>•</span>
+                  <span className="text-slate-600">•</span>
                   <button 
                     onClick={() => { setSandboxMode('recap'); triggerQuickResponse('recap'); }}
-                    className={`flex items-center gap-1 hover:text-white cursor-pointer ${sandboxMode === 'recap' ? 'text-emerald-450 font-black' : ''}`}
+                    className={`flex items-center gap-1 hover:text-white cursor-pointer px-2 py-0.5 rounded transition-colors ${sandboxMode === 'recap' ? 'text-emerald-400 font-black bg-emerald-950/80 border border-emerald-500/30' : ''}`}
                   >
                     <span>🔄 Recap</span>
                   </button>
                 </div>
 
                 {/* Bottom Input Area */}
-                <div className="p-4 bg-slate-955">
-                  <form onSubmit={handleSandboxActionSubmit} className="border border-slate-800 rounded-2xl p-2 flex items-center justify-between gap-2.5 bg-slate-900/60 shadow-inner">
+                <div className="p-4 bg-[#0a0f1d] border-t border-slate-800/80">
+                  <form onSubmit={handleSandboxActionSubmit} className="border border-slate-700/80 rounded-2xl p-2 flex items-center justify-between gap-2.5 bg-slate-900/80 shadow-inner">
                     {/* Left side: Smart pill + menu dot */}
                     <div className="flex items-center gap-1.5 shrink-0 pl-1">
-                      <span className="px-2 py-1 bg-slate-800 border border-slate-700/60 text-slate-350 font-black text-[9px] rounded-lg">
+                      <span className="px-2 py-1 bg-slate-800 border border-slate-700 text-slate-200 font-black text-[9px] rounded-lg">
                         ⚡ Smart
                       </span>
-                      <span className="text-slate-500 font-bold text-xs">...</span>
+                      <span className="text-slate-400 font-bold text-xs">...</span>
                     </div>
 
                     {/* Input element */}
@@ -2478,14 +2572,14 @@ class Solution {
                       value={sandboxInputText}
                       onChange={(e) => setSandboxInputText(e.target.value)}
                       placeholder="Ask about your screen or conversation, or ⌘ ↩ for Assist"
-                      className="w-full bg-transparent border-0 text-slate-100 text-[11px] font-sans placeholder-slate-500 focus:outline-none focus:ring-0 select-text cursor-text"
+                      className="w-full bg-transparent border-0 text-white text-[11px] font-sans placeholder-slate-400 focus:outline-none focus:ring-0 select-text cursor-text font-medium"
                     />
 
                     {/* Play/Send circular button */}
                     <button 
                       type="submit"
                       disabled={isSandboxLoading}
-                      className="w-7 h-7 rounded-full bg-[#0b48a3] hover:bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
+                      className="w-7 h-7 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
                     >
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
@@ -2494,11 +2588,11 @@ class Solution {
                   </form>
 
                   {/* Hide option (collapses to small pill widget) */}
-                  <div className="mt-3.5 flex items-center justify-between text-[10px] text-slate-500 font-extrabold px-1">
+                  <div className="mt-3.5 flex items-center justify-between text-[10px] text-slate-400 font-extrabold px-1">
                     <span className="font-mono">Press Enter to Ask</span>
                     <button 
                       onClick={() => setSandboxCollapsed(true)}
-                      className="flex items-center gap-1 hover:text-white cursor-pointer px-2.5 py-1 bg-slate-900 border border-slate-800/80 rounded-lg hover:bg-slate-855 transition-colors"
+                      className="flex items-center gap-1 hover:text-white cursor-pointer px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 text-slate-300 transition-colors"
                     >
                       <ChevronDown size={11} />
                       <span>Hide Widget</span>
