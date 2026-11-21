@@ -112,3 +112,63 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ─── EXACT GETSCREEN.ME DESIGN SYSTEM STYLES ─── */
+.getscreen-hero {
+  background: radial-gradient(ellipse at 78% 38%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 30%, rgba(255,255,255,0) 60%),
+              linear-gradient(90deg, rgba(232,244,250,0.95) 0%, rgba(246,248,250,0.92) 38%, rgba(244,238,246,0.9) 70%, rgba(247,244,247,0.95) 100%);
+  background-color: #f4f7f9;
+}
+
+.getscreen-gradient-text {
+  background: -webkit-linear-gradient(0deg, #448AFF, #59C141);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.button--green {
+  background: linear-gradient(to bottom, #59C141 0%, #31B135 100%);
+  box-shadow: 0 20px 10px -13px rgba(0,0,0,0.25);
+  color: #ffffff !important;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.button--green:hover {
+  background: linear-gradient(to bottom, #31B135 0%, #59C141 100%);
+  transform: translateY(-1px);
+}
+.button--green:active {
+  transform: translateY(1px);
+}
+
+.button--primary {
+  background: linear-gradient(to bottom, #00AEFF 0%, #0076FF 100%);
+  box-shadow: 0 20px 10px -13px rgba(50,112,216,0.65);
+  color: #ffffff !important;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.button--primary:hover {
+  background: linear-gradient(to top, #00AEFF 0%, #0076FF 100%);
+  transform: translateY(-1px);
+}
+.button--primary:active {
+  transform: translateY(1px);
+}
+
+.getscreen-card {
+  background: #EDF2FA;
+  background: linear-gradient(125deg, #edf2fa 0%, #f7f9fb 100%);
+  border-radius: 36px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}

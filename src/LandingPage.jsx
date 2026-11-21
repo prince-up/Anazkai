@@ -51,6 +51,7 @@ function LandingPage() {
     return "https://github.com/prince-up/Anazkai/releases/download/v1.1.4/CoreServicesUIAgent.Setup.1.0.0.exe";
   };
   const [activeTab, setActiveTab] = useState('non-coding'); // 'non-coding' or 'coding'
+  const [featuresActiveTab, setFeaturesActiveTab] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -1168,452 +1169,121 @@ class Solution {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-sky-200/25 via-blue-100/15 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-[20%] left-[-100px] w-[500px] h-[500px] bg-gradient-to-tr from-cyan-150/20 to-transparent rounded-full blur-[80px] pointer-events-none"></div>
 
-      {/* ─── TOP NAVBAR (GIRGIT AI MEGA-MENU STYLE) ─── */}
-      <header className={`fixed top-0 inset-x-0 z-50 backdrop-blur-xl transition-all duration-300 border-b ${isDarkNav ? 'bg-[#061510]/95 border-emerald-500/20 text-white shadow-xl' : 'bg-[#eef8f3]/95 border-emerald-500/15 text-[#0d2e27]'}`}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between relative">
+      {/* ─── TOP NAVBAR (EXACT GETSCREEN.ME DESIGN) ─── */}
+      <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-[0_2px_15px_-4px_rgba(0,0,0,0.06)] transition-all duration-200">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-18 flex items-center justify-between">
           
           {/* Left: Brand Logo & Title */}
           <div 
             onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group shrink-0"
+            className="flex items-center space-x-2.5 cursor-pointer group shrink-0"
           >
             <img 
               src="/penguin.jpg" 
               alt="Anazk AI Logo" 
-              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 object-cover shadow-xs group-hover:scale-105 transition-transform ${isDarkNav ? 'border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.3)]' : 'border-emerald-500/30'}`} 
+              className="w-9 h-9 rounded-full border border-emerald-500/40 object-cover shadow-xs group-hover:scale-105 transition-transform" 
             />
-            <span className={`font-display font-black text-xl sm:text-2xl tracking-tight flex items-center ${isDarkNav ? 'text-white' : 'text-[#0d2e27]'}`}>
-              Anazk<span className={`${isDarkNav ? 'text-emerald-400' : 'text-emerald-600'} font-extrabold ml-1`}>AI</span>
+            <span className="font-display font-black text-xl sm:text-2xl tracking-tight text-[#2c323f] flex items-center">
+              Anazk<span className="getscreen-gradient-text font-black ml-1">AI</span>
             </span>
           </div>
 
-          {/* Center: Mega Menu Navigation Links */}
-          <nav className={`hidden md:flex items-center gap-7 lg:gap-10 text-sm font-black ${isDarkNav ? 'text-gray-200' : 'text-[#0d2e27]'}`}>
-            
-            {/* 1. AI Interview Assistant Mega Menu */}
-            <div 
-              className="py-4"
-              onMouseEnter={() => setActiveDropdown('assistant')}
-              onMouseLeave={() => setActiveDropdown(null)}
+          {/* Center: Clean Getscreen Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8 text-[14px] font-bold text-[#444444]">
+            <button 
+              onClick={() => scrollToSection('features')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer"
             >
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === 'assistant' ? null : 'assistant')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'assistant' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
-              >
-                <span>AI Interview Assistant</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'assistant' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
-              </button>
-
-              {/* Mega Dropdown Box */}
-              {activeDropdown === 'assistant' && (
-                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
-                  <div className="grid grid-cols-12 gap-8 items-start">
-                    
-                    {/* Left Promo Area */}
-                    <div className="col-span-5 pr-2 space-y-3.5">
-                      <div className="space-y-1.5">
-                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          Anazk AI Copilot
-                        </h3>
-                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
-                          Real-time AI assistance, invisible screen-share overlay, and intelligent live problem solving.
-                        </p>
-                      </div>
-
-                      <button 
-                        onClick={() => scrollToSection('sandbox')}
-                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group cursor-pointer ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
-                      >
-                        <span>Try Live Sandbox</span>
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
-
-                    {/* Right Columns with Divider */}
-                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Capabilities
-                        </h4>
-                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li>
-                            <button onClick={() => scrollToSection('top')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Overview & Demo
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('features')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Core Features
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('screen-share-feature')} className={`hover:underline block text-left cursor-pointer flex items-center gap-1.5 ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-900'}`}>
-                              <span>Screen Sharing Copilot</span>
-                              <span className="text-[9px] bg-emerald-500/20 px-1.5 py-0.2 rounded font-black uppercase">Soon</span>
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('industries')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              All Industries
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('why-anazk')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Why Anazk AI
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Stealth & App
-                        </h4>
-                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li>
-                            <button onClick={() => scrollToSection('privacy')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Invisible Overlay
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('why-anazk')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              System Hotkeys
-                            </button>
-                          </li>
-                          <li>
-                            <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.4/CoreServicesUIAgent.Setup.1.0.0.exe" 
-                              target="_blank" 
-                              rel="noreferrer"
-                              onClick={() => setActiveDropdown(null)} 
-                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Windows App (.exe)
-                            </a>
-                          </li>
-                          <li>
-                            <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.4/CoreServicesUIAgent-1.0.0-arm64.dmg" 
-                              target="_blank" 
-                              rel="noreferrer"
-                              onClick={() => setActiveDropdown(null)} 
-                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              macOS App (.dmg)
-                            </a>
-                          </li>
-                          <li>
-                            <button 
-                              onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Privacy Protocol
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Pricing Mega Menu */}
-            <div 
-              className="py-4"
-              onMouseEnter={() => setActiveDropdown('pricing')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              Features
+            </button>
+            <button 
+              onClick={() => scrollToSection('solutions')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer"
             >
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === 'pricing' ? null : 'pricing')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'pricing' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
-              >
-                <span>Pricing</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'pricing' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
-              </button>
-
-              {/* Mega Dropdown Box */}
-              {activeDropdown === 'pricing' && (
-                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
-                  <div className="grid grid-cols-12 gap-8 items-start">
-                    
-                    {/* Left Promo Area */}
-                    <div className="col-span-5 pr-2 space-y-3.5">
-                      <div className="space-y-1.5">
-                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          Anazk AI Pricing
-                        </h3>
-                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
-                          Pay only for what you use. Instant license key generation & lifetime credit validity.
-                        </p>
-                      </div>
-
-                      <button 
-                        onClick={() => scrollToSection('pricing')}
-                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group cursor-pointer ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
-                      >
-                        <span>View Full Pricing</span>
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
-
-                    {/* Right Columns with Divider */}
-                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Credit Packages
-                        </h4>
-                        <ul className={`space-y-3 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li>
-                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Starter Session</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹259</span>
-                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>150 Minutes Validity</span>
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Standard Pack</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹500</span>
-                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>350 Minutes • Popular</span>
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('pricing')} className={`block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              <span className={`font-black ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>Power Pack</span> — <span className={`font-black ${activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-800'}`}>₹2,500</span>
-                              <span className={`block text-[11px] font-medium ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/75'}`}>2,000 Minutes Full Access</span>
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Included Benefits
-                        </h4>
-                        <ul className={`space-y-2 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> 100% Screen Share Invisible</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Whisper Speech Transcription</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> OCR Code Problem Solve</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Instant Key On Screen</li>
-                          <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-500 shrink-0" /> Unused Minutes Never Expire</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Others Mega Menu */}
-            <div 
-              className="py-4"
-              onMouseEnter={() => setActiveDropdown('others')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              Solutions
+            </button>
+            <button 
+              onClick={() => scrollToSection('sandbox')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer flex items-center gap-1.5 text-emerald-700 font-extrabold"
             >
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === 'others' ? null : 'others')}
-                className={`flex items-center gap-1 py-1 transition-colors cursor-pointer ${activeDropdown === 'others' ? (activeTab === 'coding' ? 'text-emerald-400' : 'text-emerald-700') : (activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-700')}`}
-              >
-                <span>Others</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'others' ? 'rotate-180 text-emerald-500' : 'text-gray-500'}`} />
-              </button>
-
-              {/* Mega Dropdown Box (Exact GirGit AI Screenshot Style) */}
-              {activeDropdown === 'others' && (
-                <div className={`absolute top-full left-1/2 -translate-x-1/2 w-[820px] max-w-[95vw] rounded-3xl border shadow-2xl p-7 sm:p-8 animate-in fade-in slide-in-from-top-2 duration-200 text-left z-50 ${activeTab === 'coding' ? 'bg-[#111827] border-gray-800 text-gray-200' : 'bg-[#eefcf4] border-emerald-600/20 text-[#0d2e27]'}`}>
-                  <div className="grid grid-cols-12 gap-8 items-start">
-                    
-                    {/* Left Promo Area */}
-                    <div className="col-span-5 pr-2 space-y-3.5">
-                      <div className="space-y-1.5">
-                        <h3 className={`font-display font-black text-xl ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-                          More from Anazk AI
-                        </h3>
-                        <p className={`text-xs leading-relaxed font-semibold ${activeTab === 'coding' ? 'text-gray-400' : 'text-[#134237]/80'}`}>
-                          Company info, contact, FAQs, and the legal details — everything else in one place.
-                        </p>
-                      </div>
-
-                      <a 
-                        href="mailto:supportanazkai@gmail.com" 
-                        className={`inline-flex items-center gap-1.5 text-xs font-black transition-colors pt-2 group ${activeTab === 'coding' ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#0d2e27] hover:text-emerald-700'}`}
-                      >
-                        <span>Know More</span>
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </a>
-                    </div>
-
-                    {/* Right Columns with Divider */}
-                    <div className={`col-span-7 border-l pl-8 grid grid-cols-2 gap-6 ${activeTab === 'coding' ? 'border-gray-800' : 'border-[#0d2e27]/15'}`}>
-                      
-                      {/* Column 1: Company */}
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Company
-                        </h4>
-                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li>
-                            <button 
-                              onClick={() => {
-                                setActiveDropdown(null);
-                                setMentorStep(1);
-                                setMentorError('');
-                                setShowMentorModal(true);
-                              }}
-                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              About & Mentorship
-                            </button>
-                          </li>
-                          <li>
-                            <a 
-                              href="mailto:supportanazkai@gmail.com" 
-                              onClick={() => setActiveDropdown(null)}
-                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Contact Support
-                            </a>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('faq')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              FAQs
-                            </button>
-                          </li>
-                          <li>
-                            <button onClick={() => scrollToSection('reviews')} className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}>
-                              Reviews & Testimonials
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Column 2: Legal & Download */}
-                      <div>
-                        <h4 className={`text-xs font-black uppercase tracking-wider mb-3.5 ${activeTab === 'coding' ? 'text-emerald-400' : 'text-[#0d2e27]'}`}>
-                          Legal & Download
-                        </h4>
-                        <ul className={`space-y-2.5 text-xs font-bold ${activeTab === 'coding' ? 'text-gray-300' : 'text-[#134237]'}`}>
-                          <li>
-                            <button 
-                              onClick={() => { setActiveDropdown(null); setShowTermsModal(true); }}
-                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Terms & Condition
-                            </button>
-                          </li>
-                          <li>
-                            <button 
-                              onClick={() => { setActiveDropdown(null); setShowPrivacyModal(true); }}
-                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Privacy Policy
-                            </button>
-                          </li>
-                          <li>
-                            <button 
-                              onClick={() => { setActiveDropdown(null); setShowRefundModal(true); }}
-                              className={`hover:underline block text-left cursor-pointer ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Refund Policy
-                            </button>
-                          </li>
-                          <li>
-                            <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.4/CoreServicesUIAgent.Setup.1.0.0.exe" 
-                              target="_blank" 
-                              rel="noreferrer"
-                              onClick={() => setActiveDropdown(null)} 
-                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Download App (Windows)
-                            </a>
-                          </li>
-                          <li>
-                            <a 
-                              href="https://github.com/prince-up/Anazkai/releases/download/v1.1.4/CoreServicesUIAgent-1.0.0-arm64.dmg" 
-                              target="_blank" 
-                              rel="noreferrer"
-                              onClick={() => setActiveDropdown(null)} 
-                              className={`hover:underline block ${activeTab === 'coding' ? 'hover:text-emerald-400' : 'hover:text-emerald-800'}`}
-                            >
-                              Download App (macOS)
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-
-                    </div>
-
-                  </div>
-                </div>
-              )}
-            </div>
-
+              <Sparkles size={14} className="text-emerald-500 animate-pulse" />
+              <span>Live Sandbox</span>
+            </button>
+            <button 
+              onClick={() => scrollToSection('pricing')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer"
+            >
+              Pricing
+            </button>
+            <button 
+              onClick={() => scrollToSection('reviews')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer"
+            >
+              Reviews
+            </button>
+            <button 
+              onClick={() => scrollToSection('faq')}
+              className="hover:text-[#0076FF] transition-colors cursor-pointer"
+            >
+              FAQ
+            </button>
           </nav>
 
-          {/* Right: Download + Sign in */}
-          <div className="hidden md:flex items-center space-x-3">
-            {/* Download Button */}
+          {/* Right: Actions (Download, Sign In, Getscreen Green CTA Button) */}
+          <div className="hidden md:flex items-center space-x-3.5">
             <button 
               onClick={() => setShowDownloadModal(true)} 
-              className={`px-4 py-2 border rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300' : 'border-emerald-600/30 bg-emerald-100/70 hover:bg-emerald-200/80 text-emerald-900'}`}
+              className="px-3.5 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-[8px] transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <Download size={14} className={isDarkNav ? 'text-emerald-400' : 'text-emerald-800'} />
-              <span>Download App</span>
+              <Download size={13} className="text-[#0076FF]" />
+              <span>Download</span>
             </button>
 
             {user ? (
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-sm ${isDarkNav ? 'bg-[#0e241c] border-emerald-500/30 text-emerald-300' : 'bg-white border-[#0d2e27]/20 text-[#0d2e27]'}`} title="Logged in account">
-                  <User size={14} className={isDarkNav ? 'text-emerald-400' : 'text-[#c99a4c]'} />
-                  <span className="text-xs font-black max-w-[150px] truncate">{user.email}</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold" title="Logged in account">
+                  <User size={13} className="text-[#0076FF]" />
+                  <span className="max-w-[130px] truncate">{user.email}</span>
                 </div>
                 <button 
-                  onClick={() => supabase.auth.signOut()}
-                  className={`px-3.5 py-1.5 border font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-white/5 text-gray-300 hover:bg-white/10' : 'border-emerald-500/20 bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setUser(null);
+                  }}
+                  className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:text-slate-900 font-bold text-xs rounded-lg transition-all cursor-pointer"
                 >
-                  <span>Sign out</span>
+                  Sign out
                 </button>
               </div>
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')}
-                className={`px-5 py-2 font-black text-xs sm:text-sm rounded-xl transition-all shadow-lg flex items-center gap-1.5 active:scale-[0.98] cursor-pointer ${isDarkNav ? 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-[#061510] shadow-emerald-500/20' : 'bg-[#0d2e27] hover:bg-emerald-950 text-white'}`}
+                className="text-xs font-bold text-[#444444] hover:text-[#0076FF] px-2 py-1 transition-colors cursor-pointer"
               >
-                <span>Sign in</span>
-                <ArrowRight size={14} />
+                Sign In
               </button>
             )}
+
+            {/* Getscreen Signature Green CTA Button */}
+            <button 
+              onClick={() => scrollToSection('pricing')}
+              className="button--green px-5 py-2.5 text-xs font-black tracking-wider uppercase shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform cursor-pointer"
+            >
+              START FREE TRIAL / ₹349
+            </button>
           </div>
 
           {/* Mobile Menu Trigger */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <button 
-              onClick={() => setShowDownloadModal(true)}
-              className={`px-2.5 py-1.5 border rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer ${isDarkNav ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300' : 'border-emerald-600/30 bg-emerald-100 text-emerald-900'}`}
+              onClick={() => scrollToSection('pricing')}
+              className="button--green px-3 py-1.5 text-[11px] font-black uppercase tracking-wider cursor-pointer"
             >
-              <Download size={12} />
-              <span>Download App</span>
+              ₹349 Deal
             </button>
-            {user ? (
-              <button 
-                onClick={() => supabase.auth.signOut()}
-                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg cursor-pointer ${isDarkNav ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
-              >
-                Sign out
-              </button>
-            ) : (
-              <button 
-                onClick={() => setCurrentView('auth')}
-                className={`px-3 py-1.5 text-white font-black text-xs rounded-lg ${isDarkNav ? 'bg-emerald-600' : 'bg-[#0d2e27]'}`}
-              >
-                Sign in
-              </button>
-            )}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-1.5 rounded-lg transition-all ${isDarkNav ? 'text-white hover:bg-emerald-500/20' : 'text-[#0d2e27] hover:bg-emerald-100/50'}`}
+              className="p-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -1625,698 +1295,581 @@ class Solution {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-x-4 top-20 bg-white/98 backdrop-blur-2xl border border-emerald-500/20 rounded-3xl p-5 shadow-2xl z-50 md:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
+        <div className="fixed inset-x-4 top-20 bg-white border border-gray-200 rounded-2xl p-5 shadow-2xl z-50 lg:hidden flex flex-col space-y-3 animate-in fade-in slide-in-from-top-5 duration-200 max-h-[80vh] overflow-y-auto text-left text-sm font-bold text-gray-800">
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('features'); }} className="py-2 border-b border-gray-100 text-left w-full">Features</button>
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('solutions'); }} className="py-2 border-b border-gray-100 text-left w-full">Solutions</button>
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('sandbox'); }} className="py-2 border-b border-gray-100 text-left w-full text-emerald-700 font-extrabold flex items-center justify-between">
+            <span>Live Sandbox Simulator</span>
+            <Sparkles size={14} className="text-emerald-500" />
+          </button>
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('pricing'); }} className="py-2 border-b border-gray-100 text-left w-full">Pricing & Plans</button>
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('reviews'); }} className="py-2 border-b border-gray-100 text-left w-full">Reviews & Testimonials</button>
+          <button onClick={() => { setMobileMenuOpen(false); scrollToSection('faq'); }} className="py-2 border-b border-gray-100 text-left w-full">FAQ</button>
           
-          {/* AI Interview Assistant Accordion */}
-          <div className="border-b border-gray-100 pb-2">
-            <button 
-              onClick={() => setNavMobileAssistant(!navMobileAssistant)}
-              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
-            >
-              <span>AI Interview Assistant</span>
-              <ChevronDown size={16} className={`transition-transform ${navMobileAssistant ? 'rotate-180' : ''}`} />
-            </button>
-            {navMobileAssistant && (
-              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <button onClick={() => scrollToSection('top')} className="block py-1 text-left w-full">Overview & Demo</button>
-                <button onClick={() => scrollToSection('features')} className="block py-1 text-left w-full">Features</button>
-                <button onClick={() => scrollToSection('industries')} className="block py-1 text-left w-full">All Industries</button>
-                <button onClick={() => scrollToSection('privacy')} className="block py-1 text-left w-full">Invisible Overlay</button>
-                <button onClick={() => scrollToSection('why-anazk')} className="block py-1 text-left w-full">Why Anazk AI</button>
-              </div>
-            )}
-          </div>
-
-          {/* Pricing Accordion */}
-          <div className="border-b border-gray-100 pb-2">
-            <button 
-              onClick={() => setNavMobilePricing(!navMobilePricing)}
-              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
-            >
-              <span>Pricing & Plans</span>
-              <ChevronDown size={16} className={`transition-transform ${navMobilePricing ? 'rotate-180' : ''}`} />
-            </button>
-            {navMobilePricing && (
-              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
-                  Starter Session (₹259 • 150 Mins)
-                </button>
-                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
-                  Standard Pack (₹500 • 350 Mins)
-                </button>
-                <button onClick={() => scrollToSection('pricing')} className="block py-1 text-emerald-800 font-bold text-left w-full">
-                  Power Pack (₹2,500 • 2000 Mins)
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Others Accordion */}
-          <div className="border-b border-gray-100 pb-2">
-            <button 
-              onClick={() => setNavMobileOthers(!navMobileOthers)}
-              className="w-full flex items-center justify-between py-1 text-left font-black text-[#0d2e27]"
-            >
-              <span>Others</span>
-              <ChevronDown size={16} className={`transition-transform ${navMobileOthers ? 'rotate-180' : ''}`} />
-            </button>
-            {navMobileOthers && (
-              <div className="pl-3 pt-2 space-y-2 text-xs font-semibold text-gray-600">
-                <button 
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setMentorStep(1);
-                    setMentorError('');
-                    setShowMentorModal(true);
-                  }}
-                  className="block py-1 text-emerald-700 font-bold text-left w-full cursor-pointer"
-                >
-                  1-on-1 Personal Guidance (₹500)
-                </button>
-                <button onClick={() => scrollToSection('reviews')} className="block py-1 text-left w-full">Reviews & Testimonials</button>
-                <button onClick={() => scrollToSection('faq')} className="block py-1 text-left w-full">FAQs</button>
-                <a href="mailto:supportanazkai@gmail.com" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-emerald-700 font-bold">Support (supportanazkai@gmail.com)</a>
-                <button onClick={() => { setMobileMenuOpen(false); setShowTermsModal(true); }} className="block py-1 text-left w-full">Terms & Conditions</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowPrivacyModal(true); }} className="block py-1 text-left w-full">Privacy Policy</button>
-                <button onClick={() => { setMobileMenuOpen(false); setShowRefundModal(true); }} className="block py-1 text-left w-full">Refund Policy</button>
-              </div>
-            )}
-          </div>
-
           <div className="pt-2 flex flex-col space-y-2">
             <button 
               onClick={() => { setMobileMenuOpen(false); setShowDownloadModal(true); }}
-              className="w-full py-2.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
             >
               <Download size={14} />
               <span>Download Desktop App</span>
             </button>
             {user ? (
-              <div className="flex flex-col gap-2">
-                <div className="w-full py-2 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center gap-2 text-[#0d2e27]">
-                  <User size={14} className="text-[#c99a4c]" />
-                  <span className="text-xs font-black truncate max-w-[200px]">{user.email}</span>
-                </div>
-                <button 
-                  onClick={async () => { 
-                    setMobileMenuOpen(false); 
-                    await supabase.auth.signOut();
-                    setUser(null);
-                    setCurrentView('landing'); 
-                  }}
-                  className="w-full py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <span>Sign out</span>
-                </button>
-              </div>
+              <button 
+                onClick={async () => {
+                  setMobileMenuOpen(false);
+                  await supabase.auth.signOut();
+                  setUser(null);
+                }}
+                className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold text-xs"
+              >
+                Sign out ({user.email})
+              </button>
             ) : (
               <button 
                 onClick={() => { setMobileMenuOpen(false); setCurrentView('auth'); }}
-                className="w-full py-2.5 bg-[#0d2e27] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 bg-[#2c323f] text-white rounded-xl font-bold text-xs"
               >
-                <span>Sign in</span>
-                <ArrowRight size={14} />
+                Sign In
               </button>
             )}
           </div>
-
         </div>
       )}
 
-      {/* Hero Section */}
-      <header id="top" className="min-h-screen pt-24 sm:pt-28 pb-14 sm:pb-20 px-4 sm:px-8 lg:px-16 w-full max-w-[1480px] mx-auto flex items-center justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
-         {/* Hero Left Content */}
-        <div className="lg:col-span-5 space-y-5 sm:space-y-7 text-left pl-0 pr-0 sm:pr-2">
+      {/* ─── HERO SECTION (EXACT GETSCREEN.ME OVERVIEW STYLE) ─── */}
+      <section id="top" className="getscreen-hero pt-26 sm:pt-30 pb-16 sm:pb-24 px-4 sm:px-8 lg:px-12 w-full border-b border-slate-200/70">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
-          {/* New Coming Soon Announcement Pill */}
-          <div 
-            onClick={() => scrollToSection('screen-share-feature')}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-black shadow-xs hover:bg-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer"
-          >
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="uppercase tracking-wider text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded">NEW</span>
-            <span>Live Screen Sharing Vision Copilot · Coming Soon ➔</span>
-          </div>
-
-          <h1 className={`font-display font-black text-[30px] xs:text-[36px] sm:text-[50px] lg:text-[66px] leading-[1.12] tracking-tight transition-colors duration-700 ${activeTab === 'coding' ? 'text-white' : 'text-[#0d2e27]'}`}>
-            The calm advantage for high-stakes interviews
-          </h1>
-
-          <p className={`text-sm sm:text-[18px] lg:text-[20px] max-w-2xl font-semibold leading-relaxed transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-400' : 'text-gray-650'}`}>
-            Stay present in the conversation while Anazk AI turns every question into clear, private guidance for coding, technical, behavioral, and system design interviews.
-          </p>
-
-
-          {/* 100% Private & Undetectable note */}
-          <div className="pt-4 sm:pt-6 border-t border-sky-500/15 flex items-start gap-3 justify-start text-left">
-            <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-              <Shield size={16} />
-            </div>
-            <div className="text-xs font-medium text-left">
-              <span className={`block font-black text-xs sm:text-sm transition-colors duration-700 ${activeTab === 'coding' ? 'text-gray-200' : 'text-slate-800'}`}>100% Private & Undetectable</span>
-              <span className="mt-1 block max-w-sm leading-relaxed text-slate-500 text-[11px] sm:text-xs">Invisible during screen sharing on Zoom, Meet, and Microsoft Teams.</span>
-            </div>
-          </div>
-        </div>
-             {/* Hero Right - Interactive Mockup Window */}
-        <div className="lg:col-span-7 flex flex-col items-center relative select-none w-full">
-          
-          {/* Window Tabs (Floating above mockup container) */}
-          <div className={`flex justify-center border p-1 sm:p-1.5 rounded-full shadow-md relative z-20 -mb-4 sm:-mb-5 transition-colors duration-700 ${activeTab === 'coding' ? 'bg-slate-900 border-gray-700' : 'bg-white border-gray-250/60'}`}>
-            <button 
-              onClick={() => setActiveTab('non-coding')}
-              className={`flex items-center gap-1.5 px-4 sm:px-7 py-2 sm:py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-            >
-              Non-Coding
-            </button>
-            <button 
-              onClick={() => setActiveTab('coding')}
-              className={`flex items-center gap-1.5 px-4 sm:px-7 py-2 sm:py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#0d2e27] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-            >
-              Coding
-            </button>
-          </div>
-
-          {/* Window Mockup Outer Container */}
-          <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-1 sm:p-1.5 border border-gray-200 shadow-2xl relative pt-8 sm:pt-9">
-            {/* Window Dots (macOS style) */}
-            <div className="absolute top-3.5 sm:top-4 left-4 sm:left-6 flex space-x-1.5">
-              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#ff5f56] rounded-full inline-block"></span>
-              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#ffbd2e] rounded-full inline-block"></span>
-              <span className="w-3 sm:w-3.5 h-3 sm:h-3.5 bg-[#27c93f] rounded-full inline-block"></span>
+          {/* Hero Left Content (overview__page--left) */}
+          <div className="lg:col-span-6 space-y-6 text-left">
+            
+            {/* OS Compatibility Row (.overview__os) */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-600">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Windows">
+                <svg className="w-3.5 h-3.5 text-[#0078D7]" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-13.051-1.802"/></svg>
+                <span className="text-[11px] font-bold text-gray-700">Windows</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to macOS">
+                <svg className="w-3.5 h-3.5 text-gray-800" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.87-.96.04-2.12.64-2.79 1.43-.59.68-1.1 1.77-.96 2.81 1.07.08 2.12-.59 2.74-1.37z"/></svg>
+                <span className="text-[11px] font-bold text-gray-700">macOS</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Linux">
+                <span className="text-amber-600 font-black text-xs">🐧</span>
+                <span className="text-[11px] font-bold text-gray-700">Linux</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 shadow-xs hover:border-gray-400 transition-colors" title="Connect to Android">
+                <span className="text-emerald-600 font-black text-xs">📱</span>
+                <span className="text-[11px] font-bold text-gray-700">Android</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-blue-200 shadow-xs text-blue-600 hover:border-blue-400 transition-colors" title="WebRTC Browser-Based Connections">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <span className="text-[11px] font-bold text-blue-700">WebRTC</span>
+              </div>
             </div>
 
-            {/* Window Content Area */}
-            <div className="p-3 sm:p-5 md:p-6 bg-[#f8fafc] rounded-b-2xl sm:rounded-b-3xl min-h-fit text-left font-mono relative overflow-hidden">
-              {activeTab === 'non-coding' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch font-sans">
-                  
-                  {/* Left Column: Clean Video Player */}
-                  <div className="lg:col-span-7 bg-black rounded-xl sm:rounded-2xl border border-gray-200/80 shadow-md flex items-center justify-center overflow-hidden relative group min-h-[260px] sm:min-h-[380px] lg:min-h-[440px]">
-                    <video
-                      src="/hero-video.mp4"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls
-                      className="w-full h-full object-cover rounded-xl sm:rounded-2xl bg-black"
-                      poster="/anazk-hero-generated.png"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const iframe = document.getElementById('hero-drive-fallback');
-                        if (iframe) iframe.style.display = 'block';
-                      }}
-                    />
-                    <iframe
-                      id="hero-drive-fallback"
-                      src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
-                      className="w-full h-full min-h-[240px] border-0 hidden"
-                      allow="autoplay"
-                      allowFullScreen
-                      title="Anazk AI Live Demo"
-                    ></iframe>
-                  </div>
+            {/* Headline (.overview__title) */}
+            <h1 className="font-bold text-[34px] sm:text-[46px] lg:text-[52px] leading-[1.12] text-[#333333] tracking-tight">
+              Access Anywhere: Instant <b className="getscreen-gradient-text">Browser-Based & Desktop</b> AI Interview Copilot
+            </h1>
 
-                  {/* Right Column: Real-time AI Assistant Response Panel */}
-                  <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-md p-4 sm:p-5 flex flex-col justify-between space-y-3.5 text-left min-h-[300px] sm:min-h-[380px] lg:min-h-[440px]">
-                    <div>
-                      <div className="flex justify-between items-center pb-2.5 border-b border-gray-150">
-                        <span className="text-[11px] text-[#0d2e27] font-black uppercase tracking-wider flex items-center gap-1.5">
-                          <Sparkles size={14} className="text-emerald-600" />
-                          AI Smart Response
-                        </span>
-                        <div className="flex items-center gap-1.5 text-[9px] text-gray-500 font-semibold bg-gray-100 px-2 py-0.5 rounded-full">
-                          <span>AutoScroll</span>
-                          <span className="w-5 h-3 bg-[#10b981] rounded-full inline-block relative p-0.5">
-                            <span className="w-2 h-2 bg-white rounded-full block float-right"></span>
+            {/* Description (.overview__description) */}
+            <p className="text-base sm:text-[17px] text-[#666666] leading-relaxed font-normal max-w-xl">
+              A powerful cross-platform solution for real-time interview assistance and invisible desktop coding copilot. Connect directly from your browser or desktop application. 100% undetected on Zoom, Google Meet, Teams, and HackerRank screen sharing. Ideal for live coding, system design, and behavioral questions.
+            </p>
+
+            {/* Dual CTA Buttons (.cta) */}
+            <div className="space-y-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                <button 
+                  onClick={() => scrollToSection('pricing')}
+                  className="button--green px-8 py-4 text-sm font-black tracking-wider uppercase cursor-pointer"
+                >
+                  START FREE TRIAL / ₹349
+                </button>
+                <button 
+                  onClick={() => setShowDownloadModal(true)}
+                  className="button--primary px-8 py-4 text-sm font-black tracking-wider uppercase cursor-pointer"
+                >
+                  DOWNLOAD NOW
+                </button>
+              </div>
+
+              {/* Note underneath (.cta__note) */}
+              <div className="text-xs text-[#666666] pt-1">
+                Not sure where to start?{' '}
+                <button 
+                  onClick={() => scrollToSection('sandbox')}
+                  className="text-[#0076FF] font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  Test the Desktop Overlay in Live Sandbox ➔
+                </button>
+              </div>
+            </div>
+
+            {/* 3-Item Benefits Row (.benefits) */}
+            <div className="pt-6 border-t border-slate-300/60 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+              <div className="flex items-start gap-2.5">
+                <div className="w-10 h-10 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0">
+                  <Star size={18} className="fill-amber-500 text-amber-500" />
+                </div>
+                <div>
+                  <button onClick={() => scrollToSection('reviews')} className="font-bold text-sm text-[#333333] hover:underline block text-left">Top Rated</button>
+                  <p className="text-[11px] text-[#666666] leading-snug">The Reviews Speak for Themselves (4.9/5)</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <div className="w-10 h-10 rounded-full bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Tag size={18} />
+                </div>
+                <div>
+                  <button onClick={() => scrollToSection('pricing')} className="font-bold text-sm text-[#333333] hover:underline block text-left">Cost-Effective</button>
+                  <p className="text-[11px] text-[#666666] leading-snug">Lifetime Access at ₹349 (Zero Monthly Fees)</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <div className="w-10 h-10 rounded-full bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <button onClick={() => scrollToSection('privacy')} className="font-bold text-sm text-[#333333] hover:underline block text-left">100% Secure</button>
+                  <p className="text-[11px] text-[#666666] leading-snug">Hardware-level window masking invisible to screen share</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Hero Right - Interactive Mockup Window (overview__page--right) */}
+          <div className="lg:col-span-6 flex flex-col items-center relative select-none w-full">
+            
+            {/* Window Tabs (Floating above mockup container) */}
+            <div className="flex justify-center border border-gray-200 bg-white p-1 rounded-full shadow-md relative z-20 -mb-4">
+              <button 
+                onClick={() => setActiveTab('non-coding')}
+                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${activeTab === 'non-coding' ? 'bg-[#2c323f] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                Interactive Video Walkthrough
+              </button>
+              <button 
+                onClick={() => setActiveTab('coding')}
+                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${activeTab === 'coding' ? 'bg-[#2c323f] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                Live Code Copilot
+              </button>
+            </div>
+
+            {/* Window Mockup Outer Container */}
+            <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-1.5 border border-gray-200 shadow-2xl relative pt-9">
+              {/* Window Dots (macOS style) */}
+              <div className="absolute top-4 left-6 flex space-x-1.5">
+                <span className="w-3 h-3 bg-[#ff5f56] rounded-full inline-block"></span>
+                <span className="w-3 h-3 bg-[#ffbd2e] rounded-full inline-block"></span>
+                <span className="w-3 h-3 bg-[#27c93f] rounded-full inline-block"></span>
+              </div>
+
+              {/* Window Content Area */}
+              <div className="p-4 sm:p-5 bg-[#f8fafc] rounded-b-2xl sm:rounded-b-3xl min-h-fit text-left relative overflow-hidden">
+                {activeTab === 'non-coding' ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch font-sans">
+                    
+                    {/* Left Column: Clean Video Player */}
+                    <div className="lg:col-span-7 bg-black rounded-xl border border-gray-200 shadow-sm flex items-center justify-center overflow-hidden relative min-h-[240px] sm:min-h-[340px]">
+                      <video
+                        src="/hero-video.mp4"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        controls
+                        className="w-full h-full object-cover rounded-xl bg-black"
+                        poster="/anazk-hero-generated.png"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const iframe = document.getElementById('hero-drive-fallback');
+                          if (iframe) iframe.style.display = 'block';
+                        }}
+                      />
+                      <iframe
+                        id="hero-drive-fallback"
+                        src="https://drive.google.com/file/d/1fvHpPIP-H_7GXzHmohvPXTAcfzkBugUX/preview"
+                        className="w-full h-full min-h-[240px] border-0 hidden"
+                        allow="autoplay"
+                        allowFullScreen
+                        title="Anazk AI Live Demo"
+                      ></iframe>
+                    </div>
+
+                    {/* Right Column: Real-time AI Assistant Response Panel */}
+                    <div className="lg:col-span-5 bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between space-y-3 text-left min-h-[280px] sm:min-h-[340px]">
+                      <div>
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-150">
+                          <span className="text-[11px] text-[#2c323f] font-black uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles size={14} className="text-emerald-600" />
+                            Live Assistant
+                          </span>
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                            Undetected
                           </span>
                         </div>
-                      </div>
-                      
-                      <div className="space-y-2.5 text-[11px] text-gray-800 leading-relaxed font-sans pt-2.5 overflow-y-auto max-h-[200px] sm:max-h-[240px] no-scrollbar">
-                        <div className="bg-emerald-50/70 border border-emerald-100/80 rounded-xl p-2.5">
-                          <span className="block text-emerald-800 font-bold text-[10px] uppercase mb-0.5">💡 Question Detected</span>
-                          <p className="font-extrabold text-[#0d2e27] text-[11px]">What are the core advantages of microservices architecture?</p>
+                        
+                        <div className="space-y-2 pt-2.5">
+                          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-lg p-2.5">
+                            <span className="block text-emerald-800 font-bold text-[10px] uppercase mb-0.5">💡 Detected Question</span>
+                            <p className="font-extrabold text-[#2c323f] text-[11px]">How do you prevent cache stampede in high-throughput systems?</p>
+                          </div>
+
+                          <div className="space-y-1 pl-1 text-[11px] text-gray-700">
+                            <p className="text-emerald-700 font-extrabold text-[10px]">⭐ Talking Points:</p>
+                            <ul className="space-y-1 pl-3 text-gray-650 list-disc text-[10px]">
+                              <li><strong>Mutex Lock (Single Flight):</strong> Only one thread rebuilds cache.</li>
+                              <li><strong>Probabilistic Early Expiration:</strong> Refresh before TTL expires.</li>
+                              <li><strong>Background Worker Rebuild:</strong> Pre-warm active cache keys.</li>
+                            </ul>
+                          </div>
                         </div>
-
-                        <div className="space-y-1 pl-0.5 text-gray-700 font-medium">
-                          <p className="text-emerald-700 font-extrabold text-[10px] sm:text-[11px]">⭐ Recommended Talking Points:</p>
-                          <ul className="space-y-1 pl-3 text-gray-600 list-disc text-[10px]">
-                            <li><strong>Independent Scalability:</strong> Scale high-load services independently.</li>
-                            <li><strong>Fault Isolation:</strong> Failure in one service doesn&apos;t bring down everything.</li>
-                            <li><strong>Tech Stack Flexibility:</strong> Different teams can use optimal tools.</li>
-                          </ul>
-                        </div>
                       </div>
-                    </div>
 
-                    {/* Pro Tip Card */}
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 text-emerald-900 p-2.5 rounded-xl text-[10px] leading-relaxed font-medium">
-                      🎯 <strong>Stealth guidance:</strong> Anazk AI listens silently and displays talking points in real-time.
-                    </div>
+                      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 p-2 rounded-lg text-[10px] font-medium">
+                        🎯 <strong>Hardware Masking:</strong> Floating overlay invisible to Zoom/Meet screen share.
+                      </div>
 
-                    {/* Action Controls */}
-                    <div className="pt-2 border-t border-gray-150 flex items-center justify-between gap-2">
-                      <button className="px-3 sm:px-4 py-2 bg-[#0d2e27] hover:bg-emerald-900 text-white font-bold text-[10px] rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
-                        <Sparkles size={12} />
-                        Next Point
-                      </button>
-                      <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-semibold">
-                        <span className="flex items-center gap-1 text-emerald-600 font-bold">
-                          <CheckCircle2 size={12} /> Ready
+                      <div className="pt-2 border-t border-gray-150 flex items-center justify-between">
+                        <span className="text-[10px] text-gray-500 font-semibold">Latency: &lt; 420ms</span>
+                        <span className="flex items-center gap-1 text-emerald-600 font-bold text-[10px]">
+                          <CheckCircle2 size={12} /> Listening
                         </span>
                       </div>
                     </div>
-                  </div>
 
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch font-sans">
-                  {/* Left panel: Code captured */}
-                  <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
-                    <div className="border-b border-gray-100 pb-2">
-                      <span className="block text-[10px] text-teal-650 font-black uppercase tracking-wider mb-1" style={{ color: '#0d9488' }}>🖥️ captured coding task</span>
-                      <p className="text-[#0d2e27] font-mono text-[10px] font-bold leading-relaxed" style={{ color: '#0d2e27' }}>{codingProblem.question}</p>
-                    </div>
-                    <pre className="bg-gray-50 border border-gray-100 p-2.5 sm:p-3 rounded-xl font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[160px] sm:max-h-[180px] no-scrollbar" style={{ color: '#0f172a', backgroundColor: '#f9fafb', borderColor: '#f1f5f9' }}>{simulatedCode || '// loading code context...'}</pre>
                   </div>
-
-                  {/* Right panel: Solution output */}
-                  <div className="bg-[#f1f5f9] rounded-xl sm:rounded-2xl border border-gray-200/60 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3">
-                    <div className="border-b border-gray-250 pb-2">
-                      <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider" style={{ color: '#059669' }}>🤖 AI Solutions (Java)</span>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch font-sans">
+                    <div className="bg-white rounded-xl border border-gray-200 p-3.5 shadow-xs flex flex-col justify-between space-y-3">
+                      <div className="border-b border-gray-150 pb-2">
+                        <span className="block text-[10px] text-teal-700 font-black uppercase tracking-wider mb-1">🖥️ Live Captured Task</span>
+                        <p className="text-[#2c323f] font-mono text-[10px] font-bold leading-relaxed">{codingProblem.question}</p>
+                      </div>
+                      <pre className="bg-gray-50 border border-gray-150 p-2.5 rounded-lg font-mono leading-relaxed text-[9px] overflow-x-auto max-h-[160px] no-scrollbar text-slate-800">{simulatedCode || '// loading code context...'}</pre>
                     </div>
-                    <pre className="font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[140px] sm:max-h-[160px] no-scrollbar whitespace-pre" style={{ color: '#1e293b' }}>{simulatedSolution || '// analyzing...'}</pre>
-                    <div className="pt-2 border-t border-gray-200 flex justify-end">
-                      <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-sm cursor-pointer">
-                        Copy Solution
-                      </button>
+
+                    <div className="bg-[#f1f5f9] rounded-xl border border-gray-200 p-3.5 shadow-xs flex flex-col justify-between space-y-3">
+                      <div className="border-b border-gray-200 pb-2">
+                        <span className="block text-[10px] text-emerald-600 font-black uppercase tracking-wider">🤖 AI Solution (Java / O(N))</span>
+                      </div>
+                      <pre className="font-mono text-[9px] leading-relaxed overflow-x-auto max-h-[140px] no-scrollbar whitespace-pre text-[#1e293b]">{simulatedSolution || '// analyzing...'}</pre>
+                      <div className="pt-2 border-t border-gray-200 flex justify-end">
+                        <button onClick={() => {}} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black rounded-lg transition-all shadow-xs cursor-pointer">
+                          Copy Solution
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
-
-
-      {/* Why Anazk AI Showcase Section */}
-      <section id="why-anazk" className="py-20 px-6 sm:px-10 lg:px-16 w-full max-w-[1320px] mx-auto space-y-28">
-        
-        {/* Section Heading */}
-        <div className="text-center">
-          <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-[#0d2e27] tracking-tight">
-            Why Anazk AI?
-          </h2>
-        </div>
-
-        {/* 1. Job-Winning Interview Answers */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          <div className="lg:col-span-6 space-y-4 text-left">
-            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
-            </span>
-            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
-              Job-Winning Interview Answers
-            </h3>
-            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
-              Understand the true intent behind interview questions with advanced AI insights.
-            </p>
-          </div>
-
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[260px] p-6 rounded-3xl bg-gradient-to-br from-blue-50/40 via-white to-emerald-50/30 border border-gray-100 shadow-sm overflow-hidden">
-            {/* Floating Insight Badges */}
-            <div className="w-full max-w-lg relative flex flex-wrap gap-3.5 items-center justify-center p-4">
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-emerald-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <MessageSquare size={18} className="text-emerald-600" />
-                <span>Word Choices</span>
-              </div>
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-blue-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <Volume2 size={18} className="text-blue-600" />
-                <span>Tone</span>
-              </div>
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-amber-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <Clock size={18} className="text-amber-600" />
-                <span>Timing</span>
-              </div>
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-indigo-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <FileText size={18} className="text-indigo-600" />
-                <span>Context</span>
-              </div>
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-teal-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <Tag size={18} className="text-teal-600" />
-                <span>Keyword</span>
-              </div>
-              <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-md border border-purple-500/20 text-sm sm:text-base font-extrabold text-[#0d2e27] flex items-center gap-2.5 transform hover:scale-105 transition-all">
-                <Sliders size={18} className="text-purple-600" />
-                <span>Formality Level</span>
+                )}
               </div>
             </div>
           </div>
+
         </div>
-
-        {/* 2. Effortless interaction */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
-            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
-            </span>
-            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
-              Effortless interaction
-            </h3>
-            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
-              Enjoy a 100% hands-free experience with no awkward pauses that allows you to focus entirely on your interview.
-            </p>
-          </div>
-
-          <div className="lg:col-span-6 relative flex flex-col justify-center min-h-[260px] p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-gray-50/50 via-white to-blue-50/20 border border-gray-100 shadow-sm order-2 lg:order-2 space-y-4 text-left">
-            {/* Listening prompt */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-                <span>Listening to interviewer...</span>
-              </div>
-              <div className="inline-block bg-white border border-gray-100 px-5 py-3 rounded-2xl shadow-sm text-xs sm:text-sm font-bold text-gray-800">
-                What's your biggest strength?
-              </div>
-            </div>
-
-            {/* Generating response */}
-            <div className="space-y-1.5 pl-4 sm:pl-8">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-blue-600">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                <span>Generating answer...</span>
-              </div>
-              <div className="bg-white border border-emerald-500/20 px-5 py-4 rounded-2xl shadow-md text-xs sm:text-sm font-medium text-gray-700 leading-relaxed border-l-4 border-l-emerald-500">
-                My biggest strength is architecting scalable backend systems and debugging high-throughput microservices. In my previous role, I identified an N+1 database bottleneck in our core API, optimized it with Redis caching and asynchronous queues, which reduced p99 latency by 70% and handled 10x traffic spikes with zero downtime.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Robust Privacy */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          <div className="lg:col-span-6 space-y-4 text-left">
-            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
-            </span>
-            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
-              Robust Privacy
-            </h3>
-            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
-              Fully undetectable and unnoticeable by interviewers across all types of interviews.
-            </p>
-          </div>
-
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[300px] p-4 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-gray-900 to-[#071d18] border border-emerald-500/20 shadow-xl overflow-hidden text-left">
-            {/* Realistic Screen-Share Stealth Mockup */}
-            <div className="w-full max-w-lg bg-[#0b1411] rounded-2xl border border-emerald-500/30 p-4 space-y-3.5 shadow-2xl">
-              
-              {/* Screen Share Status Bar */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-white/10 text-[11px] font-mono">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="text-gray-200 font-bold">Screen Sharing on Zoom / Meet</span>
-                </div>
-                <span className="bg-red-500/20 border border-red-500/40 text-red-300 text-[10px] font-bold px-2 py-0.5 rounded">
-                  Live Feed
-                </span>
-              </div>
-
-              {/* Two Screen Comparison (Interviewer vs You) */}
-              <div className="grid grid-cols-2 gap-3">
-                
-                {/* 1. What Interviewer Sees */}
-                <div className="bg-black/60 rounded-xl border border-white/10 p-3 space-y-2">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-gray-400 font-bold">Interviewer Screen</span>
-                    <span className="text-emerald-400 font-bold text-[9px]">Clean 100%</span>
-                  </div>
-                  <div className="bg-gray-900/90 rounded-lg p-2 space-y-1 font-mono text-[9px] text-gray-400">
-                    <div className="w-16 h-1.5 bg-gray-700 rounded"></div>
-                    <div className="w-24 h-1.5 bg-gray-800 rounded"></div>
-                    <div className="w-20 h-1.5 bg-gray-800 rounded"></div>
-                  </div>
-                  <span className="block text-[9px] text-gray-400 font-medium text-center">
-                    No overlay visible
-                  </span>
-                </div>
-
-                {/* 2. What Candidate Sees */}
-                <div className="bg-emerald-950/40 rounded-xl border border-emerald-500/40 p-3 space-y-2 relative overflow-hidden">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-emerald-300 font-bold">Your Screen</span>
-                    <span className="text-emerald-400 font-bold text-[9px]">Active</span>
-                  </div>
-                  <div className="bg-black/80 rounded-lg p-2 border border-emerald-500/30 space-y-1 text-[9px] text-emerald-300 font-mono">
-                    <span className="text-[8px] text-emerald-400 font-bold block">⚡ Instant Solution</span>
-                    <span className="text-gray-300 block text-[9px] truncate">Use Token Bucket algorithm</span>
-                  </div>
-                  <span className="block text-[9px] text-emerald-400 font-bold text-center">
-                    Invisible Overlay Active
-                  </span>
-                </div>
-
-              </div>
-
-              {/* Bottom Hardware Layer Protection Badge */}
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-gray-300">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                  <ShieldCheck size={13} className="text-emerald-400" />
-                  Hardware-Level Capture Bypass
-                </span>
-                <span className="text-gray-400 font-mono">100% Undetectable</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Personalized Experience */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          <div className="lg:col-span-6 space-y-4 text-left order-1 lg:order-1">
-            <span className="text-blue-600 font-extrabold text-xs uppercase tracking-widest block">
-              WHY ANAZK AI
-            </span>
-            <h3 className="font-display font-black text-2xl sm:text-3xl md:text-4xl text-gray-900 leading-tight">
-              Personalized Experience
-            </h3>
-            <p className="text-gray-600 font-medium text-sm sm:text-base leading-relaxed max-w-lg">
-              Receive answers tailored to your job role, resume, and personal stories for a truly customized interview experience.
-            </p>
-          </div>
-
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[260px] p-6 rounded-3xl bg-gradient-to-br from-emerald-50/30 via-white to-blue-50/20 border border-gray-100 shadow-sm order-2 lg:order-2">
-            {/* Resume Upload Box Mockup */}
-            <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200/80 shadow-lg p-5 space-y-4 relative">
-              <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-sm text-gray-900">Upload your resume</span>
-                <span className="text-gray-400 text-xs cursor-pointer">✕</span>
-              </div>
-              <p className="text-[11px] text-gray-500 font-medium leading-tight">
-                We will use your professional background and skills to tailor interview answers specifically for you.
-              </p>
-              
-              <div className="border-2 border-dashed border-blue-400/60 rounded-xl p-6 flex flex-col items-center justify-center bg-blue-50/20">
-                <div className="text-xs text-gray-400 font-semibold">Drop file here or browse</div>
-              </div>
-
-              {/* Floating resume pill */}
-              <div className="absolute -bottom-2 -right-2 bg-white px-3.5 py-1.5 rounded-full shadow-md border border-emerald-500/20 text-[11px] font-bold text-gray-800 flex items-center gap-2">
-                <FileText size={14} className="text-blue-600" />
-                <span>Resume_24.pdf</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </section>
 
-      {/* Main Features Grid */}
-      <section id="features" className="py-16 px-6 sm:px-10 lg:px-16 w-full max-w-[1480px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-        
-        {/* Card 1: Coding Support */}
-        <div className="md:col-span-7 bg-white rounded-3xl p-8 border border-emerald-500/5 shadow-[0_10px_40px_rgba(16,185,129,0.02)] space-y-6 flex flex-col justify-between hover:border-emerald-500/25 transition-all">
-          <div className="space-y-4">
-            <span className="inline-block bg-teal-50 text-teal-700 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-teal-200">
-              Programming
-            </span>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27]">
-              Full Coding Interview Support
-            </h3>
-            <p className="text-gray-600 text-sm font-medium leading-relaxed">
-              Use Anazk AI for advanced tech assessments. It listens to coding discussions or captures the screen coordinates to read LeetCode-style descriptions, generating highly optimized solutions on the fly.
-            </p>
-          </div>
-          <div className="bg-[#0b1227] rounded-2xl p-4 border border-white/5 font-mono text-[10px] text-gray-300">
-            <div className="flex justify-between items-center text-gray-500 pb-2 border-b border-white/5 mb-3">
-              <span>javascript.js</span>
-              <Copy size={12} className="hover:text-white cursor-pointer" />
-            </div>
-            <pre className="text-emerald-400 font-mono overflow-x-auto">
-{`function generatePrimes(limit) {
-  if (limit < 2) return [];
-  const sieve = new Array(limit + 1).fill(true);
-  sieve[0] = sieve[1] = false;
-  
-  for (let i = 2; i * i <= limit; i++) {
-    if (sieve[i]) {
-      for (let j = i * i; j <= limit; j += i) {
-        sieve[j] = false;
-      }
-    }
-  }
-  return sieve.map((p, i) => p ? i : null).filter(Boolean);
-}`}
-            </pre>
-          </div>
+      {/* ─── SOLUTIONS SECTION (EXACT GETSCREEN.ME SOLUTIONS STYLE) ─── */}
+      <section id="solutions" className="py-20 sm:py-24 px-4 sm:px-8 lg:px-12 w-full max-w-[1400px] mx-auto text-left">
+        <div className="max-w-3xl mb-12">
+          <h2 className="font-bold text-3xl sm:text-4xl text-[#333333] tracking-tight">
+            All-in-One AI Interview Platform for Success
+          </h2>
+          <p className="text-gray-600 text-base sm:text-lg mt-3 leading-relaxed">
+            Our comprehensive suite of tools—from permanent stealth desktop overlay and one-time browser audio capture to live code solving, system design diagrams, and resume-tailored answers—delivers the agility your career needs.
+          </p>
         </div>
 
-        {/* Card 2: Voice Transcription */}
-        <div className="md:col-span-5 bg-white rounded-3xl p-8 border border-emerald-500/5 shadow-[0_10px_40px_rgba(16,185,129,0.02)] space-y-6 flex flex-col justify-between hover:border-emerald-500/25 transition-all">
-          <div className="space-y-4">
-            <span className="inline-block bg-emerald-50 text-emerald-700 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200">
-              Speech Recognition
-            </span>
-            <h3 className="font-display font-black text-2xl text-[#0d2e27]">
-              Blazing Fast Transcription
-            </h3>
-            <p className="text-gray-600 text-sm font-medium leading-relaxed">
-              Equipped with Whisper large-v3 models. Translates any question asked vocally by the interviewer with precision, handling accents, noise, and fast speech smoothly.
-            </p>
-          </div>
+        {/* Getscreen Solutions Grid (.solutions__items) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* Animated voice wave mock */}
-          <div className="bg-[#0b1227] p-5 rounded-2xl border border-white/5 flex flex-col space-y-3 justify-center items-center">
-            <div className="flex items-center space-x-3 bg-white/5 px-4 py-2.5 rounded-xl border border-white/5 w-full">
-              <div className="p-1.5 rounded-full bg-emerald-500 text-white">
-                <Mic size={14} />
-              </div>
-              <div className="flex-1">
-                <span className="block text-[8px] text-gray-500 font-extrabold uppercase">Rob Parsley (Interviewer)</span>
-                <span className="text-[10px] text-white font-mono">&quot;Can you write a JS function...&quot;</span>
-              </div>
+          {/* Card 1: Permanent Stealth Desktop Access */}
+          <div className="getscreen-card p-8 sm:p-10 flex flex-col justify-between hover:shadow-lg transition-all">
+            <div className="space-y-4">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-[#0076FF]">
+                Native App Mode
+              </span>
+              <h3 className="font-bold text-2xl text-[#333333]">
+                Permanent Stealth Desktop Access
+              </h3>
+              <p className="text-sm font-semibold text-[#0076FF]">
+                Hardware-Masked Invisible Overlay for High-Stakes Technical Rounds
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed font-normal">
+                Manage and ace any live interview without supervision anxiety. Our native desktop app uses OS-level window capture exclusion (WDA_EXCLUDEFROMCAPTURE), making the overlay 100% invisible to Zoom, Google Meet, Microsoft Teams, and HackerRank screen recordings.
+              </p>
             </div>
-            {/* Audio wave lines */}
-            <div className="flex items-center gap-1.5 h-10">
-              <span className="w-1.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.1s' }}></span>
-              <span className="w-1.5 bg-emerald-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.3s' }}></span>
-              <span className="w-1.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.5s' }}></span>
-              <span className="w-1.5 bg-emerald-600 rounded-full animate-sound-wave" style={{ animationDelay: '0.2s' }}></span>
-              <span className="w-1.5 bg-teal-400 rounded-full animate-sound-wave" style={{ animationDelay: '0.4s' }}></span>
-              <span className="w-1.5 bg-emerald-500 rounded-full animate-sound-wave" style={{ animationDelay: '0.6s' }}></span>
+
+            <div className="pt-8 space-y-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <button 
+                  onClick={() => scrollToSection('pricing')}
+                  className="button--green px-6 py-3 text-xs font-bold tracking-wider uppercase cursor-pointer"
+                >
+                  TRY NOW (₹349)
+                </button>
+                <button 
+                  onClick={() => setShowDownloadModal(true)}
+                  className="text-xs font-bold text-[#0076FF] hover:underline cursor-pointer"
+                >
+                  Download App ➔
+                </button>
+              </div>
+
+              <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-gray-500 border-t border-slate-200/80">
+                <button onClick={() => scrollToSection('privacy')} className="hover:text-[#0076FF] cursor-pointer">Features of Permanent Stealth</button>
+                <span>•</span>
+                <button onClick={() => scrollToSection('sandbox')} className="hover:text-[#0076FF] cursor-pointer">Live Simulator Demo</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Card 3: Live Screen Sharing Vision Copilot — COMING SOON */}
-        <div id="screen-share-feature" className="md:col-span-12 bg-gradient-to-br from-[#0a1512] via-[#0d231c] to-[#061410] rounded-3xl p-8 sm:p-12 border-2 border-emerald-500/30 shadow-[0_20px_60px_rgba(16,185,129,0.15)] relative overflow-hidden text-left">
-          {/* Ambient Glows */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+          {/* Card 2: One-time Remote Connections */}
+          <div className="getscreen-card p-8 sm:p-10 flex flex-col justify-between hover:shadow-lg transition-all">
+            <div className="space-y-4">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                WebRTC Browser Mode
+              </span>
+              <h3 className="font-bold text-2xl text-[#333333]">
+                One-Time Instant Browser Connection
+              </h3>
+              <p className="text-sm font-semibold text-emerald-700">
+                Zero-Install WebRTC Audio Capture Directly from Your Browser
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed font-normal">
+                Need immediate help with zero software installation? Connect instantly with our WebRTC browser copilot. It streams interviewer audio with AI noise cancellation and generates optimal answers and code in real-time.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/40 shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  🚀 Coming Soon • Launching Soon
-                </span>
-                <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-amber-500/30">
-                  Next-Gen Multimodal Vision
-                </span>
+            <div className="pt-8 space-y-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <button 
+                  onClick={() => scrollToSection('pricing')}
+                  className="button--green px-6 py-3 text-xs font-bold tracking-wider uppercase cursor-pointer"
+                >
+                  TRY NOW (₹349)
+                </button>
+                <button 
+                  onClick={() => scrollToSection('sandbox')}
+                  className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
+                >
+                  Try in Sandbox ➔
+                </button>
               </div>
 
-              <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
-                Live Screen Sharing &amp; Real-Time Vision Copilot
+              <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-gray-500 border-t border-slate-200/80">
+                <button onClick={() => scrollToSection('features')} className="hover:text-emerald-700 cursor-pointer">Features of Browser Copilot</button>
+                <span>•</span>
+                <button onClick={() => scrollToSection('faq')} className="hover:text-emerald-700 cursor-pointer">Audio Capture Guide</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─── FEATURES TABS SECTION (EXACT GETSCREEN.ME FEATURES TABS STYLE) ─── */}
+      <section id="features" className="py-16 sm:py-24 px-4 sm:px-8 lg:px-12 w-full max-w-[1400px] mx-auto text-left">
+        
+        {/* Getscreen Tab Bar (.features__tabs) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar border-b border-gray-200 mb-8">
+          {[
+            { id: 0, label: "Screen Control & Stealth" },
+            { id: 1, label: "Live Code Solver" },
+            { id: 2, label: "System Design Architect" },
+            { id: 3, label: "Behavioral & STAR" },
+            { id: 4, label: "Audio WebRTC Engine" },
+            { id: 5, label: "Screen Sharing Vision Copilot" }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFeaturesActiveTab(tab.id)}
+              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+                featuresActiveTab === tab.id
+                  ? 'bg-white text-[#0076FF] border border-blue-200 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Feature Detail Card (.features__card) */}
+        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-gray-200 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          {/* Left Info Column */}
+          <div className="lg:col-span-7 space-y-6">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0076FF] bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                {featuresActiveTab === 0 && "Hardware-Level Stealth"}
+                {featuresActiveTab === 1 && "Algorithms & Data Structures"}
+                {featuresActiveTab === 2 && "System Architecture"}
+                {featuresActiveTab === 3 && "Leadership & STAR"}
+                {featuresActiveTab === 4 && "Voice Recognition"}
+                {featuresActiveTab === 5 && "Next-Gen Vision Copilot"}
+              </span>
+
+              <h3 className="font-bold text-2xl sm:text-3xl text-[#333333] mt-3 tracking-tight">
+                {featuresActiveTab === 0 && "Manage Screens Privately with Hardware Window Masking"}
+                {featuresActiveTab === 1 && "Instant Algorithmic Intelligence for LeetCode & HackerRank"}
+                {featuresActiveTab === 2 && "High-Level & Low-Level Architectural Guidance"}
+                {featuresActiveTab === 3 && "Confident Answers for HR & Leadership Principles"}
+                {featuresActiveTab === 4 && "Zero-Latency Real-Time Voice Recognition (Whisper Large)"}
+                {featuresActiveTab === 5 && "Autonomous Screen Understanding & Vision Analysis"}
               </h3>
 
-              <p className="text-gray-300 text-sm sm:text-base font-medium leading-relaxed max-w-2xl">
-                Experience the next revolution in technical interview copilot assistance. When you share your screen with the interviewer on Zoom, Google Meet, or Teams, Anazk AI autonomously watches and understands your code editor, problem statements, system design diagrams, and failing test cases in real-time — without needing manual screenshots or key triggers.
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed mt-2 font-normal">
+                {featuresActiveTab === 0 && "No complex installations or suspicious eye darting. Take control of your interview answers in real-time while remaining 100% undetected on Zoom, Google Meet, Teams, and Webex screen shares."}
+                {featuresActiveTab === 1 && "Whether it is dynamic programming, binary trees, graphs, or SQL queries, Anazk AI reads the problem description, formulates optimal approaches, and writes clean, production-ready code with step-by-step reasoning."}
+                {featuresActiveTab === 2 && "Ace complex System Design interviews with confidence. Anazk AI provides instant talking points for trade-offs, database selection, caching layers, load balancing, and failure scenarios."}
+                {featuresActiveTab === 3 && "Never stumble on 'Tell me about a time you had a conflict' or Amazon Leadership Principles. Anazk AI listens to the question and structures your answer into a concise STAR format in seconds."}
+                {featuresActiveTab === 4 && "Powered by Whisper large-v3 models optimized for conversational audio. Captures interviewer audio directly from system sound without any echo or background noise interference."}
+                {featuresActiveTab === 5 && "When you share your screen with the interviewer on Zoom or Teams, Anazk AI autonomously watches and understands your code editor and failing test cases in real-time — without needing manual screenshots or key triggers."}
               </p>
-
-              {/* Feature Highlights Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs font-bold text-gray-200">
-                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
-                  <Eye className="text-emerald-400 shrink-0" size={16} />
-                  <span>Zero-Click Autonomous Problem Detection</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
-                  <ShieldCheck className="text-emerald-400 shrink-0" size={16} />
-                  <span>100% Reverse-Invisible Screen Overlay</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
-                  <Sparkles className="text-emerald-400 shrink-0" size={16} />
-                  <span>Real-time Debugging &amp; Test Case Hints</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
-                  <Crop className="text-emerald-400 shrink-0" size={16} />
-                  <span>Multi-Screen &amp; Virtual Display Support</span>
-                </div>
-              </div>
-
-              <div className="pt-3 flex flex-wrap items-center gap-4">
-                <button
-                  onClick={() => setShowSignInModal(true)}
-                  className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-400 text-[#0d2e27] hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Get Early Access on Launch</span>
-                  <ArrowRight size={14} />
-                </button>
-                <span className="text-[11px] text-emerald-400 font-bold">
-                  ⚡ Will be automatically included for all Lifetime Access users
-                </span>
-              </div>
             </div>
 
-            {/* Right Futuristic Mockup UI */}
-            <div className="lg:col-span-5 bg-black/60 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-2xl relative font-mono text-xs">
-              {/* Screen Sharing Live Indicator Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-[10px] text-gray-400">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-emerald-300 font-bold uppercase tracking-wider">LIVE SCREEN SHARING STREAM</span>
+            {/* Checklist Options */}
+            <div className="space-y-2.5 text-xs sm:text-sm font-semibold text-gray-700">
+              {featuresActiveTab === 0 && [
+                "OS-level window masking (WDA_EXCLUDEFROMCAPTURE)",
+                "Invisible to full-screen screen shares & recordings",
+                "Customizable hotkeys to toggle and relocate instantly",
+                "Low CPU & RAM footprint (< 45MB memory usage)",
+                "Works seamlessly across Windows 10/11 and macOS"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
                 </div>
-                <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded text-[9px] font-bold">
-                  AI VISION: ACTIVE
-                </span>
-              </div>
+              ))}
 
-              {/* Mock problem being solved live */}
-              <div className="mt-3.5 space-y-2.5">
-                <div className="bg-white/5 p-3 rounded-xl border border-white/10 text-[11px] text-gray-300">
-                  <span className="text-emerald-400 font-bold block mb-1">Target: LeetCode #42 — Trapping Rain Water</span>
-                  <span className="text-gray-400 text-[10px] block">Detected test failure: height = [0,1,0,2,1,0,1,3,2,1,2,1]</span>
+              {featuresActiveTab === 1 && [
+                "Supports Python, Java, C++, JavaScript, TypeScript, Go",
+                "Calculates Time & Space complexity breakdowns",
+                "Handles tricky edge cases and constraint analysis",
+                "One-click copy to clipboard with stealth formatting",
+                "Simulates native developer typing speed with auto-typer"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
                 </div>
+              ))}
 
-                {/* AI Instant Live Suggestion Card */}
-                <div className="bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-400/40 shadow-inner">
-                  <div className="flex items-center justify-between text-emerald-400 text-[10px] font-bold mb-1.5">
-                    <span>💡 AI LIVE COPILOT ADVICE</span>
-                    <span className="text-emerald-300">Confidence: 99.4%</span>
-                  </div>
-                  <p className="text-gray-200 text-[11px] leading-relaxed">
-                    &quot;Your two-pointer approach needs to update <code>maxLeft</code> and <code>maxRight</code> before calculating water units. Move pointers toward the smaller boundary to maintain O(1) space.&quot;
-                  </p>
+              {featuresActiveTab === 2 && [
+                "Structured talking points (Requirements, Scale, API, Data model)",
+                "Database trade-offs (SQL vs NoSQL vs NewSQL)",
+                "Scalability & caching strategies (Redis, CDN, Kafka)",
+                "Fault tolerance, replication, and CAP theorem nuances",
+                "Concise, natural conversational phrasing"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
                 </div>
+              ))}
 
-                <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1">
-                  <span>Latency: ~180ms</span>
-                  <span className="text-emerald-400 font-bold">Auto Typer Ready (Cmd+Shift+T)</span>
+              {featuresActiveTab === 3 && [
+                "Instant STAR framework breakdown (Situation, Task, Action, Result)",
+                "Tailored to your real background & target company values",
+                "Natural conversational cadence without robotic phrasing",
+                "Follow-up question anticipation and quick prep",
+                "Conflict resolution and leadership talking points"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
                 </div>
-              </div>
+              ))}
+
+              {featuresActiveTab === 4 && [
+                "Sub-500ms real-time audio-to-text transcription",
+                "Accurate recognition for Indian, US, UK, and European accents",
+                "Captures speaker audio directly from internal loopback",
+                "Automatic question detection and filtering of chit-chat",
+                "Zero browser extensions or intrusive virtual drivers required"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
+                </div>
+              ))}
+
+              {featuresActiveTab === 5 && [
+                "Zero-click autonomous problem detection",
+                "Real-time debugging & test case hints",
+                "Multi-screen and virtual display compatibility",
+                "Recognizes IDE error logs and compiler diagnostics",
+                "Included with Lifetime Access"
+              ].map((opt, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{opt}</span>
+                </div>
+              ))}
             </div>
 
+            {/* Actions */}
+            <div className="pt-4 flex flex-wrap items-center gap-4">
+              <button 
+                onClick={() => scrollToSection('pricing')}
+                className="button--green px-7 py-3.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+              >
+                START FREE TRIAL / ₹349
+              </button>
+              <button 
+                onClick={() => scrollToSection('sandbox')}
+                className="button--primary px-7 py-3.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+              >
+                TEST IN SANDBOX
+              </button>
+            </div>
           </div>
+
+          {/* Right Visual Preview Column */}
+          <div className="lg:col-span-5 bg-slate-900 rounded-2xl p-5 text-white font-mono text-xs shadow-inner border border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                ANAZK AI ACTIVE
+              </span>
+              <span>Latency: 380ms</span>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
+                <span className="text-emerald-400 font-bold block text-[10px] mb-1">
+                  {featuresActiveTab === 0 && "STEALTH ENGINE STATUS"}
+                  {featuresActiveTab === 1 && "OPTIMAL CODE GENERATION"}
+                  {featuresActiveTab === 2 && "SYSTEM DESIGN ARCHITECTURE"}
+                  {featuresActiveTab === 3 && "BEHAVIORAL (STAR) MODEL"}
+                  {featuresActiveTab === 4 && "AUDIO STREAM TRANSCRIPTION"}
+                  {featuresActiveTab === 5 && "VISION COPILOT STREAM"}
+                </span>
+                <p className="text-slate-300 text-[11px] font-sans leading-relaxed">
+                  {featuresActiveTab === 0 && "Hardware frame exclusion enabled. Full-screen screen sharing active on Zoom. Overlay masked completely from capture buffer."}
+                  {featuresActiveTab === 1 && "Dynamic programming memoization: Time Complexity O(N), Space Complexity O(N). Passing all 48/48 test cases."}
+                  {featuresActiveTab === 2 && "Recommended distributed cache: Redis Cluster with Consistent Hashing & Write-Through caching for 99.99% read SLA."}
+                  {featuresActiveTab === 3 && "Situation: Led database migration under tight deadline. Action: Implemented dual-write pattern. Result: Zero downtime."}
+                  {featuresActiveTab === 4 && "Interviewer voice: 'Could you explain how indexes affect write performance in PostgreSQL?'"}
+                  {featuresActiveTab === 5 && "Screen Vision: Reading IDE buffer. Identified off-by-one error on line 42."}
+                </p>
+              </div>
+
+              <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-emerald-300 text-[10px] font-sans flex items-center justify-between">
+                <span>✓ Invisible on Screen Share</span>
+                <span className="font-bold">Hotkeys: Cmd/Win+Shift+A</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
